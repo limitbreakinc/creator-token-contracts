@@ -1,0 +1,41 @@
+{
+    "name": "@limitbreak/creator-token-contracts",
+    "version": "1.0.1",
+    "description": "This repo contains smart contracts mixins that are re-usable across many NFT project wishing to protect creator royalties.",
+    "main": "index.js",
+    "files": [
+      "/contracts/**/*.sol",
+      "/build/contracts/*.json",
+      "!/contracts/mocks/**/*",
+      "/test/**/*.js"
+    ],
+    "scripts": {
+      "compile": "hardhat compile",
+      "coverage": "env COVERAGE=true hardhat coverage",
+      "clean": "hardhat clean && rimraf build contracts/build",
+      "prepack": "npm run clean && npm run compile && node scripts/prepack.js",
+      "test": "hardhat test"
+    },
+    "author": "LimitBreak",
+    "license": "MIT",
+    "devDependencies": {
+      "@nomicfoundation/hardhat-network-helpers": "^1.0.4",
+      "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+      "@nomiclabs/hardhat-etherscan": "^3.1.0",
+      "@nomiclabs/hardhat-truffle5": "^2.0.6",
+      "@nomiclabs/hardhat-web3": "^2.0.0",
+      "@openzeppelin/test-helpers": "^0.5.15",
+      "dotenv": "^16.0.1",
+      "hardhat": "^2.10.1",
+      "hardhat-contract-sizer": "^2.6.1",
+      "hardhat-gas-reporter": "^1.0.8",
+      "keccak256": "^1.0.6",
+      "merkletreejs": "^0.3.2",
+      "solidity-coverage": "^0.7.21",
+      "web3": "^1.7.5"
+    },
+    "dependencies": {
+      "@openzeppelin/contracts": "4.7.0"
+    }
+  }
+  

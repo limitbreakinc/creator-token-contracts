@@ -1,0 +1,16 @@
+node_modules
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+.DS_Store
+secret.json
+
+#Hardhat files
+cache
+artifacts
+
+# NPM Build Output
+build
+*.tgz
