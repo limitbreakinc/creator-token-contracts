@@ -68,8 +68,8 @@ push_repo_github:
       git checkout $CI_COMMIT_REF_NAME
       git rm .gitlab-ci.yml && git commit -m "removing ci file"
       git pull --set-upstream github_origin master --allow-unrelated-histories --no-edit
-      git checkout master && git merge $CI_COMMIT_REF_NAME
-      git push github_origin master
+      git checkout main && git main $CI_COMMIT_REF_NAME
+      git push github_origin main
       git tag -fa $TAG -m "version: ${TAG}"
       git push github_origin --tags
   rules:
