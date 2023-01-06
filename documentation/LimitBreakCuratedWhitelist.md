@@ -24,5 +24,7 @@ Address: [0x2e318924d1bf55D6FF2dECea10307655a3abED84](https://etherscan.io/addre
 | Zora | 0xe5bfab544eca83849c53464f85b7164375bdaac1 |
 | Zora | 0x9458e29713b98bf452ee9b2c099289f533a5f377 |
 | Zora | 0x34aa9cbb80dc0b3d82d04900c02fb81468dafcab |
+| GigaMart | 0xcA833F943a0C7D3C4021B0b161a2686f9ebf6b02 |
+| GigaMart Aggregator | 0x4C9712Cd94376C537464cAa4d87bce198d59936c |
 
 To be considered for the whitelist or to propose a new exchange, teams can reach out to blockchain@limitbreak.com.
