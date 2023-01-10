@@ -55,7 +55,7 @@ push_repo_github:
   services:
   - docker:dind
   before_script:
-    - apt install openssh-client git  -y
+    - apt-get update && apt-get install openssh-client git  -y
     - eval $(ssh-agent -s)
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
   script:
