@@ -1,6 +1,6 @@
 {
     "name": "@limitbreak/creator-token-contracts",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "This repo contains smart contracts mixins that are re-usable across many NFT project wishing to protect creator royalties.",
     "main": "index.js",
     "files": [
@@ -15,6 +15,10 @@
       "clean": "hardhat clean && rimraf build contracts/build",
       "prepack": "npm run clean && npm run compile && node scripts/prepack.js",
       "test": "hardhat test"
+    },
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/limitbreakinc/creator-token-contracts.git"
     },
     "author": "LimitBreak",
     "license": "MIT",
