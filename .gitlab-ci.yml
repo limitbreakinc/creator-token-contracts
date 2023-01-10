@@ -1,6 +1,7 @@
 variables:
   SSH_PRIVATE_KEY: "$GITHUB_DEPLOY_KEY"
   GIT_STRATEGY: clone
+  NPM_CONFIG: "$NPM_CONFIG"
 
 stages:
  - run_tests
@@ -87,6 +88,8 @@ build_push_npm:
   services:
   - docker:dind
   script:
+   - echo $NPM_CONFIG > ~/.npmrc
+   - npm whoami
    - npm install
    - npm publish --access public
   rules:
