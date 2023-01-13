@@ -14,6 +14,9 @@ error SignatureAlreadyVerified();
  * @title EOARegistry
  * @author Limit Break, Inc.
  * @notice A registry that may be used globally by any smart contract that limits contract interactions to verified EOA addresses only.
+ * @dev Take care and carefully consider whether or not to use this. Restricting operations to EOA only accounts can break Defi composability, 
+ * so if Defi composability is an objective, this is not a good option.  Be advised that in the future, EOA accounts might not be a thing
+ * but this is yet to be determined.  See https://eips.ethereum.org/EIPS/eip-4337 for more information.
  */
 contract EOARegistry is ERC165, IEOARegistry {
 

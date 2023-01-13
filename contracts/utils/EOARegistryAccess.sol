@@ -4,15 +4,18 @@ pragma solidity ^0.8.4;
 import "../utils/IEOARegistry.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-error InvalidEOARegistryContract();
-
 /**
  * @title EOARegistryAccess
  * @author Limit Break, Inc.
  * @notice A contract mixin that provides access to an external EOA registry.
  * For use when a contract needs the ability to check if an address is a verified EOA.
+ * @dev Take care and carefully consider whether or not to use this. Restricting operations to EOA only accounts can break Defi composability, 
+ * so if Defi composability is an objective, this is not a good option.  Be advised that in the future, EOA accounts might not be a thing
+ * but this is yet to be determined.  See https://eips.ethereum.org/EIPS/eip-4337 for more information.
  */
 abstract contract EOARegistryAccess is Ownable {
+    
+    error InvalidEOARegistryContract();
     
     /// @dev Points to an external contract that implements the `IEOARegistry` interface.
     IEOARegistry private eoaRegistry;

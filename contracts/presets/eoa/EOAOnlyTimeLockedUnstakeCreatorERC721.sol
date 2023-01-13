@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../CreatorERC721.sol";
+import "../../EOAOnlyCreatorERC721.sol";
 
 /**
- * @title TimeLockedUnstakeCreatorERC721
+ * @title EOAOnlyTimeLockedUnstakeCreatorERC721
  * @author Limit Break, Inc.
- * @notice Extension of CreatorERC721 that enforces a time lock to unstake the wrapped token.
+ * @notice Extension of EOAOnlyCreatorERC721 that enforces a time lock to unstake the wrapped token.
  */
-abstract contract TimeLockedUnstakeCreatorERC721 is CreatorERC721 {
-    
+abstract contract EOAOnlyTimeLockedUnstakeCreatorERC721 is EOAOnlyCreatorERC721 {
+
     error TimelockHasNotExpired();
     
     /// @dev The amount of time the token is locked before unstaking is permitted.  This cannot be modified after contract creation.
