@@ -4,7 +4,7 @@
 
 ## When To Use This
 
-When there is a contract that needs to verify that an address has previously verified themselves as an EOA.
+When there is a contract that needs to verify that an address has previously verified themselves as an EOA.  Take care and carefully consider whether or not to use this. Restricting operations to EOA only accounts can break Defi composability, so if Defi composability is an objective, this is not a good option.  Be advised that in the future, EOA accounts might not be a thing but this is yet to be determined.  See https://eips.ethereum.org/EIPS/eip-4337 for more information.
 
 ## Design Decisions
 

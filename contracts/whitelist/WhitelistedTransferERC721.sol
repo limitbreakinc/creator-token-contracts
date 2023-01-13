@@ -6,9 +6,6 @@ import "../utils/TransferValidation.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
-error CallerIsNotWhitelisted(address caller);
-error InvalidTransferWhitelistContract();
-
 /**
  * @title WhitelistedTransferERC721
  * @author Limit Break, Inc.
@@ -17,6 +14,9 @@ error InvalidTransferWhitelistContract();
  */
 abstract contract WhitelistedTransferERC721 is Ownable, ERC721, TransferValidation {
     
+    error CallerIsNotWhitelisted(address caller);
+    error InvalidTransferWhitelistContract();
+
     /// @dev Points to an external contract that implements the `ITransferWhitelist` interface.
     ITransferWhitelist private transferWhitelist;
 
