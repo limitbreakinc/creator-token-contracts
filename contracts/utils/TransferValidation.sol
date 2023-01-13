@@ -3,8 +3,6 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Context.sol";
 
-error ShouldNotMintToBurnAddress();
-
 /**
  * @title TransferValidation
  * @author Limit Break, Inc.
@@ -13,6 +11,8 @@ error ShouldNotMintToBurnAddress();
  * developers to validate or customize transfers within the context of a mint, a burn, or a transfer.
  */
 abstract contract TransferValidation is Context {
+    
+    error ShouldNotMintToBurnAddress();
 
     /// @dev Inheriting contracts should call this function in the _beforeTokenTransfer function to get more granular hooks.
     function _validateBeforeTransfer(address from, address to, uint256 tokenId) internal virtual {

@@ -134,9 +134,58 @@ function shouldBehaveLikeCreatorToken(testUnstakeLogic, testRentableLogic) {
             await multiSigMock.setApprovalForAll(unprotectedToken.address, creatorToken.address, true);
           });
 
-          it("Allows multi-sig to stake into creator token when smart contract stakers are enabled", async function() {
-            await multiSigMock.execStake(creatorToken.address, 5);
-            expect(await creatorToken.ownerOf(5)).to.equal(multiSigMock.address);
+          it("Reverts if multi-sig stakes into EOA-only creator token ", async function() {
+            await expectRevert(multiSigMock.execStake(creatorToken.address, 5), "SmartContractsNotPermittedToStake()");
+          });
+
+          context("When An EOA Registry Is Set", function() {
+            beforeEach(async function() {
+              EOARegistry = await ethers.getContractFactory("EOARegistry");
+              eoaRegistry = await EOARegistry.deploy();
+              await eoaRegistry.deployed();
+
+              await creatorToken.setEOARegistry(eoaRegistry.address);
+
+              await unprotectedToken.connect(addrs[0]).setApprovalForAll(creatorToken.address, true);
+              await unprotectedToken.connect(addrs[1]).setApprovalForAll(creatorToken.address, true);
+              await unprotectedToken.connect(addrs[2]).setApprovalForAll(creatorToken.address, true);
+
+              await eoaRegistry.connect(addrs[0]).verifySignature(await getSignedMessage(addrs[0], "EOA"));
+              await eoaRegistry.connect(addrs[1]).verifySignature(await getSignedMessage(addrs[1], "EOA"));
+            });
+
+            async function getSignedMessage(signer, message) {
+              return await signer.signMessage(message);
+            }
+
+            it("Allows EOAs to Stake, And Reverts If Smart Contract Stakes", async function() {               
+              await verifySuccessfulStake(unprotectedToken, creatorToken, addrs[0], 1);
+              await verifySuccessfulStake(unprotectedToken, creatorToken, addrs[0], 2);
+              await verifySuccessfulStake(unprotectedToken, creatorToken, addrs[1], 3);
+              await expectRevert(multiSigMock.execStake(creatorToken.address, 5), `SignatureNotVerifiedInEOARegistry("${multiSigMock.address}", "${eoaRegistry.address}")`);                
+            });
+
+            it("Reverts if an EOA stakes without proving they are an EOA first", async function() {
+              await expectRevert(creatorToken.connect(addrs[2]).stake(4), `SignatureNotVerifiedInEOARegistry("${addrs[2].address}", "${eoaRegistry.address}")`);
+            });
+
+            it("Allows eoa registry to be set back to zero address", async function() {
+              await creatorToken.connect(owner).setEOARegistry(ZERO_ADDRESS);
+              expect(await creatorToken.getEOARegistry()).to.equal(ZERO_ADDRESS);
+            });
+
+            it("Reverts if contract owner sets EOA registy to a contract that does not implement IEOARegistry interface", async function() {
+              await expectRevert(creatorToken.connect(owner).setEOARegistry(multiSigMock.address), "InvalidEOARegistryContract()");
+            });
+
+            it("Reverts if contract owner sets EOA registy to an EOA account", async function() {
+              await expectRevert(creatorToken.connect(owner).setEOARegistry(addrs[3].address), "InvalidEOARegistryContract()");
+            });
+
+            it("Reverts if unauthorized account sets EOA registy to an EOA account", async function() {
+              await creatorToken.connect(owner).setEOARegistry(ZERO_ADDRESS);
+              await expectRevert(creatorToken.connect(addrs[3]).setEOARegistry(eoaRegistry.address), "Ownable: caller is not the owner");
+            });
           });
         });
       });

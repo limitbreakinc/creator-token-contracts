@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../CreatorERC721.sol";
+import "../../EOAOnlyCreatorERC721.sol";
 
 /**
- * @title PermanentCreatorERC721
+ * @title EOAOnlyPermanentCreatorERC721
  * @author Limit Break, Inc.
- * @notice Extension of CreatorERC721 that permanently stakes the wrapped token.
+ * @notice Extension of EOAOnlyCreatorERC721 that permanently stakes the wrapped token.
  */
-abstract contract PermanentCreatorERC721 is CreatorERC721 {
+abstract contract EOAOnlyPermanentCreatorERC721 is EOAOnlyCreatorERC721 {
 
     error UnstakeIsNotPermitted();
 

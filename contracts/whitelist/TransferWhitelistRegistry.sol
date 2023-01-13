@@ -6,9 +6,6 @@ import "./ITransferWhitelist.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-error ExchangeIsWhitelisted();
-error ExchangeIsNotWhitelisted();
-
 /**
  * @title TransferWhitelistRegistry
  * @author Limit Break, Inc.
@@ -18,6 +15,9 @@ error ExchangeIsNotWhitelisted();
  * the project's preferred governance structure.
  */
 contract TransferWhitelistRegistry is ERC165, Ownable, ITransferWhitelist {
+
+    error ExchangeIsWhitelisted();
+    error ExchangeIsNotWhitelisted();
 
     /// @dev Tracks the number of whitelisted exchanges
     uint256 private whitelistedExchangeCount;
