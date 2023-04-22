@@ -47,14 +47,34 @@ abstract contract ERC721C is Ownable, ERC721, TransferValidation {
     }
 
     /// @dev Ties the open-zeppelin _beforeTokenTransfer hook to more granular transfer validation logic
-    function _beforeTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
-        _validateBeforeTransfer(from, to, tokenId);
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize) internal virtual override {
+        for (uint256 i = 0; i < batchSize;) {
+            _validateBeforeTransfer(from, to, firstTokenId + i);
+            unchecked {
+                ++i;
+            }
+        }
     }
 
     /// @dev Ties the open-zeppelin _afterTokenTransfer hook to more granular transfer validation logic
-    function _afterTokenTransfer(address from, address to, uint256 tokenId) internal virtual override {
-        _validateAfterTransfer(from, to, tokenId);
+    function _afterTokenTransfer(
+        address from,
+        address to,
+        uint256 firstTokenId,
+        uint256 batchSize) internal virtual override {
+        for (uint256 i = 0; i < batchSize;) {
+            _validateAfterTransfer(from, to, firstTokenId + i);
+            unchecked {
+                ++i;
+            }
+        }
     }
+
+    
 
     function _preValidateTransfer(
         address caller, 
