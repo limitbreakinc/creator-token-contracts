@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.9;
 
-import "../presets/PaidUnstakeWrapperERC721C.sol";
+import "../erc721c/presets/PaidUnstakeWrapperERC721C.sol";
 
 contract PaidUnstakeWrapperERC721CMock is PaidUnstakeWrapperERC721C {
     constructor(

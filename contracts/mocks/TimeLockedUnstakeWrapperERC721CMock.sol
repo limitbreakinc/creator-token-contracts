@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.9;
 
-import "../presets/TimeLockedUnstakeWrapperERC721C.sol";
+import "../erc721c/presets/TimeLockedUnstakeWrapperERC721C.sol";
 
 contract TimeLockedUnstakeWrapperERC721CMock is TimeLockedUnstakeWrapperERC721C {
     constructor(

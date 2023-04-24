@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../erc721c/extensions/WrapperERC721C.sol";
+import "../extensions/WrapperERC721C.sol";
 
 /**
  * @title TimeLockedUnstakeWrapperERC721C
