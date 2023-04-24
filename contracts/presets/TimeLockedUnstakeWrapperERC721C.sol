@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../../EOAOnlyCreatorERC721.sol";
+import "../erc721c/extensions/WrapperERC721C.sol";
 
 /**
- * @title EOAOnlyTimeLockedUnstakeCreatorERC721
+ * @title TimeLockedUnstakeWrapperERC721C
  * @author Limit Break, Inc.
- * @notice Extension of EOAOnlyCreatorERC721 that enforces a time lock to unstake the wrapped token.
+ * @notice Extension of ERC721C that enforces a time lock to unstake the wrapped token.
  */
-abstract contract EOAOnlyTimeLockedUnstakeCreatorERC721 is EOAOnlyCreatorERC721 {
-
-    error TimelockHasNotExpired();
+abstract contract TimeLockedUnstakeWrapperERC721C is WrapperERC721C {
+    
+    error TimeLockedUnstakeWrapperERC721C__TimelockHasNotExpired();
     
     /// @dev The amount of time the token is locked before unstaking is permitted.  This cannot be modified after contract creation.
     uint256 immutable private timelockSeconds;
@@ -18,7 +18,12 @@ abstract contract EOAOnlyTimeLockedUnstakeCreatorERC721 is EOAOnlyCreatorERC721 
     /// @dev Mapping of token ids to the timestamps when they were staked.
     mapping (uint256 => uint256) private stakedTimestamps;
 
-    constructor(uint256 timelockSeconds_, address wrappedCollectionAddress_, string memory name_, string memory symbol_) CreatorERC721(wrappedCollectionAddress_, name_, symbol_) {
+    constructor(
+        uint256 timelockSeconds_, 
+        address wrappedCollectionAddress_, 
+        address transferValidator_,
+        string memory name_, 
+        string memory symbol_) WrapperERC721C(wrappedCollectionAddress_, transferValidator_, name_, symbol_) {
         timelockSeconds = timelockSeconds_;
     }
 
@@ -54,7 +59,7 @@ abstract contract EOAOnlyTimeLockedUnstakeCreatorERC721 is EOAOnlyCreatorERC721 
         }
 
         if(elapsedTimeSinceStake < timelockSeconds) {
-            revert TimelockHasNotExpired();
+            revert TimeLockedUnstakeWrapperERC721C__TimelockHasNotExpired();
         }
 
         delete stakedTimestamps[tokenId];
