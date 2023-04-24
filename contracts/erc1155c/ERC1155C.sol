@@ -48,12 +48,12 @@ abstract contract ERC1155C is Ownable, ERC1155, TransferValidation {
 
     /// @dev Ties the open-zeppelin _beforeTokenTransfer hook to more granular transfer validation logic
     function _beforeTokenTransfer(
-        address operator,
+        address /*operator*/,
         address from,
         address to,
         uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
+        uint256[] memory /*amounts*/,
+        bytes memory /*data*/
     ) internal virtual override {
         for (uint256 i = 0; i < ids.length;) {
             _validateBeforeTransfer(from, to, ids[i]);
@@ -66,12 +66,12 @@ abstract contract ERC1155C is Ownable, ERC1155, TransferValidation {
 
     /// @dev Ties the open-zeppelin _afterTokenTransfer hook to more granular transfer validation logic
     function _afterTokenTransfer(
-        address operator,
+        address /*operator*/,
         address from,
         address to,
         uint256[] memory ids,
-        uint256[] memory amounts,
-        bytes memory data
+        uint256[] memory /*amounts*/,
+        bytes memory /*data*/
     ) internal virtual override {
         for (uint256 i = 0; i < ids.length;) {
             _validateAfterTransfer(from, to, ids[i]);
