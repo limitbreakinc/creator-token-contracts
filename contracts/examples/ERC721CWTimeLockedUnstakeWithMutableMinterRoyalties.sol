@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../erc721c/presets/TimeLockedUnstakeWrapperERC721C.sol";
+import "../erc721c/presets/ERC721CWTimeLockedUnstake.sol";
 import "../programmable-royalties/MutableMinterRoyalties.sol";
 
-contract TimeLockedUnstakeWrapperERC721CWithMutableMinterRoyalties is TimeLockedUnstakeWrapperERC721C, MutableMinterRoyalties {
+contract ERC721CWTimeLockedUnstakeWithMutableMinterRoyalties is ERC721CWTimeLockedUnstake, MutableMinterRoyalties {
 
     constructor(
         uint256 defaultRoyaltyFeeNumerator_,
@@ -13,7 +13,7 @@ contract TimeLockedUnstakeWrapperERC721CWithMutableMinterRoyalties is TimeLocked
         address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        TimeLockedUnstakeWrapperERC721C(timelockSeconds_, wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
+        ERC721CWTimeLockedUnstake(timelockSeconds_, wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
         MutableMinterRoyalties(defaultRoyaltyFeeNumerator_) {
     }
 

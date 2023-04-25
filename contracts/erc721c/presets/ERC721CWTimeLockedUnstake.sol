@@ -4,13 +4,13 @@ pragma solidity ^0.8.4;
 import "../extensions/ERC721CW.sol";
 
 /**
- * @title TimeLockedUnstakeWrapperERC721C
+ * @title ERC721CWTimeLockedUnstake
  * @author Limit Break, Inc.
  * @notice Extension of ERC721C that enforces a time lock to unstake the wrapped token.
  */
-abstract contract TimeLockedUnstakeWrapperERC721C is ERC721CW {
+abstract contract ERC721CWTimeLockedUnstake is ERC721CW {
     
-    error TimeLockedUnstakeWrapperERC721C__TimelockHasNotExpired();
+    error ERC721CWTimeLockedUnstake__TimelockHasNotExpired();
     
     /// @dev The amount of time the token is locked before unstaking is permitted.  This cannot be modified after contract creation.
     uint256 immutable private timelockSeconds;
@@ -59,7 +59,7 @@ abstract contract TimeLockedUnstakeWrapperERC721C is ERC721CW {
         }
 
         if(elapsedTimeSinceStake < timelockSeconds) {
-            revert TimeLockedUnstakeWrapperERC721C__TimelockHasNotExpired();
+            revert ERC721CWTimeLockedUnstake__TimelockHasNotExpired();
         }
 
         delete stakedTimestamps[tokenId];

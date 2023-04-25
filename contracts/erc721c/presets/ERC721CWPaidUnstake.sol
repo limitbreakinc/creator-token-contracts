@@ -4,13 +4,13 @@ pragma solidity ^0.8.4;
 import "../extensions/ERC721CW.sol";
 
 /**
- * @title PaidUnstakeWrapperERC721C
+ * @title ERC721CWPaidUnstake
  * @author Limit Break, Inc.
- * @notice Extension of ERC721C that enforces a payment to unstake the wrapped token.
+ * @notice Extension of ERC721CW that enforces a payment to unstake the wrapped token.
  */
-abstract contract PaidUnstakeWrapperERC721C is ERC721CW {
+abstract contract ERC721CWPaidUnstake is ERC721CW {
 
-    error PaidUnstakeWrapperERC721C__IncorrectUnstakePayment();
+    error ERC721CWPaidUnstake__IncorrectUnstakePayment();
     
     /// @dev The price required to unstake.  This cannot be modified after contract creation.
     uint256 immutable private unstakePrice;
@@ -32,7 +32,7 @@ abstract contract PaidUnstakeWrapperERC721C is ERC721CW {
     /// @dev Reverts if the unstaking payment is not exactly equal to the unstaking price.
     function _onUnstake(uint256 /*tokenId*/, uint256 value) internal virtual override {
         if(value != unstakePrice) {
-            revert PaidUnstakeWrapperERC721C__IncorrectUnstakePayment();
+            revert ERC721CWPaidUnstake__IncorrectUnstakePayment();
         }
     }
 }

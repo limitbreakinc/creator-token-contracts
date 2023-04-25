@@ -2,16 +2,16 @@
 
 pragma solidity 0.8.9;
 
-import "../erc721c/presets/TimeLockedUnstakeWrapperERC721C.sol";
+import "../erc721c/presets/ERC721CWTimeLockedUnstake.sol";
 
-contract TimeLockedUnstakeWrapperERC721CMock is TimeLockedUnstakeWrapperERC721C {
+contract TimeLockedUnstakeWrapperERC721CMock is ERC721CWTimeLockedUnstake {
     constructor(
         uint256 timelockSeconds_, 
         address wrappedCollectionAddress_, 
         address transferValidator_,
         string memory name_, 
         string memory symbol_) 
-        TimeLockedUnstakeWrapperERC721C(
+        ERC721CWTimeLockedUnstake(
             timelockSeconds_, 
             wrappedCollectionAddress_, 
             transferValidator_, 

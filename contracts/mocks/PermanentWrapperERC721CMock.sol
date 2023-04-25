@@ -2,9 +2,9 @@
 
 pragma solidity 0.8.9;
 
-import "../erc721c/presets/PermanentWrapperERC721C.sol";
+import "../erc721c/presets/ERC721CWPermanent.sol";
 
-contract PermanentWrapperERC721CMock is PermanentWrapperERC721C {
+contract ERC721CWPermanentMock is ERC721CWPermanent {
     constructor(
         address wrappedCollectionAddress_, 
         address transferValidator_,

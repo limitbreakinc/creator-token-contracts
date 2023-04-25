@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../erc721c/presets/PaidUnstakeWrapperERC721C.sol";
+import "../erc721c/presets/ERC721CWPaidUnstake.sol";
 import "../programmable-royalties/MinterCreatorSharedRoyalties.sol";
 
-contract PaidUnstakeERC721CWithMinterCreatorSharedRoyalties is PaidUnstakeWrapperERC721C, MinterCreatorSharedRoyalties {
+contract ERC721CWPaidUnstakeWithMinterCreatorSharedRoyalties is ERC721CWPaidUnstake, MinterCreatorSharedRoyalties {
 
     constructor(
         uint256 royaltyFeeNumerator_,
@@ -16,7 +16,7 @@ contract PaidUnstakeERC721CWithMinterCreatorSharedRoyalties is PaidUnstakeWrappe
         address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        PaidUnstakeWrapperERC721C(unstakePrice_, wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
+        ERC721CWPaidUnstake(unstakePrice_, wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
         MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_) {
     }
 

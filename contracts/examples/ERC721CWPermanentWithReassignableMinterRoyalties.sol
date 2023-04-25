@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../erc721c/presets/PermanentWrapperERC721C.sol";
+import "../erc721c/presets/ERC721CWPermanent.sol";
 import "../programmable-royalties/MinterRoyaltiesReassignableRightsNFT.sol";
 
-contract PermanentWrapperERC721CWithReassignableMinterRoyalties is PermanentWrapperERC721C, MinterRoyaltiesReassignableRightsNFT {
+contract ERC721CWPermanentWithReassignableMinterRoyalties is ERC721CWPermanent, MinterRoyaltiesReassignableRightsNFT {
 
     constructor(
         uint256 royaltyFeeNumerator_,

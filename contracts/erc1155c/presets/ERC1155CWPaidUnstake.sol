@@ -4,13 +4,13 @@ pragma solidity ^0.8.4;
 import "../extensions/ERC1155CW.sol";
 
 /**
- * @title PaidUnstakeWrapperERC1155C
+ * @title ERC1155CWPaidUnstake
  * @author Limit Break, Inc.
- * @notice Extension of ERC1155C that enforces a payment to unstake the wrapped token.
+ * @notice Extension of ERC1155CW that enforces a payment to unstake the wrapped token.
  */
-abstract contract PaidUnstakeWrapperERC1155C is ERC1155CW {
+abstract contract ERC1155CWPaidUnstake is ERC1155CW {
 
-    error PaidUnstakeWrapperERC1155C__IncorrectUnstakePayment();
+    error ERC1155CWPaidUnstake__IncorrectUnstakePayment();
     
     /// @dev The price required to unstake.  This cannot be modified after contract creation.
     uint256 immutable private unstakeUnitPrice;
@@ -31,7 +31,7 @@ abstract contract PaidUnstakeWrapperERC1155C is ERC1155CW {
     /// @dev Reverts if the unstaking payment is not exactly equal to the unstaking price.
     function _onUnstake(uint256 /*tokenId*/, uint256 amount, uint256 value) internal virtual override {
         if(value != amount * unstakeUnitPrice) {
-            revert PaidUnstakeWrapperERC1155C__IncorrectUnstakePayment();
+            revert ERC1155CWPaidUnstake__IncorrectUnstakePayment();
         }
     }
 }
