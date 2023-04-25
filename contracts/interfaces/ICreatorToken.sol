@@ -2,9 +2,8 @@
 pragma solidity ^0.8.4;
 
 import "../utils/ITransferValidator.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
-interface IERC721C is IERC721 {
+interface ICreatorToken {
     event TransferValidatorUpdated(address oldValidator, address newValidator);
 
     function getTransferValidator() external view returns (ITransferValidator);

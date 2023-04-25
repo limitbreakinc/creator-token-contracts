@@ -16,7 +16,7 @@ contract WrapperERC721CWithImmutableMinterRoyalties is WrapperERC721C, Immutable
         ImmutableMinterRoyalties(royaltyFeeNumerator_) {
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ImmutableMinterRoyalties) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721C, ImmutableMinterRoyalties) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

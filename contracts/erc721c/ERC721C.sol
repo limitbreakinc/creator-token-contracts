@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "./IERC721C.sol";
+import "../interfaces/ICreatorToken.sol";
 import "../utils/ICreatorTokenTransferValidator.sol";
 import "../utils/TransferValidation.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -12,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
  * @author Limit Break, Inc.
  * @notice 
  */
-abstract contract ERC721C is Ownable, ERC721, TransferValidation, IERC721C {
+abstract contract ERC721C is Ownable, ERC721, TransferValidation, ICreatorToken {
     
     error ERC721C__InvalidTransferValidatorContract();
 
@@ -39,6 +39,10 @@ abstract contract ERC721C is Ownable, ERC721, TransferValidation, IERC721C {
         emit TransferValidatorUpdated(address(transferValidator), transferValidator_);
 
         transferValidator = ICreatorTokenTransferValidator(transferValidator_);
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(ICreatorToken).interfaceId || super.supportsInterface(interfaceId);
     }
 
     function getTransferValidator() public view override returns (ITransferValidator) {

@@ -17,7 +17,7 @@ contract TimeLockedUnstakeWrapperERC721CWithMutableMinterRoyalties is TimeLocked
         MutableMinterRoyalties(defaultRoyaltyFeeNumerator_) {
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, MutableMinterRoyalties) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721C, MutableMinterRoyalties) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

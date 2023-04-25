@@ -20,7 +20,7 @@ contract PaidUnstakeERC721CWithMinterCreatorSharedRoyalties is PaidUnstakeWrappe
         MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_) {
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, MinterCreatorSharedRoyalties) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721C, MinterCreatorSharedRoyalties) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

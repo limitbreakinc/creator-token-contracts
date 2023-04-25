@@ -17,7 +17,7 @@ contract PermanentWrapperERC721CWithReassignableMinterRoyalties is PermanentWrap
         MinterRoyaltiesReassignableRightsNFT(royaltyFeeNumerator_, royaltyRightsNFTReference_) {
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, MinterRoyaltiesReassignableRightsNFT) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721C, MinterRoyaltiesReassignableRightsNFT) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
