@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../utils/ITransferValidator.sol";
-import "../utils/TransferValidation.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "../utils/CreatorTokenBase.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 /**
@@ -11,39 +9,16 @@ import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
  * @author Limit Break, Inc.
  * @notice 
  */
-abstract contract ERC1155C is Ownable, ERC1155, TransferValidation {
+abstract contract ERC1155C is ERC1155, CreatorTokenBase {
     
-    error ERC1155C__InvalidTransferValidatorContract();
-
-    ITransferValidator private transferValidator;
-
-    event TransferValidatorUpdated(address oldValidator, address newValidator);
-
-    constructor(address transferValidator_, string memory uri_) ERC1155(uri_) {
+    constructor(address transferValidator_, string memory uri_) 
+    CreatorTokenBase(transferValidator_)
+    ERC1155(uri_) {
         setTransferValidator(transferValidator_);
     }
 
-    function setTransferValidator(address transferValidator_) public onlyOwner {
-        bool isValidTransferValidator = false;
-
-        if(transferValidator_.code.length > 0) {
-            try IERC165(transferValidator_).supportsInterface(type(ITransferValidator).interfaceId) 
-                returns (bool supportsInterface) {
-                isValidTransferValidator = supportsInterface;
-            } catch {}
-        }
-
-        if(transferValidator_ != address(0) && !isValidTransferValidator) {
-            revert ERC1155C__InvalidTransferValidatorContract();
-        }
-
-        emit TransferValidatorUpdated(address(transferValidator), transferValidator_);
-
-        transferValidator = ITransferValidator(transferValidator_);
-    }
-
-    function getTransferValidator() public view returns (ITransferValidator) {
-        return transferValidator;
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(ICreatorToken).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// @dev Ties the open-zeppelin _beforeTokenTransfer hook to more granular transfer validation logic
@@ -79,17 +54,6 @@ abstract contract ERC1155C is Ownable, ERC1155, TransferValidation {
             unchecked {
                 ++i;
             }
-        }
-    }
-
-    function _preValidateTransfer(
-        address caller, 
-        address from, 
-        address to, 
-        uint256 /*tokenId*/, 
-        uint256 /*value*/) internal virtual override {
-        if (address(transferValidator) != address(0)) {
-            transferValidator.applyCollectionTransferPolicy(caller, from, to);
         }
     }
 }
