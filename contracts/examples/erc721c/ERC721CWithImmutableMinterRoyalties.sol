@@ -1,22 +1,21 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../erc721c/ERC721C.sol";
-import "../programmable-royalties/MinterRoyaltiesReassignableRightsNFT.sol";
+import "../../erc721c/ERC721C.sol";
+import "../../programmable-royalties/ImmutableMinterRoyalties.sol";
 
-contract ERC721CWithReassignableMinterRoyalties is ERC721C, MinterRoyaltiesReassignableRightsNFT {
+contract ERC721CWithImmutableMinterRoyalties is ERC721C, ImmutableMinterRoyalties {
 
     constructor(
         uint256 royaltyFeeNumerator_,
-        address royaltyRightsNFTReference_,
         address transferValidator_, 
         string memory name_,
         string memory symbol_) 
         ERC721C(transferValidator_, name_, symbol_) 
-        MinterRoyaltiesReassignableRightsNFT(royaltyFeeNumerator_, royaltyRightsNFTReference_) {
+        ImmutableMinterRoyalties(royaltyFeeNumerator_) {
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721C, MinterRoyaltiesReassignableRightsNFT) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721C, ImmutableMinterRoyalties) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../erc721c/presets/ERC721CWTimeLockedUnstake.sol";
-import "../programmable-royalties/MutableMinterRoyalties.sol";
+import "../../erc721c/presets/ERC721CWTimeLockedUnstake.sol";
+import "../../programmable-royalties/MutableMinterRoyalties.sol";
 
 contract ERC721CWTimeLockedUnstakeWithMutableMinterRoyalties is ERC721CWTimeLockedUnstake, MutableMinterRoyalties {
 

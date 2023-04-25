@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../erc721c/ERC721C.sol";
-import "../programmable-royalties/MinterCreatorSharedRoyalties.sol";
+import "../../erc721c/ERC721C.sol";
+import "../../programmable-royalties/MinterCreatorSharedRoyalties.sol";
 
 contract ERC721CWithMinterCreatorSharedRoyalties is ERC721C, MinterCreatorSharedRoyalties {
 
