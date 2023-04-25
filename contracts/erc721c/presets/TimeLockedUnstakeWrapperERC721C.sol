@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../extensions/WrapperERC721C.sol";
+import "../extensions/ERC721CW.sol";
 
 /**
  * @title TimeLockedUnstakeWrapperERC721C
  * @author Limit Break, Inc.
  * @notice Extension of ERC721C that enforces a time lock to unstake the wrapped token.
  */
-abstract contract TimeLockedUnstakeWrapperERC721C is WrapperERC721C {
+abstract contract TimeLockedUnstakeWrapperERC721C is ERC721CW {
     
     error TimeLockedUnstakeWrapperERC721C__TimelockHasNotExpired();
     
@@ -23,7 +23,7 @@ abstract contract TimeLockedUnstakeWrapperERC721C is WrapperERC721C {
         address wrappedCollectionAddress_, 
         address transferValidator_,
         string memory name_, 
-        string memory symbol_) WrapperERC721C(wrappedCollectionAddress_, transferValidator_, name_, symbol_) {
+        string memory symbol_) ERC721CW(wrappedCollectionAddress_, transferValidator_, name_, symbol_) {
         timelockSeconds = timelockSeconds_;
     }
 

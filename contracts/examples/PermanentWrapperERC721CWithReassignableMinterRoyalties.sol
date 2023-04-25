@@ -13,7 +13,7 @@ contract PermanentWrapperERC721CWithReassignableMinterRoyalties is PermanentWrap
         address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        WrapperERC721C(wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
+        ERC721CW(wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
         MinterRoyaltiesReassignableRightsNFT(royaltyFeeNumerator_, royaltyRightsNFTReference_) {
     }
 

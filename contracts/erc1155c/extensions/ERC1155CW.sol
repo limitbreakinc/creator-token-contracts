@@ -15,14 +15,14 @@ import "../../utils/WithdrawETH.sol";
  * @dev The base version of CreatorERC721 wrapper allows smart contract accounts and EOAs to stake to wrap tokens.
  * For developers that have a reason to restrict staking to EOA accounts only, see UncomposableCreatorERC721.
  */
-abstract contract WrapperERC1155C is ERC1155C, WithdrawETH {
+abstract contract ERC1155CW is ERC1155C, WithdrawETH {
 
-    error WrapperERC1155C__AmountMustBeGreaterThanZero();
-    error WrapperERC1155C__InsufficientBalanceOfWrappedToken();
-    error WrapperERC1155C__InsufficientBalanceOfWrappingToken();
-    error WrapperERC1155C__DefaultImplementationOfStakeDoesNotAcceptPayment();
-    error WrapperERC1155C__DefaultImplementationOfUnstakeDoesNotAcceptPayment();
-    error WrapperERC1155C__InvalidERC1155Collection();
+    error ERC1155CW__AmountMustBeGreaterThanZero();
+    error ERC1155CW__InsufficientBalanceOfWrappedToken();
+    error ERC1155CW__InsufficientBalanceOfWrappingToken();
+    error ERC1155CW__DefaultImplementationOfStakeDoesNotAcceptPayment();
+    error ERC1155CW__DefaultImplementationOfUnstakeDoesNotAcceptPayment();
+    error ERC1155CW__InvalidERC1155Collection();
 
     /// @dev Points to an external ERC721 contract that will be wrapped via staking.
     IERC1155 immutable private wrappedCollection;
@@ -41,7 +41,7 @@ abstract contract WrapperERC1155C is ERC1155C, WithdrawETH {
         ERC1155C(transferValidator_, uri_) {
         
         if(!IERC165(wrappedCollectionAddress_).supportsInterface(type(IERC1155).interfaceId)) {
-            revert WrapperERC1155C__InvalidERC1155Collection();
+            revert ERC1155CW__InvalidERC1155Collection();
         }
 
         wrappedCollection = IERC1155(wrappedCollectionAddress_);
@@ -63,12 +63,12 @@ abstract contract WrapperERC1155C is ERC1155C, WithdrawETH {
     /// A `Staked` event has been emitted.
     function stake(uint256 id, uint256 amount) public virtual payable {
         if (amount == 0) {
-            revert WrapperERC1155C__AmountMustBeGreaterThanZero();
+            revert ERC1155CW__AmountMustBeGreaterThanZero();
         }
 
         uint256 tokenBalance = wrappedCollection.balanceOf(_msgSender(), id);
         if (tokenBalance < amount) {
-            revert WrapperERC1155C__InsufficientBalanceOfWrappedToken();
+            revert ERC1155CW__InsufficientBalanceOfWrappedToken();
         }
         
         _onStake(id, amount, msg.value);
@@ -91,12 +91,12 @@ abstract contract WrapperERC1155C is ERC1155C, WithdrawETH {
     /// An `Unstaked` event has been emitted.
     function unstake(uint256 id, uint256 amount) public virtual payable {
         if (amount == 0) {
-            revert WrapperERC1155C__AmountMustBeGreaterThanZero();
+            revert ERC1155CW__AmountMustBeGreaterThanZero();
         }
 
         uint256 tokenBalance = balanceOf(_msgSender(), id);
         if (tokenBalance < amount) {
-            revert WrapperERC1155C__InsufficientBalanceOfWrappingToken();
+            revert ERC1155CW__InsufficientBalanceOfWrappingToken();
         }
 
         _onUnstake(id, amount, msg.value);
@@ -121,14 +121,14 @@ abstract contract WrapperERC1155C is ERC1155C, WithdrawETH {
     /// @dev Optional logic hook that fires during stake transaction.
     function _onStake(uint256 /*tokenId*/, uint256 /*amount*/, uint256 value) internal virtual {
         if(value > 0) {
-            revert WrapperERC1155C__DefaultImplementationOfStakeDoesNotAcceptPayment();
+            revert ERC1155CW__DefaultImplementationOfStakeDoesNotAcceptPayment();
         }
     }
 
     /// @dev Optional logic hook that fires during unstake transaction.
     function _onUnstake(uint256 /*tokenId*/, uint256 /*amount*/, uint256 value) internal virtual {
         if(value > 0) {
-            revert WrapperERC1155C__DefaultImplementationOfUnstakeDoesNotAcceptPayment();
+            revert ERC1155CW__DefaultImplementationOfUnstakeDoesNotAcceptPayment();
         }
     }
 }

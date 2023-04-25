@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../erc721c/extensions/WrapperERC721C.sol";
+import "../erc721c/extensions/ERC721CW.sol";
 import "../programmable-royalties/ImmutableMinterRoyalties.sol";
 
-contract WrapperERC721CWithImmutableMinterRoyalties is WrapperERC721C, ImmutableMinterRoyalties {
+contract WrapperERC721CWithImmutableMinterRoyalties is ERC721CW, ImmutableMinterRoyalties {
 
     constructor(
         uint256 royaltyFeeNumerator_,
@@ -12,7 +12,7 @@ contract WrapperERC721CWithImmutableMinterRoyalties is WrapperERC721C, Immutable
         address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        WrapperERC721C(wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
+        ERC721CW(wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
         ImmutableMinterRoyalties(royaltyFeeNumerator_) {
     }
 

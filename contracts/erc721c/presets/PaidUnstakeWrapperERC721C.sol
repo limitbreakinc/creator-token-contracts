@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../extensions/WrapperERC721C.sol";
+import "../extensions/ERC721CW.sol";
 
 /**
  * @title PaidUnstakeWrapperERC721C
  * @author Limit Break, Inc.
  * @notice Extension of ERC721C that enforces a payment to unstake the wrapped token.
  */
-abstract contract PaidUnstakeWrapperERC721C is WrapperERC721C {
+abstract contract PaidUnstakeWrapperERC721C is ERC721CW {
 
     error PaidUnstakeWrapperERC721C__IncorrectUnstakePayment();
     
@@ -20,7 +20,7 @@ abstract contract PaidUnstakeWrapperERC721C is WrapperERC721C {
         address wrappedCollectionAddress_, 
         address transferValidator_, 
         string memory name_, 
-        string memory symbol_) WrapperERC721C(wrappedCollectionAddress_, transferValidator_, name_, symbol_) {
+        string memory symbol_) ERC721CW(wrappedCollectionAddress_, transferValidator_, name_, symbol_) {
         unstakePrice = unstakePrice_;
     }
 

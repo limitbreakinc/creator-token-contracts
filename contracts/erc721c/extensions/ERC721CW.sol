@@ -15,13 +15,13 @@ import "../../utils/WithdrawETH.sol";
  * @dev The base version of CreatorERC721 wrapper allows smart contract accounts and EOAs to stake to wrap tokens.
  * For developers that have a reason to restrict staking to EOA accounts only, see UncomposableCreatorERC721.
  */
-abstract contract WrapperERC721C is ERC721C, WithdrawETH {
+abstract contract ERC721CW is ERC721C, WithdrawETH {
 
-    error WrapperERC721C__CallerNotOwnerOfWrappingToken();
-    error WrapperERC721C__CallerNotOwnerOfWrappedToken();
-    error WrapperERC721C__DefaultImplementationOfStakeDoesNotAcceptPayment();
-    error WrapperERC721C__DefaultImplementationOfUnstakeDoesNotAcceptPayment();
-    error WrapperERC721C__InvalidERC721Collection();
+    error ERC721CW__CallerNotOwnerOfWrappingToken();
+    error ERC721CW__CallerNotOwnerOfWrappedToken();
+    error ERC721CW__DefaultImplementationOfStakeDoesNotAcceptPayment();
+    error ERC721CW__DefaultImplementationOfUnstakeDoesNotAcceptPayment();
+    error ERC721CW__InvalidERC721Collection();
 
     /// @dev Points to an external ERC721 contract that will be wrapped via staking.
     IERC721 immutable private wrappedCollection;
@@ -41,7 +41,7 @@ abstract contract WrapperERC721C is ERC721C, WithdrawETH {
         ERC721C(transferValidator_, name_, symbol_) {
         
         if(!IERC165(wrappedCollectionAddress_).supportsInterface(type(IERC721).interfaceId)) {
-            revert WrapperERC721C__InvalidERC721Collection();
+            revert ERC721CW__InvalidERC721Collection();
         }
 
         wrappedCollection = IERC721(wrappedCollectionAddress_);
@@ -64,7 +64,7 @@ abstract contract WrapperERC721C is ERC721C, WithdrawETH {
     function stake(uint256 tokenId) public virtual payable {
         address tokenOwner = wrappedCollection.ownerOf(tokenId);
         if(tokenOwner != _msgSender()) {
-            revert WrapperERC721C__CallerNotOwnerOfWrappedToken();
+            revert ERC721CW__CallerNotOwnerOfWrappedToken();
         }
         
         _onStake(tokenId, msg.value);
@@ -88,7 +88,7 @@ abstract contract WrapperERC721C is ERC721C, WithdrawETH {
     function unstake(uint256 tokenId) public virtual payable {
         address tokenOwner = ownerOf(tokenId);
         if(tokenOwner != _msgSender()) {
-            revert WrapperERC721C__CallerNotOwnerOfWrappingToken();
+            revert ERC721CW__CallerNotOwnerOfWrappingToken();
         }
 
         _onUnstake(tokenId, msg.value);
@@ -113,14 +113,14 @@ abstract contract WrapperERC721C is ERC721C, WithdrawETH {
     /// @dev Optional logic hook that fires during stake transaction.
     function _onStake(uint256 /*tokenId*/, uint256 value) internal virtual {
         if(value > 0) {
-            revert WrapperERC721C__DefaultImplementationOfStakeDoesNotAcceptPayment();
+            revert ERC721CW__DefaultImplementationOfStakeDoesNotAcceptPayment();
         }
     }
 
     /// @dev Optional logic hook that fires during unstake transaction.
     function _onUnstake(uint256 /*tokenId*/, uint256 value) internal virtual {
         if(value > 0) {
-            revert WrapperERC721C__DefaultImplementationOfUnstakeDoesNotAcceptPayment();
+            revert ERC721CW__DefaultImplementationOfUnstakeDoesNotAcceptPayment();
         }
     }
 }

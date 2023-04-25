@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../extensions/WrapperERC1155C.sol";
+import "../extensions/ERC1155CW.sol";
 
 /**
  * @title PermanentWrapperER11551C
  * @author Limit Break, Inc.
  * @notice Extension of ERC1155C that permanently stakes the wrapped token.
  */
-abstract contract PermanentWrapperERC1155C is WrapperERC1155C {
+abstract contract PermanentWrapperERC1155C is ERC1155CW {
 
     error PermanentWrapperERC1155C__UnstakeIsNotPermitted();
 
