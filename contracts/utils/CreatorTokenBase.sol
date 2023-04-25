@@ -2,17 +2,17 @@
 pragma solidity ^0.8.4;
 
 import "../interfaces/ICreatorToken.sol";
-import "../utils/ICreatorTokenTransferValidator.sol";
+import "../interfaces/ICreatorTokenTransferValidator.sol";
 import "../utils/TransferValidation.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
+import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 /**
  * @title ERC721C
  * @author Limit Break, Inc.
  * @notice 
  */
-abstract contract CreatorTokenBase is TransferValidation, Ownable, ICreatorToken {
+abstract contract CreatorTokenBase is Ownable, TransferValidation, ICreatorToken {
     
     error CreatorTokenBase__InvalidTransferValidatorContract();
 

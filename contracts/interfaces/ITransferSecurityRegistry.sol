@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "./TransferPolicy.sol";
+import "../utils/TransferPolicy.sol";
 
 interface ITransferSecurityRegistry {
     event AddedToAllowlist(AllowlistTypes indexed kind, uint256 indexed id, address indexed account);
