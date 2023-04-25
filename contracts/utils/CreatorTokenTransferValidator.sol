@@ -2,14 +2,13 @@
 pragma solidity ^0.8.4;
 
 import "./IOwnable.sol";
-import "./ITransferSecurityRegistry.sol";
-import "./ITransferValidator.sol";
+import "./ICreatorTokenTransferValidator.sol";
 import "./EOARegistry.sol";
 import "@openzeppelin/contracts/access/IAccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 
-contract CreatorTokenTransferValidator is EOARegistry, ITransferValidator, ITransferSecurityRegistry {
+contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferValidator {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     error ERC721CTransferValidator__AddressAlreadyAllowed();
