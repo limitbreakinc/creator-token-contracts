@@ -60,4 +60,9 @@ abstract contract MutableMinterRoyalties is IERC2981, ERC165 {
 
         _minters[tokenId] = minter;
     }
+
+    function _onBurned(uint256 tokenId) internal {
+        delete _minters[tokenId];
+        delete _royaltyFeeNumerators[tokenId];
+    }
 }

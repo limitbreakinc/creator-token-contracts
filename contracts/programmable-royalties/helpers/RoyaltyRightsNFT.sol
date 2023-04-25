@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 contract RoyaltyRightsNFT is ERC721, ICloneableRoyaltyRightsERC721 {
 
     error RoyaltyRightsNFT__CollectionAlreadyInitialized();
+    error RoyaltyRightsNFT__OnlyBurnableFromCollection();
     error RoyaltyRightsNFT__OnlyMintableFromCollection();
 
     IERC721Metadata public collection;
@@ -28,6 +29,14 @@ contract RoyaltyRightsNFT is ERC721, ICloneableRoyaltyRightsERC721 {
         }
 
         _mint(to, tokenId);
+    }
+
+    function burn(uint256 tokenId) external override {
+        if (_msgSender() != address(collection)) {
+            revert RoyaltyRightsNFT__OnlyBurnableFromCollection();
+        }
+
+        _burn(tokenId);
     }
 
     function name() public view virtual override returns (string memory) {

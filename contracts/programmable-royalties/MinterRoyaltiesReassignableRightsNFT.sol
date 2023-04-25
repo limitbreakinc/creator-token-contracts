@@ -52,4 +52,8 @@ abstract contract MinterRoyaltiesReassignableRightsNFT is IERC2981, ERC165 {
     function _onMinted(address minter, uint256 tokenId) internal {
         royaltyRightsNFT.mint(minter, tokenId);
     }
+
+    function _onBurned(uint256 tokenId) internal {
+        royaltyRightsNFT.burn(tokenId);
+    }
 }

@@ -161,6 +161,16 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
     }
 
     /**
+     * @dev  Internal function that must be called when a token is burned.
+     *       Deletes the payment splitter mapping and minter mapping for the token in case it is ever re-minted.
+     * @param tokenId The id of the token that was burned.
+     */
+    function _onBurned(uint256 tokenId) internal {
+        delete _paymentSplitters[tokenId];
+        delete _minters[tokenId];
+    }
+
+    /**
      * @dev   Internal function that creates a payment splitter for the minter and creator of the token to share royalties.
      * @param minter The minter of the token.
      * @return       The address of the payment splitter.
