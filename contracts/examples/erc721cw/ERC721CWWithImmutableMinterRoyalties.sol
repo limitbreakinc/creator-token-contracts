@@ -9,10 +9,9 @@ contract ERC721CWWithImmutableMinterRoyalties is ERC721CW, ImmutableMinterRoyalt
     constructor(
         uint256 royaltyFeeNumerator_,
         address wrappedCollectionAddress_,
-        address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        ERC721CW(wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
+        ERC721CW(wrappedCollectionAddress_, name_, symbol_) 
         ImmutableMinterRoyalties(royaltyFeeNumerator_) {
     }
 

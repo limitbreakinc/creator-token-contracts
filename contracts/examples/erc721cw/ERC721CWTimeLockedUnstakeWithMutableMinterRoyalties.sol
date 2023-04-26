@@ -10,10 +10,9 @@ contract ERC721CWTimeLockedUnstakeWithMutableMinterRoyalties is ERC721CWTimeLock
         uint256 defaultRoyaltyFeeNumerator_,
         uint256 timelockSeconds_,
         address wrappedCollectionAddress_,
-        address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        ERC721CWTimeLockedUnstake(timelockSeconds_, wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
+        ERC721CWTimeLockedUnstake(timelockSeconds_, wrappedCollectionAddress_, name_, symbol_) 
         MutableMinterRoyalties(defaultRoyaltyFeeNumerator_) {
     }
 

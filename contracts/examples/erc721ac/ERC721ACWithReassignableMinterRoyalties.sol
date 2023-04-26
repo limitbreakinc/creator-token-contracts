@@ -9,10 +9,9 @@ contract ERC721CWithReassignableMinterRoyalties is ERC721AC, MinterRoyaltiesReas
     constructor(
         uint256 royaltyFeeNumerator_,
         address royaltyRightsNFTReference_,
-        address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        ERC721AC(transferValidator_, name_, symbol_) 
+        ERC721AC(name_, symbol_) 
         MinterRoyaltiesReassignableRightsNFT(royaltyFeeNumerator_, royaltyRightsNFTReference_) {
     }
 

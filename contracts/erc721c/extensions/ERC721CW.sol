@@ -35,11 +35,9 @@ abstract contract ERC721CW is ERC721C, WithdrawETH {
     /// @dev Constructor - specify the name, symbol, and wrapped contract addresses here
     constructor(
         address wrappedCollectionAddress_, 
-        address transferValidator_, 
         string memory name_, 
         string memory symbol_) 
-        ERC721C(transferValidator_, name_, symbol_) {
-        
+        ERC721C(name_, symbol_) {
         if(!IERC165(wrappedCollectionAddress_).supportsInterface(type(IERC721).interfaceId)) {
             revert ERC721CW__InvalidERC721Collection();
         }

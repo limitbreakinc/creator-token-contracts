@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../utils/CreatorTokenBase.sol";
+import "../utils/CreatorTokenBaseDefault.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 /**
@@ -9,13 +9,9 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
  * @author Limit Break, Inc.
  * @notice 
  */
-abstract contract ERC721C is ERC721, CreatorTokenBase {
+abstract contract ERC721C is ERC721, CreatorTokenBaseDefault {
 
-    constructor(address transferValidator_, string memory name_, string memory symbol_) 
-    CreatorTokenBase(transferValidator_)
-    ERC721(name_, symbol_) {
-        setTransferValidator(transferValidator_);
-    }
+    constructor(string memory name_, string memory symbol_) CreatorTokenBaseDefault() ERC721(name_, symbol_) {}
 
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(ICreatorToken).interfaceId || super.supportsInterface(interfaceId);

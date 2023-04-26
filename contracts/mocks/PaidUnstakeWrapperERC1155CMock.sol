@@ -8,7 +8,7 @@ contract PaidUnstakeWrapperERC1155CMock is ERC1155CWPaidUnstake {
     constructor(
         uint256 unrevealPrice_, 
         address wrappedCollectionAddress_, 
-        address transferValidator_,
         string memory uri_) 
-        ERC1155CWPaidUnstake(unrevealPrice_, wrappedCollectionAddress_, transferValidator_, uri_) {}
+        ERC1155CWPaidUnstake(unrevealPrice_, wrappedCollectionAddress_, uri_) {
+        }
 }

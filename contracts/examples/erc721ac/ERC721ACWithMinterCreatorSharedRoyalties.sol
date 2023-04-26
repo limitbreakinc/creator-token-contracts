@@ -11,10 +11,9 @@ contract ERC721ACWithMinterCreatorSharedRoyalties is ERC721AC, MinterCreatorShar
         uint256 minterShares_,
         uint256 creatorShares_,
         address creator_,
-        address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        ERC721AC(transferValidator_, name_, symbol_) 
+        ERC721AC(name_, symbol_) 
         MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_) {
     }
 

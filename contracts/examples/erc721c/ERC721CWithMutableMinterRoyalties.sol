@@ -8,10 +8,9 @@ contract ERC721CWithMutableMinterRoyalties is ERC721C, MutableMinterRoyalties {
 
     constructor(
         uint256 defaultRoyaltyFeeNumerator_,
-        address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        ERC721C(transferValidator_, name_, symbol_) 
+        ERC721C(name_, symbol_) 
         MutableMinterRoyalties(defaultRoyaltyFeeNumerator_) {
     }
 

@@ -13,10 +13,9 @@ contract ERC721CWPaidUnstakeWithMinterCreatorSharedRoyalties is ERC721CWPaidUnst
         address creator_,
         uint256 unstakePrice_, 
         address wrappedCollectionAddress_,
-        address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        ERC721CWPaidUnstake(unstakePrice_, wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
+        ERC721CWPaidUnstake(unstakePrice_, wrappedCollectionAddress_, name_, symbol_) 
         MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_) {
     }
 

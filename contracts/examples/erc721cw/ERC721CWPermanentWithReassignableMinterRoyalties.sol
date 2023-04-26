@@ -10,10 +10,9 @@ contract ERC721CWPermanentWithReassignableMinterRoyalties is ERC721CWPermanent, 
         uint256 royaltyFeeNumerator_,
         address royaltyRightsNFTReference_,
         address wrappedCollectionAddress_,
-        address transferValidator_, 
         string memory name_,
         string memory symbol_) 
-        ERC721CW(wrappedCollectionAddress_, transferValidator_, name_, symbol_) 
+        ERC721CW(wrappedCollectionAddress_, name_, symbol_) 
         MinterRoyaltiesReassignableRightsNFT(royaltyFeeNumerator_, royaltyRightsNFTReference_) {
     }
 

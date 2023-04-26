@@ -34,12 +34,7 @@ abstract contract ERC1155CW is ERC1155C, WithdrawETH {
     event Unstaked(uint256 indexed id, address indexed account, uint256 amount);
 
     /// @dev Constructor - specify the name, symbol, and wrapped contract addresses here
-    constructor(
-        address wrappedCollectionAddress_, 
-        address transferValidator_, 
-        string memory uri_) 
-        ERC1155C(transferValidator_, uri_) {
-        
+    constructor(address wrappedCollectionAddress_, string memory uri_) ERC1155C(uri_) {
         if(!IERC165(wrappedCollectionAddress_).supportsInterface(type(IERC1155).interfaceId)) {
             revert ERC1155CW__InvalidERC1155Collection();
         }

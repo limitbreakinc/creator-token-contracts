@@ -18,8 +18,7 @@ abstract contract ERC1155CWPaidUnstake is ERC1155CW {
     constructor(
         uint256 unstakeUnitPrice_, 
         address wrappedCollectionAddress_, 
-        address transferValidator_, 
-        string memory uri_) ERC1155CW(wrappedCollectionAddress_, transferValidator_, uri_) {
+        string memory uri_) ERC1155CW(wrappedCollectionAddress_, uri_) {
         unstakeUnitPrice = unstakeUnitPrice_;
     }
 
