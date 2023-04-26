@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
     error MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice();
     error MinterCreatorSharedRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
+    error MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId();
 
     enum ReleaseTo {
         Minter,
@@ -86,7 +87,7 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
      * @return           The amount of native funds that can be released to the minter or creator of the token with id `tokenId`.
      */
     function releasableNativeFunds(uint256 tokenId, ReleaseTo releaseTo) external view returns (uint256) {
-        PaymentSplitter paymentSplitter = PaymentSplitter(payable(_paymentSplitters[tokenId]));
+        PaymentSplitter paymentSplitter = _getPaymentSplitterForTokenOrRevert(tokenId);
 
         if (releaseTo == ReleaseTo.Minter) {
             return paymentSplitter.releasable(payable(_minters[tokenId]));
@@ -103,7 +104,7 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
      * @return           The amount of ERC20 funds that can be released to the minter or creator of the token with id `tokenId`.
      */
     function releasableERC20Funds(uint256 tokenId, address coin, ReleaseTo releaseTo) external view returns (uint256) {
-        PaymentSplitter paymentSplitter = PaymentSplitter(payable(_paymentSplitters[tokenId]));
+        PaymentSplitter paymentSplitter = _getPaymentSplitterForTokenOrRevert(tokenId);
 
         if (releaseTo == ReleaseTo.Minter) {
             return paymentSplitter.releasable(IERC20(coin), _minters[tokenId]);
@@ -118,7 +119,7 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
      * @param  releaseTo Specifies whether the minter or creator should be released to.
      */
     function releaseNativeFunds(uint256 tokenId, ReleaseTo releaseTo) external {
-        PaymentSplitter paymentSplitter = PaymentSplitter(payable(_paymentSplitters[tokenId]));
+        PaymentSplitter paymentSplitter = _getPaymentSplitterForTokenOrRevert(tokenId);
 
         if (releaseTo == ReleaseTo.Minter) {
             paymentSplitter.release(payable(_minters[tokenId]));
@@ -134,7 +135,7 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
      * @param  releaseTo Specifies whether the minter or creator should be released to.
      */
     function releaseERC20Funds(uint256 tokenId, address coin, ReleaseTo releaseTo) external {
-        PaymentSplitter paymentSplitter = PaymentSplitter(payable(_paymentSplitters[tokenId]));
+        PaymentSplitter paymentSplitter = _getPaymentSplitterForTokenOrRevert(tokenId);
 
         if(releaseTo == ReleaseTo.Minter) {
             paymentSplitter.release(IERC20(coin), _minters[tokenId]);
@@ -185,5 +186,14 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
         shares[1] = creatorShares;
 
         return address(new PaymentSplitter(payees, shares));
+    }
+
+    function _getPaymentSplitterForTokenOrRevert(uint256 tokenId) private view returns (PaymentSplitter) {
+        address paymentSplitterForToken = _paymentSplitters[tokenId];
+        if(paymentSplitterForToken == address(0)) {
+            revert MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId();
+        }
+
+        return PaymentSplitter(payable(paymentSplitterForToken));
     }
 }
