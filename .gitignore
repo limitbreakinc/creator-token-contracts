@@ -19,3 +19,5 @@ build
 out/
 forge-cache/
 docs/
+
+lcov.info
