@@ -129,6 +129,13 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
             callerConstraints: CallerConstraints.OperatorWhitelistDisableOTC,
             receiverConstraints: ReceiverConstraints.EOA
         });
+
+        uint120 id = ++lastOperatorWhitelistId;
+
+        operatorWhitelistOwners[id] = _msgSender();
+
+        emit CreatedAllowlist(AllowlistTypes.Operators, id, "DEFAULT OPERATOR WHITELIST");
+        emit ReassignedAllowlistOwnership(AllowlistTypes.Operators, id, _msgSender());
     }
 
     /**
