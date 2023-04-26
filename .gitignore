@@ -14,3 +14,7 @@ artifacts
 # NPM Build Output
 build
 *.tgz
+
+# Foundry
+out/
+forge-cache/
