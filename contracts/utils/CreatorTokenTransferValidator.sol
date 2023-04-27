@@ -89,8 +89,8 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
 
     mapping (TransferSecurityLevels => TransferSecurityPolicy) public transferSecurityPolicies;
     mapping (address => CollectionSecurityPolicy) private collectionSecurityPolicies;
-    mapping (uint120 => address) private operatorWhitelistOwners;
-    mapping (uint120 => address) private permittedContractReceiverAllowlistOwners;
+    mapping (uint120 => address) public operatorWhitelistOwners;
+    mapping (uint120 => address) public permittedContractReceiverAllowlistOwners;
     mapping (uint120 => EnumerableSet.AddressSet) private operatorWhitelists;
     mapping (uint120 => EnumerableSet.AddressSet) private permittedContractReceiverAllowlists;
 
@@ -224,7 +224,7 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param name The name of the new permitted contract receiver allowlist.
      * @return     The id of the new permitted contract receiver allowlist.
      */
-    function createPermittedContractReceiverAllowlists(string calldata name) external override returns (uint120) {
+    function createPermittedContractReceiverAllowlist(string calldata name) external override returns (uint120) {
         uint120 id = ++lastPermittedContractReceiverAllowlistId;
 
         permittedContractReceiverAllowlistOwners[id] = _msgSender();

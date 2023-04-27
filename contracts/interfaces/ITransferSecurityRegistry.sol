@@ -12,7 +12,7 @@ interface ITransferSecurityRegistry {
     event SetTransferSecurityLevel(address indexed collection, TransferSecurityLevels level);
 
     function createOperatorWhitelist(string calldata name) external returns (uint120);
-    function createPermittedContractReceiverAllowlists(string calldata name) external returns (uint120);
+    function createPermittedContractReceiverAllowlist(string calldata name) external returns (uint120);
     function reassignOwnershipOfOperatorWhitelist(uint120 id, address newOwner) external;
     function reassignOwnershipOfPermittedContractReceiverAllowlist(uint120 id, address newOwner) external;
     function renounceOwnershipOfOperatorWhitelist(uint120 id) external;

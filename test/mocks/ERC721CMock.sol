@@ -2,7 +2,7 @@
 
 pragma solidity 0.8.9;
 
-import "../../../contracts/erc721c/ERC721C.sol";
+import "../../contracts/erc721c/ERC721C.sol";
 
 contract ERC721CMock is ERC721C {
     

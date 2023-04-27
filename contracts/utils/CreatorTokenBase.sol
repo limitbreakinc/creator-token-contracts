@@ -7,6 +7,8 @@ import "../utils/TransferValidation.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
+import "forge-std/console.sol";
+
 /**
  * @title CreatorTokenBase
  * @author Limit Break, Inc.
@@ -35,10 +37,6 @@ abstract contract CreatorTokenBase is Ownable, TransferValidation, ICreatorToken
     error CreatorTokenBase__InvalidTransferValidatorContract();
 
     ICreatorTokenTransferValidator private transferValidator;
-
-    constructor(address transferValidator_) {
-        setTransferValidator(transferValidator_);
-    }
 
     /**
      * @notice Sets the transfer validator for the token contract.
