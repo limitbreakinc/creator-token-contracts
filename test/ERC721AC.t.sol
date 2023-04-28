@@ -3,27 +3,27 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "./mocks/ERC721CMock.sol";
+import "./mocks/ERC721ACMock.sol";
 import "./CreatorTokenTransferValidator.t.sol";
 
-contract ERC721CTest is CreatorTokenTransferValidatorTest {
+contract ERC721ACTest is CreatorTokenTransferValidatorTest {
 
-    ERC721CMock public tokenMock;
+    ERC721ACMock public tokenMock;
 
     function setUp() public virtual override {
         super.setUp();
         
-        tokenMock = new ERC721CMock();
+        tokenMock = new ERC721ACMock();
         tokenMock.setToCustomSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
     }
 
     function _deployNewToken(address creator) internal virtual override returns (ITestCreatorToken) {
         vm.prank(creator);
-        return ITestCreatorToken(address(new ERC721CMock()));
+        return ITestCreatorToken(address(new ERC721ACMock()));
     }
 
     function _mintToken(address tokenAddress, address to, uint256 tokenId) internal virtual override {
-        ERC721CMock(tokenAddress).mint(to, tokenId);
+        ERC721ACMock(tokenAddress).mint(to, tokenId);
     }
 
     function testSupportedTokenInterfaces() public {

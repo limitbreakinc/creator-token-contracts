@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "./mocks/ContractMock.sol";
 import "./mocks/ERC721CMock.sol";
+import "./interfaces/ITestCreatorToken.sol";
 import "contracts/utils/TransferPolicy.sol";
 import "contracts/utils/CreatorTokenTransferValidator.sol";
 
@@ -25,7 +26,7 @@ contract CreatorTokenTransferValidatorTest is Test {
     address validatorDeployer;
     address whitelistedOperator;
 
-    function setUp() public {
+    function setUp() public virtual {
         validatorDeployer = vm.addr(1);
         vm.startPrank(validatorDeployer);
         validator = new CreatorTokenTransferValidator{salt: saltValue}();
@@ -35,7 +36,19 @@ contract CreatorTokenTransferValidatorTest is Test {
 
         vm.prank(validatorDeployer);
         validator.addOperatorToWhitelist(1, whitelistedOperator);
-        console.log('addy ', address(validator));
+    }
+
+    function _deployNewToken(address creator) internal virtual returns (ITestCreatorToken) {
+        vm.prank(creator);
+        return ITestCreatorToken(address(new ERC721CMock()));
+    }
+
+    function _mintToken(address tokenAddress, address to, uint256 tokenId) internal virtual {
+        ERC721CMock(tokenAddress).mint(to, tokenId);
+    }
+
+    function testDeterministicAddressForCreatorTokenValidator() public {
+        assertEq(address(validator), 0x6583De8C67705Ef6B968EAEB88366eC969A05060);
     }
 
     function testTransferSecurityLevelZero() public {
@@ -277,12 +290,11 @@ contract CreatorTokenTransferValidatorTest is Test {
 
         TransferSecurityLevels level = TransferSecurityLevels(levelUint8);
 
-        vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
+        ITestCreatorToken token = _deployNewToken(creator);
 
+        vm.startPrank(creator);
         vm.expectEmit(true, false, false, true);
         emit SetTransferSecurityLevel(address(token), level);
-
         validator.setTransferSecurityLevelOfCollection(address(token), level);
         vm.stopPrank();
 
@@ -293,8 +305,8 @@ contract CreatorTokenTransferValidatorTest is Test {
     function testSetOperatorWhitelistOfCollection(address creator) public {
         vm.assume(creator != address(0));
         
+        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
 
         uint120 listId = validator.createOperatorWhitelist("test");
 
@@ -312,9 +324,8 @@ contract CreatorTokenTransferValidatorTest is Test {
         vm.assume(creator != address(0));
         vm.assume(listId > 1);
         
-        vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
-
+        ITestCreatorToken token = _deployNewToken(creator);
+        vm.prank(creator);
         vm.expectRevert(CreatorTokenTransferValidator.CreatorTokenTransferValidator__AllowlistDoesNotExist.selector);
         validator.setOperatorWhitelistOfCollection(address(token), listId);
     }
@@ -324,8 +335,7 @@ contract CreatorTokenTransferValidatorTest is Test {
         vm.assume(unauthorizedUser != address(0));
         vm.assume(creator != unauthorizedUser);
                 
-        vm.prank(creator);
-        ERC721CMock token = new ERC721CMock();
+        ITestCreatorToken token = _deployNewToken(creator);
 
         vm.startPrank(unauthorizedUser);
         uint120 listId = validator.createOperatorWhitelist("naughty list");
@@ -338,8 +348,8 @@ contract CreatorTokenTransferValidatorTest is Test {
     function testSetPermittedContractReceiverAllowlistOfCollection(address creator) public {
         vm.assume(creator != address(0));
         
+        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
 
         uint120 listId = validator.createPermittedContractReceiverAllowlist("test");
 
@@ -357,9 +367,8 @@ contract CreatorTokenTransferValidatorTest is Test {
         vm.assume(creator != address(0));
         vm.assume(listId > 0);
         
-        vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
-
+        ITestCreatorToken token = _deployNewToken(creator);
+        vm.prank(creator);
         vm.expectRevert(CreatorTokenTransferValidator.CreatorTokenTransferValidator__AllowlistDoesNotExist.selector);
         validator.setPermittedContractReceiverAllowlistOfCollection(address(token), listId);
     }
@@ -369,8 +378,7 @@ contract CreatorTokenTransferValidatorTest is Test {
         vm.assume(unauthorizedUser != address(0));
         vm.assume(creator != unauthorizedUser);
                 
-        vm.prank(creator);
-        ERC721CMock token = new ERC721CMock();
+        ITestCreatorToken token = _deployNewToken(creator);
 
         vm.startPrank(unauthorizedUser);
         uint120 listId = validator.createPermittedContractReceiverAllowlist("naughty list");
@@ -586,8 +594,8 @@ contract CreatorTokenTransferValidatorTest is Test {
 
     function testPolicyLevelZeroPermitsAllTransfers(address creator, address caller, address from, address to) public {
         vm.assume(creator != address(0));
+        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), TransferSecurityLevels.Zero);
         vm.stopPrank();
@@ -671,8 +679,8 @@ contract CreatorTokenTransferValidatorTest is Test {
         vm.assume(from != caller);
         vm.assume(to != address(0));
 
+        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
         validator.setOperatorWhitelistOfCollection(address(token), 0);
@@ -680,7 +688,7 @@ contract CreatorTokenTransferValidatorTest is Test {
 
         assertTrue(token.isTransferAllowed(caller, from, to));
 
-        token.mint(from, 1);
+        _mintToken(address(token), from, 1);
         
         vm.prank(from);
         token.setApprovalForAll(caller, true);
@@ -703,8 +711,9 @@ contract CreatorTokenTransferValidatorTest is Test {
         vm.assume(from != caller);
         vm.assume(to != address(0));
 
+        ITestCreatorToken token = _deployNewToken(creator);
+
         vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
         validator.setOperatorWhitelistOfCollection(address(token), 1);
@@ -712,8 +721,8 @@ contract CreatorTokenTransferValidatorTest is Test {
 
         assertFalse(token.isTransferAllowed(caller, from, to));
 
-        token.mint(from, 1);
-        
+        _mintToken(address(token), from, 1);
+
         vm.prank(from);
         token.setApprovalForAll(caller, true);
 
@@ -732,8 +741,8 @@ contract CreatorTokenTransferValidatorTest is Test {
         vm.assume(tokenOwner != address(0));
         vm.assume(to != address(0));
 
+        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
         validator.setOperatorWhitelistOfCollection(address(token), 1);
@@ -741,7 +750,7 @@ contract CreatorTokenTransferValidatorTest is Test {
 
         assertTrue(token.isTransferAllowed(tokenOwner, tokenOwner, to));
 
-        token.mint(tokenOwner, 1);
+        _mintToken(address(token), tokenOwner, 1);
         
         vm.prank(tokenOwner);
         token.transferFrom(tokenOwner, to, 1);
@@ -759,8 +768,8 @@ contract CreatorTokenTransferValidatorTest is Test {
         vm.assume(tokenOwner != address(0));
         vm.assume(to != address(0));
 
+        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
         validator.setOperatorWhitelistOfCollection(address(token), 1);
@@ -768,7 +777,7 @@ contract CreatorTokenTransferValidatorTest is Test {
 
         assertFalse(token.isTransferAllowed(tokenOwner, tokenOwner, to));
 
-        token.mint(tokenOwner, 1);
+        _mintToken(address(token), tokenOwner, 1);
         
         vm.prank(tokenOwner);
         vm.expectRevert(CreatorTokenTransferValidator.CreatorTokenTransferValidator__CallerMustBeWhitelistedOperator.selector);
@@ -791,8 +800,8 @@ contract CreatorTokenTransferValidatorTest is Test {
         
         address to = address(new ContractMock());
 
+        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
         validator.setOperatorWhitelistOfCollection(address(token), 1);
@@ -800,7 +809,7 @@ contract CreatorTokenTransferValidatorTest is Test {
 
         assertFalse(token.isTransferAllowed(caller, from, to));
 
-        token.mint(from, 1);
+        _mintToken(address(token), from, 1);
         
         if(caller != from) {
             vm.prank(from);
@@ -829,8 +838,8 @@ contract CreatorTokenTransferValidatorTest is Test {
             validator.addOperatorToWhitelist(1, caller);
         }
         
+        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
         validator.setOperatorWhitelistOfCollection(address(token), 1);
@@ -838,7 +847,7 @@ contract CreatorTokenTransferValidatorTest is Test {
 
         assertFalse(token.isTransferAllowed(caller, from, to));
 
-        token.mint(from, 1);
+        _mintToken(address(token), from, 1);
         
         if(caller != from) {
             vm.prank(from);
@@ -867,8 +876,8 @@ contract CreatorTokenTransferValidatorTest is Test {
             validator.addOperatorToWhitelist(1, caller);
         }
         
+        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
-        ERC721CMock token = new ERC721CMock();
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
         validator.setOperatorWhitelistOfCollection(address(token), 1);
@@ -876,7 +885,7 @@ contract CreatorTokenTransferValidatorTest is Test {
 
         assertTrue(token.isTransferAllowed(caller, from, to));
 
-        token.mint(from, 1);
+        _mintToken(address(token), from, 1);
         
         if(caller != from) {
             vm.prank(from);
@@ -904,12 +913,13 @@ contract CreatorTokenTransferValidatorTest is Test {
         
         address to = address(new ContractMock());
 
+        ITestCreatorToken token = _deployNewToken(creator);
+
         vm.startPrank(creator);
 
         uint120 permittedContractReceiversListId = validator.createPermittedContractReceiverAllowlist("");
         validator.addPermittedContractReceiverToAllowlist(permittedContractReceiversListId, to);
 
-        ERC721CMock token = new ERC721CMock();
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
         validator.setOperatorWhitelistOfCollection(address(token), 1);
@@ -918,7 +928,7 @@ contract CreatorTokenTransferValidatorTest is Test {
 
         assertTrue(token.isTransferAllowed(caller, from, to));
 
-        token.mint(from, 1);
+        _mintToken(address(token), from, 1);
         
         if(caller != from) {
             vm.prank(from);
