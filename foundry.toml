@@ -7,3 +7,7 @@ cache_path  = 'forge-cache'
 
 optimizer = true
 optimizer_runs = 1500
+
+[fuzz]
+runs = 1000
+max_test_rejects = 2560000

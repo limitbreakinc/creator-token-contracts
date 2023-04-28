@@ -21,21 +21,19 @@ contract ERC721CTest is Test {
         vm.stopPrank();
         
         token = new ERC721CMock();
+        token.setToCustomSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
     }
 
     function testDefaultValidator() public {
-        token.initializeDefaultSecurityPolicy();
         assertEq(address(token.getTransferValidator()), address(validator));
     }
 
     function testDefaultTransferSecurityLevel() public {
-        token.initializeDefaultSecurityPolicy();
         CollectionSecurityPolicy memory securityPolicy = token.getSecurityPolicy();
         assertEq(uint8(securityPolicy.transferSecurityLevel), uint8(TransferSecurityLevels.One));
     }
 
     function testDefaultOperatorWhitelistId() public {
-        token.initializeDefaultSecurityPolicy();
         CollectionSecurityPolicy memory securityPolicy = token.getSecurityPolicy();
         assertEq(securityPolicy.operatorWhitelistId, 1);
     }
@@ -44,15 +42,8 @@ contract ERC721CTest is Test {
         assertEq(address(validator), 0xBc894CF84D8f03c23B3e8182F8d5A34013A147Ab);
     }
 
-    /*
-    function testSetTransferValidator() public {
-        token.setTransferValidator(address(validator));
-    }
-    */
-
     function testIsTransferByOwnerAllowedByDefault(address owner, address to) public {
         vm.assume(owner != address(0));
-        token.initializeDefaultSecurityPolicy();
         bool isTransferAllowed = token.isTransferAllowed(owner, owner, to);
         assertEq(isTransferAllowed, true);
     }

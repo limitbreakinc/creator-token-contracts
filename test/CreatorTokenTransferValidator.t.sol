@@ -3,11 +3,13 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
+import "./mocks/ContractMock.sol";
 import "./mocks/ERC721CMock.sol";
 import "contracts/utils/TransferPolicy.sol";
 import "contracts/utils/CreatorTokenTransferValidator.sol";
 
 contract CreatorTokenTransferValidatorTest is Test {
+    using EnumerableSet for EnumerableSet.AddressSet;
 
     event AddedToAllowlist(AllowlistTypes indexed kind, uint256 indexed id, address indexed account);
     event CreatedAllowlist(AllowlistTypes indexed kind, uint256 indexed id, string indexed name);
@@ -20,12 +22,19 @@ contract CreatorTokenTransferValidatorTest is Test {
     
     CreatorTokenTransferValidator public validator;
 
+    address validatorDeployer;
+    address whitelistedOperator;
+
     function setUp() public {
-        address deployer = vm.addr(1);
-        vm.startPrank(deployer);
+        validatorDeployer = vm.addr(1);
+        vm.startPrank(validatorDeployer);
         validator = new CreatorTokenTransferValidator{salt: saltValue}();
         vm.stopPrank();
-        console.log(address(validator));
+        
+        whitelistedOperator = vm.addr(2);
+
+        vm.prank(validatorDeployer);
+        validator.addOperatorToWhitelist(1, whitelistedOperator);
     }
 
     function testTransferSecurityLevelZero() public {
@@ -572,5 +581,317 @@ contract CreatorTokenTransferValidatorTest is Test {
         assertEq(validator.supportsInterface(type(ICreatorTokenTransferValidator).interfaceId), true);
         assertEq(validator.supportsInterface(type(IEOARegistry).interfaceId), true);
         assertEq(validator.supportsInterface(type(IERC165).interfaceId), true);
+    }
+
+    function testPolicyLevelZeroPermitsAllTransfers(address creator, address caller, address from, address to) public {
+        vm.assume(creator != address(0));
+        vm.startPrank(creator);
+        ERC721CMock token = new ERC721CMock();
+        token.setTransferValidator(address(validator));
+        validator.setTransferSecurityLevelOfCollection(address(token), TransferSecurityLevels.Zero);
+        vm.stopPrank();
+        assertTrue(token.isTransferAllowed(caller, from, to));
+    }
+
+    function testWhitelistPoliciesWithOTCEnabledBlockTransfersWhenCallerNotWhitelistedOrOwner(address creator, address caller, address from, uint160 toKey) public {
+        address to = _verifyEOA(toKey);
+        _testPolicyBlocksTransfersWhenCallerNotWhitelistedOrOwner(TransferSecurityLevels.One, creator, caller, from, to);
+        _testPolicyBlocksTransfersWhenCallerNotWhitelistedOrOwner(TransferSecurityLevels.Three, creator, caller, from, to);
+        _testPolicyBlocksTransfersWhenCallerNotWhitelistedOrOwner(TransferSecurityLevels.Four, creator, caller, from, to);
+    }
+
+    function testWhitelistPoliciesWithOTCEnabledAllowTransfersWhenCalledByOwner(address creator, address tokenOwner, uint160 toKey) public {
+        address to = _verifyEOA(toKey);
+        _testPolicyAllowsTransfersWhenCalledByOwner(TransferSecurityLevels.One, creator, tokenOwner, to);
+        _testPolicyAllowsTransfersWhenCalledByOwner(TransferSecurityLevels.Three, creator, tokenOwner, to);
+        _testPolicyAllowsTransfersWhenCalledByOwner(TransferSecurityLevels.Four, creator, tokenOwner, to);
+    }
+
+    function testWhitelistPoliciesWithOTCDisabledBlockTransfersWhenCallerNotWhitelistedOrOwner(address creator, address caller, address from, uint160 toKey) public {
+        address to = _verifyEOA(toKey);
+        _testPolicyBlocksTransfersWhenCallerNotWhitelistedOrOwner(TransferSecurityLevels.Two, creator, caller, from, to);
+        _testPolicyBlocksTransfersWhenCallerNotWhitelistedOrOwner(TransferSecurityLevels.Five, creator, caller, from, to);
+        _testPolicyBlocksTransfersWhenCallerNotWhitelistedOrOwner(TransferSecurityLevels.Six, creator, caller, from, to);
+    }
+
+    function testWhitelistPoliciesWithOTCDisabledBlockTransfersWhenCalledByOwner(address creator, address tokenOwner, uint160 toKey) public {
+        address to = _verifyEOA(toKey);
+        _testPolicyBlocksTransfersWhenCalledByOwner(TransferSecurityLevels.Two, creator, tokenOwner, to);
+        _testPolicyBlocksTransfersWhenCalledByOwner(TransferSecurityLevels.Five, creator, tokenOwner, to);
+        _testPolicyBlocksTransfersWhenCalledByOwner(TransferSecurityLevels.Six, creator, tokenOwner, to);
+    }
+
+    function testNoCodePoliciesBlockTransferWhenDestinationIsAContract(address creator, address caller, address from) public {
+        _testPolicyBlocksTransfersToContractReceivers(TransferSecurityLevels.Three, creator, caller, from);
+        _testPolicyBlocksTransfersToContractReceivers(TransferSecurityLevels.Five, creator, caller, from);
+    }
+
+    function testNoCodePoliciesAllowTransferToPermittedContractDestinations(address creator, address caller, address from) public {
+        _testPolicyAllowsTransfersToPermittedContractReceivers(TransferSecurityLevels.Three, creator, caller, from);
+        _testPolicyAllowsTransfersToPermittedContractReceivers(TransferSecurityLevels.Five, creator, caller, from);
+    }
+
+    function testEOAPoliciesBlockTransferWhenDestinationHasNotVerifiedSignature(address creator, address caller, address from, address to) public {
+        _testPolicyBlocksTransfersToWalletsThatHaveNotVerifiedEOASignature(TransferSecurityLevels.Four, creator, caller, from, to);
+        _testPolicyBlocksTransfersToWalletsThatHaveNotVerifiedEOASignature(TransferSecurityLevels.Six, creator, caller, from, to);
+    }
+
+    function testEOAPoliciesAllowTransferWhenDestinationHasVerifiedSignature(address creator, address caller, address from, uint160 toKey) public {
+        address to = _verifyEOA(toKey);
+        _testPolicyAllowsTransfersToWalletsThatHaveVerifiedEOASignature(TransferSecurityLevels.Four, creator, caller, from, to);
+        _testPolicyAllowsTransfersToWalletsThatHaveVerifiedEOASignature(TransferSecurityLevels.Six, creator, caller, from, to);
+    }
+
+    function testEOAPoliciesAllowTransferToPermittedContractDestinations(address creator, address caller, address from) public {
+        _testPolicyAllowsTransfersToPermittedContractReceivers(TransferSecurityLevels.Four, creator, caller, from);
+        _testPolicyAllowsTransfersToPermittedContractReceivers(TransferSecurityLevels.Six, creator, caller, from);
+    }
+
+    function _testPolicyBlocksTransfersWhenCallerNotWhitelistedOrOwner(
+        TransferSecurityLevels level, 
+        address creator, 
+        address caller, 
+        address from, 
+        address to) private {
+        vm.assume(creator != address(0));
+        vm.assume(caller != whitelistedOperator);
+        vm.assume(caller != address(0));
+        vm.assume(from != address(0));
+        vm.assume(from != caller);
+        vm.assume(to != address(0));
+
+        vm.startPrank(creator);
+        ERC721CMock token = new ERC721CMock();
+        token.setTransferValidator(address(validator));
+        validator.setTransferSecurityLevelOfCollection(address(token), level);
+        validator.setOperatorWhitelistOfCollection(address(token), 1);
+        vm.stopPrank();
+
+        assertFalse(token.isTransferAllowed(caller, from, to));
+
+        token.mint(from, 1);
+        
+        vm.prank(from);
+        token.setApprovalForAll(caller, true);
+
+        vm.prank(caller);
+        vm.expectRevert(CreatorTokenTransferValidator.CreatorTokenTransferValidator__CallerMustBeWhitelistedOperator.selector);
+        token.transferFrom(from, to, 1);
+    }
+
+    function _testPolicyAllowsTransfersWhenCalledByOwner(
+        TransferSecurityLevels level, 
+        address creator, 
+        address tokenOwner, 
+        address to) private {
+        vm.assume(creator != address(0));
+        vm.assume(tokenOwner != whitelistedOperator);
+        vm.assume(tokenOwner != address(0));
+        vm.assume(to != address(0));
+
+        vm.startPrank(creator);
+        ERC721CMock token = new ERC721CMock();
+        token.setTransferValidator(address(validator));
+        validator.setTransferSecurityLevelOfCollection(address(token), level);
+        validator.setOperatorWhitelistOfCollection(address(token), 1);
+        vm.stopPrank();
+
+        assertTrue(token.isTransferAllowed(tokenOwner, tokenOwner, to));
+
+        token.mint(tokenOwner, 1);
+        
+        vm.prank(tokenOwner);
+        token.transferFrom(tokenOwner, to, 1);
+
+        assertEq(token.ownerOf(1), to);
+    }
+
+    function _testPolicyBlocksTransfersWhenCalledByOwner(
+        TransferSecurityLevels level, 
+        address creator, 
+        address tokenOwner, 
+        address to) private {
+        vm.assume(creator != address(0));
+        vm.assume(tokenOwner != whitelistedOperator);
+        vm.assume(tokenOwner != address(0));
+        vm.assume(to != address(0));
+
+        vm.startPrank(creator);
+        ERC721CMock token = new ERC721CMock();
+        token.setTransferValidator(address(validator));
+        validator.setTransferSecurityLevelOfCollection(address(token), level);
+        validator.setOperatorWhitelistOfCollection(address(token), 1);
+        vm.stopPrank();
+
+        assertFalse(token.isTransferAllowed(tokenOwner, tokenOwner, to));
+
+        token.mint(tokenOwner, 1);
+        
+        vm.prank(tokenOwner);
+        vm.expectRevert(CreatorTokenTransferValidator.CreatorTokenTransferValidator__CallerMustBeWhitelistedOperator.selector);
+        token.transferFrom(tokenOwner, to, 1);
+    }
+
+    function _testPolicyBlocksTransfersToContractReceivers(
+        TransferSecurityLevels level,
+        address creator,
+        address caller,
+        address from) private {
+        
+        vm.assume(creator != address(0));
+        vm.assume(from != address(0));
+
+        if(!validator.isOperatorWhitelisted(1, caller)) {
+            vm.prank(validatorDeployer);
+            validator.addOperatorToWhitelist(1, caller);
+        }
+        
+        address to = address(new ContractMock());
+
+        vm.startPrank(creator);
+        ERC721CMock token = new ERC721CMock();
+        token.setTransferValidator(address(validator));
+        validator.setTransferSecurityLevelOfCollection(address(token), level);
+        validator.setOperatorWhitelistOfCollection(address(token), 1);
+        vm.stopPrank();
+
+        assertFalse(token.isTransferAllowed(caller, from, to));
+
+        token.mint(from, 1);
+        
+        if(caller != from) {
+            vm.prank(from);
+            token.setApprovalForAll(caller, true);
+        }
+
+        vm.prank(caller);
+        vm.expectRevert(CreatorTokenTransferValidator.CreatorTokenTransferValidator__ReceiverMustNotHaveDeployedCode.selector);
+        token.transferFrom(from, to, 1);
+    }
+
+    function _testPolicyBlocksTransfersToWalletsThatHaveNotVerifiedEOASignature(
+        TransferSecurityLevels level,
+        address creator,
+        address caller,
+        address from,
+        address to) private {
+        
+        vm.assume(creator != address(0));
+        vm.assume(caller != address(0));
+        vm.assume(from != address(0));
+        vm.assume(to != address(0));
+
+        if(!validator.isOperatorWhitelisted(1, caller)) {
+            vm.prank(validatorDeployer);
+            validator.addOperatorToWhitelist(1, caller);
+        }
+        
+        vm.startPrank(creator);
+        ERC721CMock token = new ERC721CMock();
+        token.setTransferValidator(address(validator));
+        validator.setTransferSecurityLevelOfCollection(address(token), level);
+        validator.setOperatorWhitelistOfCollection(address(token), 1);
+        vm.stopPrank();
+
+        assertFalse(token.isTransferAllowed(caller, from, to));
+
+        token.mint(from, 1);
+        
+        if(caller != from) {
+            vm.prank(from);
+            token.setApprovalForAll(caller, true);
+        }
+
+        vm.prank(caller);
+        vm.expectRevert(CreatorTokenTransferValidator.CreatorTokenTransferValidator__ReceiverProofOfEOASignatureUnverified.selector);
+        token.transferFrom(from, to, 1);
+    }
+
+    function _testPolicyAllowsTransfersToWalletsThatHaveVerifiedEOASignature(
+        TransferSecurityLevels level,
+        address creator,
+        address caller,
+        address from,
+        address to) private {
+        
+        vm.assume(creator != address(0));
+        vm.assume(caller != address(0));
+        vm.assume(from != address(0));
+        vm.assume(to != address(0));
+
+        if(!validator.isOperatorWhitelisted(1, caller)) {
+            vm.prank(validatorDeployer);
+            validator.addOperatorToWhitelist(1, caller);
+        }
+        
+        vm.startPrank(creator);
+        ERC721CMock token = new ERC721CMock();
+        token.setTransferValidator(address(validator));
+        validator.setTransferSecurityLevelOfCollection(address(token), level);
+        validator.setOperatorWhitelistOfCollection(address(token), 1);
+        vm.stopPrank();
+
+        assertTrue(token.isTransferAllowed(caller, from, to));
+
+        token.mint(from, 1);
+        
+        if(caller != from) {
+            vm.prank(from);
+            token.setApprovalForAll(caller, true);
+        }
+
+        vm.prank(caller);
+        token.transferFrom(from, to, 1);
+        assertEq(token.ownerOf(1), to);
+    }
+
+    function _testPolicyAllowsTransfersToPermittedContractReceivers(
+        TransferSecurityLevels level,
+        address creator,
+        address caller,
+        address from) private {
+        
+        vm.assume(creator != address(0));
+        vm.assume(from != address(0));
+
+        if(!validator.isOperatorWhitelisted(1, caller)) {
+            vm.prank(validatorDeployer);
+            validator.addOperatorToWhitelist(1, caller);
+        }
+        
+        address to = address(new ContractMock());
+
+        vm.startPrank(creator);
+
+        uint120 permittedContractReceiversListId = validator.createPermittedContractReceiverAllowlist("");
+        validator.addPermittedContractReceiverToAllowlist(permittedContractReceiversListId, to);
+
+        ERC721CMock token = new ERC721CMock();
+        token.setTransferValidator(address(validator));
+        validator.setTransferSecurityLevelOfCollection(address(token), level);
+        validator.setOperatorWhitelistOfCollection(address(token), 1);
+        validator.setPermittedContractReceiverAllowlistOfCollection(address(token), permittedContractReceiversListId);
+        vm.stopPrank();
+
+        assertTrue(token.isTransferAllowed(caller, from, to));
+
+        token.mint(from, 1);
+        
+        if(caller != from) {
+            vm.prank(from);
+            token.setApprovalForAll(caller, true);
+        }
+
+        vm.prank(caller);
+        token.transferFrom(from, to, 1);
+        assertEq(token.ownerOf(1), to);
+    }
+
+    function _verifyEOA(uint160 toKey) private returns (address to) {
+        vm.assume(toKey > 0 && toKey < type(uint160).max);
+        to = vm.addr(toKey);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(toKey, ECDSA.toEthSignedMessageHash(bytes(validator.MESSAGE_TO_SIGN())));
+        vm.prank(to);
+        validator.verifySignatureVRS(v, r, s);
     }
 }
