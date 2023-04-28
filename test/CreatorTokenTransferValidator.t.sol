@@ -284,6 +284,106 @@ contract CreatorTokenTransferValidatorTest is Test {
         validator.renounceOwnershipOfPermittedContractReceiverAllowlist(listId);
     }
 
+    function testGetTransferValidatorReturnsAddressZeroBeforeValidatorIsSet(address creator) public {
+        vm.assume(creator != address(0));
+
+        ITestCreatorToken token = _deployNewToken(creator);
+        assertEq(address(token.getTransferValidator()), address(0));
+    }
+
+    function testRevertsWhenSetTransferValidatorCalledWithContractThatDoesNotImplementRequiredInterface(address creator) public {
+        vm.assume(creator != address(0));
+
+        ITestCreatorToken token = _deployNewToken(creator);
+        
+        vm.startPrank(creator);
+        address invalidContract = address(new ContractMock());
+        vm.expectRevert(CreatorTokenBase.CreatorTokenBase__InvalidTransferValidatorContract.selector);
+        token.setTransferValidator(invalidContract);
+        vm.stopPrank();
+    }
+
+    function testAllowsAlternativeValidatorsToBeSetIfTheyImplementRequiredInterface(address creator) public {
+        vm.assume(creator != address(0));
+
+        ITestCreatorToken token = _deployNewToken(creator);
+        
+        vm.startPrank(creator);
+        address alternativeValidator = address(new CreatorTokenTransferValidator());
+        token.setTransferValidator(alternativeValidator);
+        vm.stopPrank();
+
+        assertEq(address(token.getTransferValidator()), alternativeValidator);
+    }
+
+    function testAllowsValidatorToBeSetBackToZeroAddress(address creator) public {
+        vm.assume(creator != address(0));
+
+        ITestCreatorToken token = _deployNewToken(creator);
+        
+        vm.startPrank(creator);
+        address alternativeValidator = address(new CreatorTokenTransferValidator());
+        token.setTransferValidator(alternativeValidator);
+        token.setTransferValidator(address(0));
+        vm.stopPrank();
+
+        assertEq(address(token.getTransferValidator()), address(0));
+    }
+
+    function testGetSecurityPolicyReturnsEmptyPolicyWhenNoValidatorIsSet(address creator) public {
+        vm.assume(creator != address(0));
+        ITestCreatorToken token = _deployNewToken(creator);
+        CollectionSecurityPolicy memory securityPolicy = token.getSecurityPolicy();
+        assertEq(uint8(securityPolicy.transferSecurityLevel), uint8(TransferSecurityLevels.Zero));
+        assertEq(uint256(securityPolicy.operatorWhitelistId), 0);
+        assertEq(uint256(securityPolicy.permittedContractReceiversId), 0);
+    }
+
+    function testGetSecurityPolicyReturnsExpectedSecurityPolicy(address creator, uint8 levelUint8) public {
+        vm.assume(creator != address(0));
+        vm.assume(levelUint8 >= 0 && levelUint8 <= 6);
+
+        TransferSecurityLevels level = TransferSecurityLevels(levelUint8);
+
+        ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.startPrank(creator);
+        uint120 operatorWhitelistId = validator.createOperatorWhitelist("");
+        uint120 permittedReceiversListId = validator.createPermittedContractReceiverAllowlist("");
+        token.setTransferValidator(address(validator));
+        validator.setTransferSecurityLevelOfCollection(address(token), level);
+        validator.setOperatorWhitelistOfCollection(address(token), operatorWhitelistId);
+        validator.setPermittedContractReceiverAllowlistOfCollection(address(token), permittedReceiversListId);
+        vm.stopPrank();
+
+        CollectionSecurityPolicy memory securityPolicy = token.getSecurityPolicy();
+        assertTrue(securityPolicy.transferSecurityLevel == level);
+        assertEq(uint256(securityPolicy.operatorWhitelistId), operatorWhitelistId);
+        assertEq(uint256(securityPolicy.permittedContractReceiversId), permittedReceiversListId);
+    }
+
+    function testSetCustomSecurityPolicy(address creator, uint8 levelUint8) public {
+        vm.assume(creator != address(0));
+        vm.assume(levelUint8 >= 0 && levelUint8 <= 6);
+
+        TransferSecurityLevels level = TransferSecurityLevels(levelUint8);
+
+        ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.startPrank(creator);
+        uint120 operatorWhitelistId = validator.createOperatorWhitelist("");
+        uint120 permittedReceiversListId = validator.createPermittedContractReceiverAllowlist("");
+        token.setToCustomSecurityPolicy(address(validator), level, operatorWhitelistId, permittedReceiversListId);
+        vm.stopPrank();
+
+        assertEq(address(token.getTransferValidator()), address(validator));
+
+        CollectionSecurityPolicy memory securityPolicy = token.getSecurityPolicy();
+        assertTrue(securityPolicy.transferSecurityLevel == level);
+        assertEq(uint256(securityPolicy.operatorWhitelistId), operatorWhitelistId);
+        assertEq(uint256(securityPolicy.permittedContractReceiversId), permittedReceiversListId);
+    }
+
     function testSetTransferSecurityLevelOfCollection(address creator, uint8 levelUint8) public {
         vm.assume(creator != address(0));
         vm.assume(levelUint8 >= 0 && levelUint8 <= 6);
@@ -319,6 +419,8 @@ contract CreatorTokenTransferValidatorTest is Test {
         CollectionSecurityPolicy memory securityPolicy = validator.getCollectionSecurityPolicy(address(token));
         assertTrue(securityPolicy.operatorWhitelistId == listId);
     }
+
+    //tokenMock.setToCustomSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
 
     function testRevertsWhenSettingOperatorWhitelistOfCollectionToInvalidListId(address creator, uint120 listId) public {
         vm.assume(creator != address(0));
@@ -402,6 +504,92 @@ contract CreatorTokenTransferValidatorTest is Test {
         vm.stopPrank();
 
         assertTrue(validator.isOperatorWhitelisted(listId, operator));
+    }
+
+    function testWhitelistedOperatorsCanBeQueriedOnCreatorTokens(address creator, address operator1, address operator2, address operator3) public {
+        vm.assume(creator != address(0));
+        vm.assume(operator1 != address(0));
+        vm.assume(operator2 != address(0));
+        vm.assume(operator3 != address(0));
+        vm.assume(operator1 != operator2);
+        vm.assume(operator1 != operator3);
+        vm.assume(operator2 != operator3);
+
+        ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.startPrank(creator);
+        uint120 listId = validator.createOperatorWhitelist("");
+        token.setTransferValidator(address(validator));
+        validator.setOperatorWhitelistOfCollection(address(token), listId);
+        validator.addOperatorToWhitelist(listId, operator1);
+        validator.addOperatorToWhitelist(listId, operator2);
+        validator.addOperatorToWhitelist(listId, operator3);
+        vm.stopPrank();
+
+        assertTrue(token.isOperatorWhitelisted(operator1));
+        assertTrue(token.isOperatorWhitelisted(operator2));
+        assertTrue(token.isOperatorWhitelisted(operator3));
+
+        address[] memory allowedAddresses = token.getWhitelistedOperators();
+        assertEq(allowedAddresses.length, 3);
+        assertTrue(allowedAddresses[0] == operator1);
+        assertTrue(allowedAddresses[1] == operator2);
+        assertTrue(allowedAddresses[2] == operator3);
+    }
+
+    function testWhitelistedOperatorQueriesWhenNoTransferValidatorIsSet(address creator, address operator) public {
+        vm.assume(creator != address(0));
+        vm.assume(operator != address(0));
+        ITestCreatorToken token = _deployNewToken(creator);
+        assertFalse(token.isOperatorWhitelisted(operator));
+        address[] memory allowedAddresses = token.getWhitelistedOperators();
+        assertEq(allowedAddresses.length, 0);
+    }
+
+    function testPermittedContractReceiversCanBeQueriedOnCreatorTokens(address creator, address receiver1, address receiver2, address receiver3) public {
+        vm.assume(creator != address(0));
+        vm.assume(receiver1 != address(0));
+        vm.assume(receiver2 != address(0));
+        vm.assume(receiver3 != address(0));
+        vm.assume(receiver1 != receiver2);
+        vm.assume(receiver1 != receiver3);
+        vm.assume(receiver2 != receiver3);
+
+        ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.startPrank(creator);
+        uint120 listId = validator.createPermittedContractReceiverAllowlist("");
+        token.setTransferValidator(address(validator));
+        validator.setPermittedContractReceiverAllowlistOfCollection(address(token), listId);
+        validator.addPermittedContractReceiverToAllowlist(listId, receiver1);
+        validator.addPermittedContractReceiverToAllowlist(listId, receiver2);
+        validator.addPermittedContractReceiverToAllowlist(listId, receiver3);
+        vm.stopPrank();
+
+        assertTrue(token.isContractReceiverPermitted(receiver1));
+        assertTrue(token.isContractReceiverPermitted(receiver2));
+        assertTrue(token.isContractReceiverPermitted(receiver3));
+
+        address[] memory allowedAddresses = token.getPermittedContractReceivers();
+        assertEq(allowedAddresses.length, 3);
+        assertTrue(allowedAddresses[0] == receiver1);
+        assertTrue(allowedAddresses[1] == receiver2);
+        assertTrue(allowedAddresses[2] == receiver3);
+    }
+
+    function testPermittedContractReceiverQueriesWhenNoTransferValidatorIsSet(address creator, address receiver) public {
+        vm.assume(creator != address(0));
+        vm.assume(receiver != address(0));
+        ITestCreatorToken token = _deployNewToken(creator);
+        assertFalse(token.isContractReceiverPermitted(receiver));
+        address[] memory allowedAddresses = token.getPermittedContractReceivers();
+        assertEq(allowedAddresses.length, 0);
+    }
+
+    function testIsTransferAllowedReturnsTrueWhenNoTransferValidatorIsSet(address creator, address caller, address from, address to) public {
+        vm.assume(creator != address(0));
+        ITestCreatorToken token = _deployNewToken(creator);
+        assertTrue(token.isTransferAllowed(caller, from, to));
     }
 
     function testRevertsWhenNonOwnerAddsOperatorToWhitelist(address originalListOwner, address unauthorizedUser, address operator) public {
