@@ -39,7 +39,7 @@ contract ERC721CTest is Test {
     }
 
     function testDeterministicAddressForCreatorTokenValidator() public {
-        assertEq(address(validator), 0xBc894CF84D8f03c23B3e8182F8d5A34013A147Ab);
+        assertEq(address(validator), 0x6583De8C67705Ef6B968EAEB88366eC969A05060);
     }
 
     function testIsTransferByOwnerAllowedByDefault(address owner, address to) public {

@@ -9,5 +9,5 @@ optimizer = true
 optimizer_runs = 1500
 
 [fuzz]
-runs = 1000
+runs = 10000
 max_test_rejects = 2560000

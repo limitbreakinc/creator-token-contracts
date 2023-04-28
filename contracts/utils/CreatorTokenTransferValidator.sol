@@ -177,13 +177,15 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
         }
 
         if (transferSecurityPolicy.callerConstraints != CallerConstraints.None) {
-            if (!isOperatorWhitelisted(collectionSecurityPolicy.operatorWhitelistId, caller)) {
-                if (transferSecurityPolicy.callerConstraints == CallerConstraints.OperatorWhitelistEnableOTC) {
-                    if (caller != from) {
+            if(operatorWhitelists[collectionSecurityPolicy.operatorWhitelistId].length() > 0) {
+                if (!isOperatorWhitelisted(collectionSecurityPolicy.operatorWhitelistId, caller)) {
+                    if (transferSecurityPolicy.callerConstraints == CallerConstraints.OperatorWhitelistEnableOTC) {
+                        if (caller != from) {
+                            revert CreatorTokenTransferValidator__CallerMustBeWhitelistedOperator();
+                        }
+                    } else {
                         revert CreatorTokenTransferValidator__CallerMustBeWhitelistedOperator();
                     }
-                } else {
-                    revert CreatorTokenTransferValidator__CallerMustBeWhitelistedOperator();
                 }
             }
         }
