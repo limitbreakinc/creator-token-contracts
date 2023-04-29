@@ -9,7 +9,7 @@ import "./interfaces/ITestCreatorToken.sol";
 import "contracts/utils/TransferPolicy.sol";
 import "contracts/utils/CreatorTokenTransferValidator.sol";
 
-contract CreatorTokenTransferValidatorTest is Test {
+contract CreatorTokenTransferValidatorERC721Test is Test {
     using EnumerableSet for EnumerableSet.AddressSet;
 
     event AddedToAllowlist(AllowlistTypes indexed kind, uint256 indexed id, address indexed account);

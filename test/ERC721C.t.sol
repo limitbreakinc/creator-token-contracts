@@ -4,9 +4,9 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "./mocks/ERC721CMock.sol";
-import "./CreatorTokenTransferValidator.t.sol";
+import "./CreatorTokenTransferValidatorERC721.t.sol";
 
-contract ERC721CTest is CreatorTokenTransferValidatorTest {
+contract ERC721CTest is CreatorTokenTransferValidatorERC721Test {
 
     ERC721CMock public tokenMock;
 

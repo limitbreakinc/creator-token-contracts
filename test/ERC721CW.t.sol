@@ -5,9 +5,9 @@ import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "./mocks/ERC721Mock.sol";
 import "./mocks/ERC721CWMock.sol";
-import "./CreatorTokenTransferValidator.t.sol";
+import "./CreatorTokenTransferValidatorERC721.t.sol";
 
-contract ERC721CWTest is CreatorTokenTransferValidatorTest {
+contract ERC721CWTest is CreatorTokenTransferValidatorERC721Test {
 
     ERC721Mock public wrappedTokenMock;
     ERC721CWMock public tokenMock;
