@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import "../ERC1155C.sol";
 import "../../utils/WithdrawETH.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 /**
  * @title CreatorERC721
@@ -15,7 +16,7 @@ import "../../utils/WithdrawETH.sol";
  * @dev The base version of CreatorERC721 wrapper allows smart contract accounts and EOAs to stake to wrap tokens.
  * For developers that have a reason to restrict staking to EOA accounts only, see UncomposableCreatorERC721.
  */
-abstract contract ERC1155CW is ERC1155C, WithdrawETH {
+abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH {
 
     error ERC1155CW__AmountMustBeGreaterThanZero();
     error ERC1155CW__InsufficientBalanceOfWrappedToken();
@@ -111,6 +112,10 @@ abstract contract ERC1155CW is ERC1155C, WithdrawETH {
     /// and the wrapper token exists.
     function canUnstake(uint256 id, uint256 amount) public virtual view returns (bool) {
         return wrappedCollection.balanceOf(address(this), id) >= amount;
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155C, ERC1155Receiver) returns (bool) {
+        return super.supportsInterface(interfaceId);
     }
 
     /// @dev Optional logic hook that fires during stake transaction.
