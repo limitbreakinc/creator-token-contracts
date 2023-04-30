@@ -971,6 +971,7 @@ contract CreatorTokenTransferValidatorERC1155Test is Test {
         vm.assume(creator != address(0));
         vm.assume(tokenOwner != whitelistedOperator);
         vm.assume(tokenOwner != address(0));
+        vm.assume(tokenOwner.code.length == 0);
         vm.assume(to != address(0));
         vm.assume(tokenId > 0);
         vm.assume(amount > 0);
