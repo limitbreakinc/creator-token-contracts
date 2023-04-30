@@ -50,6 +50,7 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
 
     function testCanUnstakeReturnsFalseForStakedTokenIds(address to, uint256 tokenId) public {
         vm.assume(to != address(0));
+        vm.assume(to != address(tokenMock));
         _mintToken(address(tokenMock), to, tokenId);
         assertFalse(tokenMock.canUnstake(tokenId));
     }

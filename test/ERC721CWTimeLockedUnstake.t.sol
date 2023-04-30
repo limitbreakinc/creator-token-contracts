@@ -50,6 +50,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
 
     function testCanUnstakeReturnsFalseForStakedTokenIdsBeforeTimelockExpiration(address to, uint256 tokenId, uint256 secondsBeforeExpiration) public {
         vm.assume(to != address(0));
+        vm.assume(to != address(tokenMock));
         _mintToken(address(tokenMock), to, tokenId);
 
         uint256 expirationTimestamp = tokenMock.getStakedTimestamp(tokenId) + tokenMock.getTimelockSeconds();
@@ -60,6 +61,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
 
     function testCanUnstakeReturnsTrueForStakedTokenIdsAfterTimelockExpiration(address to, uint256 tokenId, uint256 secondsPastExpiration) public {
         vm.assume(to != address(0));
+        vm.assume(to != address(tokenMock));
         _mintToken(address(tokenMock), to, tokenId);
 
         uint256 expirationTimestamp = tokenMock.getStakedTimestamp(tokenId) + tokenMock.getTimelockSeconds();

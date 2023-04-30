@@ -420,8 +420,6 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         assertTrue(securityPolicy.operatorWhitelistId == listId);
     }
 
-    //tokenMock.setToCustomSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
-
     function testRevertsWhenSettingOperatorWhitelistOfCollectionToInvalidListId(address creator, uint120 listId) public {
         vm.assume(creator != address(0));
         vm.assume(listId > 1);
@@ -438,6 +436,8 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         vm.assume(creator != unauthorizedUser);
                 
         ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.assume(unauthorizedUser != address(token));
 
         vm.startPrank(unauthorizedUser);
         uint120 listId = validator.createOperatorWhitelist("naughty list");
@@ -470,6 +470,7 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         vm.assume(listId > 0);
         
         ITestCreatorToken token = _deployNewToken(creator);
+
         vm.prank(creator);
         vm.expectRevert(CreatorTokenTransferValidator.CreatorTokenTransferValidator__AllowlistDoesNotExist.selector);
         validator.setPermittedContractReceiverAllowlistOfCollection(address(token), listId);
@@ -481,6 +482,8 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         vm.assume(creator != unauthorizedUser);
                 
         ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.assume(unauthorizedUser != address(token));
 
         vm.startPrank(unauthorizedUser);
         uint120 listId = validator.createPermittedContractReceiverAllowlist("naughty list");
@@ -861,13 +864,18 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         address from,
         address to) private {
         vm.assume(creator != address(0));
+
+        ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.assume(caller != address(token));
         vm.assume(caller != whitelistedOperator);
         vm.assume(caller != address(0));
         vm.assume(from != address(0));
         vm.assume(from != caller);
+        vm.assume(from != address(token));
         vm.assume(to != address(0));
+        vm.assume(to != address(token));
 
-        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
@@ -893,13 +901,17 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         address from, 
         address to) private {
         vm.assume(creator != address(0));
+
+        ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.assume(caller != address(token));
         vm.assume(caller != whitelistedOperator);
         vm.assume(caller != address(0));
         vm.assume(from != address(0));
         vm.assume(from != caller);
+        vm.assume(from != address(token));
         vm.assume(to != address(0));
-
-        ITestCreatorToken token = _deployNewToken(creator);
+        vm.assume(to != address(token));
 
         vm.startPrank(creator);
         token.setTransferValidator(address(validator));
@@ -925,11 +937,15 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         address tokenOwner, 
         address to) private {
         vm.assume(creator != address(0));
+
+        ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.assume(tokenOwner != address(token));
         vm.assume(tokenOwner != whitelistedOperator);
         vm.assume(tokenOwner != address(0));
         vm.assume(to != address(0));
+        vm.assume(to != address(token));
 
-        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
@@ -952,11 +968,15 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         address tokenOwner, 
         address to) private {
         vm.assume(creator != address(0));
+
+        ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.assume(tokenOwner != address(token));
         vm.assume(tokenOwner != whitelistedOperator);
         vm.assume(tokenOwner != address(0));
         vm.assume(to != address(0));
+        vm.assume(to != address(token));
 
-        ITestCreatorToken token = _deployNewToken(creator);
         vm.startPrank(creator);
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
@@ -979,16 +999,21 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         address from) private {
         
         vm.assume(creator != address(0));
-        vm.assume(from != address(0));
 
         if(!validator.isOperatorWhitelisted(1, caller)) {
             vm.prank(validatorDeployer);
             validator.addOperatorToWhitelist(1, caller);
         }
         
+        vm.prank(creator);
         address to = address(new ContractMock());
 
         ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.assume(caller != address(token));
+        vm.assume(from != address(0));
+        vm.assume(from != address(token));
+
         vm.startPrank(creator);
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
@@ -1015,11 +1040,7 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         address caller,
         address from,
         address to) private {
-        
         vm.assume(creator != address(0));
-        vm.assume(caller != address(0));
-        vm.assume(from != address(0));
-        vm.assume(to != address(0));
 
         if(!validator.isOperatorWhitelisted(1, caller)) {
             vm.prank(validatorDeployer);
@@ -1027,6 +1048,14 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         }
         
         ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.assume(caller != address(token));
+        vm.assume(caller != address(0));
+        vm.assume(from != address(0));
+        vm.assume(from != address(token));
+        vm.assume(to != address(0));
+        vm.assume(to != address(token));
+
         vm.startPrank(creator);
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
@@ -1055,9 +1084,6 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         address to) private {
         
         vm.assume(creator != address(0));
-        vm.assume(caller != address(0));
-        vm.assume(from != address(0));
-        vm.assume(to != address(0));
 
         if(!validator.isOperatorWhitelisted(1, caller)) {
             vm.prank(validatorDeployer);
@@ -1065,6 +1091,14 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         }
         
         ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.assume(caller != address(token));
+        vm.assume(caller != address(0));
+        vm.assume(from != address(0));
+        vm.assume(from != address(token));
+        vm.assume(to != address(0));
+        vm.assume(to != address(token));
+
         vm.startPrank(creator);
         token.setTransferValidator(address(validator));
         validator.setTransferSecurityLevelOfCollection(address(token), level);
@@ -1092,16 +1126,20 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         address from) private {
         
         vm.assume(creator != address(0));
-        vm.assume(from != address(0));
 
         if(!validator.isOperatorWhitelisted(1, caller)) {
             vm.prank(validatorDeployer);
             validator.addOperatorToWhitelist(1, caller);
         }
         
+        vm.prank(creator);
         address to = address(new ContractMock());
 
         ITestCreatorToken token = _deployNewToken(creator);
+
+        vm.assume(caller != address(token));
+        vm.assume(from != address(0));
+        vm.assume(from != address(token));
 
         vm.startPrank(creator);
 

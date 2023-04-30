@@ -7,4 +7,12 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 contract ContractMock is ERC1155Holder {
     
     constructor() {}
+
+    function foo() external pure returns (string memory) {
+        return "foo";
+    }
+
+    function bar() external pure returns (string memory) {
+        return "bar";
+    }
 }
