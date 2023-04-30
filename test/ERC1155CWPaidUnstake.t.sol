@@ -4,36 +4,36 @@ pragma solidity ^0.8.0;
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
 import "./mocks/ERC1155Mock.sol";
-import "./mocks/ERC1155CWMock.sol";
+import "./mocks/ERC1155CWPaidUnstakeMock.sol";
 import "./CreatorTokenTransferValidatorERC1155.t.sol";
 
-contract ERC1155CWTest is CreatorTokenTransferValidatorERC1155Test {
+contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
 
     ERC1155Mock public wrappedTokenMock;
-    ERC1155CWMock public tokenMock;
+    ERC1155CWPaidUnstakeMock public tokenMock;
 
     function setUp() public virtual override {
         super.setUp();
         
         wrappedTokenMock = new ERC1155Mock();
-        tokenMock = new ERC1155CWMock(address(wrappedTokenMock));
+        tokenMock = new ERC1155CWPaidUnstakeMock(1 ether, address(wrappedTokenMock));
         tokenMock.setToCustomSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
     }
 
     function _deployNewToken(address creator) internal virtual override returns (ITestCreatorToken1155) {
         vm.startPrank(creator);
         address wrappedToken = address(new ERC1155Mock());
-        ITestCreatorToken1155 token = ITestCreatorToken1155(address(new ERC1155CWMock(wrappedToken)));
+        ITestCreatorToken1155 token = ITestCreatorToken1155(address(new ERC1155CWPaidUnstakeMock(1 ether, wrappedToken)));
         vm.stopPrank();
         return token;
     }
 
     function _mintToken(address tokenAddress, address to, uint256 tokenId, uint256 amount) internal virtual override {
-        address wrappedTokenAddress = ERC1155CWMock(tokenAddress).getWrappedCollectionAddress();
+        address wrappedTokenAddress = ERC1155CWPaidUnstakeMock(tokenAddress).getWrappedCollectionAddress();
         vm.startPrank(to);
         ERC1155Mock(wrappedTokenAddress).mint(to, tokenId, amount);
         ERC1155Mock(wrappedTokenAddress).setApprovalForAll(tokenAddress, true);
-        ERC1155CWMock(tokenAddress).mint(to, tokenId, amount);
+        ERC1155CWPaidUnstakeMock(tokenAddress).mint(to, tokenId, amount);
         vm.stopPrank();
     }
 
@@ -219,40 +219,64 @@ contract ERC1155CWTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
     }
 
-    function testWrappingCollectionHoldersCanUnstakeTokensGiveSufficientBalance(address to, uint256 tokenId, uint256 amount, uint256 amountToUnstake) public {
+    function testWrappingCollectionHoldersCannotUnstakeIfUnstakePriceIsUnderpaid(address to, uint256 tokenId, uint256 amount, uint256 amountToUnstake) public {
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
         vm.assume(amount > 1);
         vm.assume(amountToUnstake > 0 && amountToUnstake <= amount);
+        vm.assume(amountToUnstake < type(uint128).max);
+
+        uint256 underpayment = amountToUnstake * tokenMock.getUnstakeUnitPrice() - 1;
+        vm.deal(to, underpayment);
 
         vm.startPrank(to);
         wrappedTokenMock.mint(to, tokenId, amount);
         wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
         tokenMock.stake(tokenId, amount);
-        tokenMock.unstake(tokenId, amountToUnstake);
+        vm.expectRevert(ERC1155CWPaidUnstake.ERC1155CWPaidUnstake__IncorrectUnstakePayment.selector);
+        tokenMock.unstake{value: underpayment}(tokenId, amountToUnstake);
+        vm.stopPrank();
+    }
+
+    function testWrappingCollectionHoldersCannotUnstakeIfUnstakePriceIsOverpaid(address to, uint256 tokenId, uint256 amount, uint256 amountToUnstake) public {
+        vm.assume(to != address(0));
+        vm.assume(to.code.length == 0);
+        vm.assume(amount > 1);
+        vm.assume(amountToUnstake > 0 && amountToUnstake <= amount);
+        vm.assume(amountToUnstake < type(uint128).max);
+
+        uint256 overpayment = amountToUnstake * tokenMock.getUnstakeUnitPrice() + 1;
+        vm.deal(to, overpayment);
+
+        vm.startPrank(to);
+        wrappedTokenMock.mint(to, tokenId, amount);
+        wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
+        tokenMock.stake(tokenId, amount);
+        vm.expectRevert(ERC1155CWPaidUnstake.ERC1155CWPaidUnstake__IncorrectUnstakePayment.selector);
+        tokenMock.unstake{value: overpayment}(tokenId, amountToUnstake);
+        vm.stopPrank();
+    }
+
+    function testWrappingCollectionHoldersCanUnstakeIfExactUnstakePriceIsPaid(address to, uint256 tokenId, uint256 amount, uint256 amountToUnstake) public {
+        vm.assume(to != address(0));
+        vm.assume(to.code.length == 0);
+        vm.assume(amount > 1);
+        vm.assume(amountToUnstake > 0 && amountToUnstake <= amount);
+        vm.assume(amountToUnstake < type(uint128).max);
+
+        uint256 unstakePayment = amountToUnstake * tokenMock.getUnstakeUnitPrice();
+        vm.deal(to, unstakePayment);
+
+        vm.startPrank(to);
+        wrappedTokenMock.mint(to, tokenId, amount);
+        wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
+        tokenMock.stake(tokenId, amount);
+        tokenMock.unstake{value: unstakePayment}(tokenId, amountToUnstake);
         vm.stopPrank();
 
         assertEq(tokenMock.balanceOf(to, tokenId), amount - amountToUnstake);
         assertEq(wrappedTokenMock.balanceOf(to, tokenId), amountToUnstake);
         assertEq(wrappedTokenMock.balanceOf(address(tokenMock), tokenId), amount - amountToUnstake);
-    }
-    
-    function testRevertsWhenNativeFundsIncludedInUnstakeCall(address to, uint256 tokenId, uint256 amount, uint256 amountToUnstake, uint256 value) public {
-        vm.assume(to != address(0));
-        vm.assume(to.code.length == 0);
-        vm.assume(amount > 1);
-        vm.assume(amountToUnstake > 0 && amountToUnstake <= amount);
-        vm.assume(value > 0);
-
-        vm.deal(to, value);
-
-        vm.startPrank(to);
-        wrappedTokenMock.mint(to, tokenId, amount);
-        wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
-        tokenMock.stake(tokenId, amount);
-        vm.expectRevert(ERC1155CW.ERC1155CW__DefaultImplementationOfUnstakeDoesNotAcceptPayment.selector);
-        tokenMock.unstake{value: value}(tokenId, amountToUnstake);
-        vm.stopPrank();
     }
 
     function testRevertsWhenUnstakingZeroAmount(address to, uint256 tokenId, uint256 amount) public {
@@ -265,11 +289,11 @@ contract ERC1155CWTest is CreatorTokenTransferValidatorERC1155Test {
         wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
         tokenMock.stake(tokenId, amount);
         vm.expectRevert(ERC1155CW.ERC1155CW__AmountMustBeGreaterThanZero.selector);
-        tokenMock.unstake(tokenId, 0);
+        tokenMock.unstake{value: 0}(tokenId, 0);
         vm.stopPrank();
     }
 
-    function testSecondaryWrappingCollectionHoldersCanUnstakeTokens(address to, address secondaryHolder, uint256 tokenId, uint256 amount, uint256 amountToTransfer) public {
+    function testSecondaryWrappingCollectionHoldersCanUnstakeTokensByPayingStakePrice(address to, address secondaryHolder, uint256 tokenId, uint256 amount, uint256 amountToTransfer) public {
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
         vm.assume(secondaryHolder != address(0));
@@ -277,6 +301,7 @@ contract ERC1155CWTest is CreatorTokenTransferValidatorERC1155Test {
         vm.assume(to != secondaryHolder);
         vm.assume(amount > 1);
         vm.assume(amountToTransfer > 0 && amountToTransfer < amount);
+        vm.assume(amount < type(uint128).max);
 
         vm.startPrank(to);
         wrappedTokenMock.mint(to, tokenId, amount);
@@ -285,12 +310,18 @@ contract ERC1155CWTest is CreatorTokenTransferValidatorERC1155Test {
         tokenMock.safeTransferFrom(to, secondaryHolder, tokenId, amountToTransfer, "");
         vm.stopPrank();
 
+        uint256 unstakePayment1 = amountToTransfer * tokenMock.getUnstakeUnitPrice();
+        vm.deal(secondaryHolder, unstakePayment1);
+
         vm.startPrank(secondaryHolder);
-        tokenMock.unstake(tokenId, amountToTransfer);
+        tokenMock.unstake{value: unstakePayment1}(tokenId, amountToTransfer);
         vm.stopPrank();
 
+        uint256 unstakePayment2 = (amount - amountToTransfer) * tokenMock.getUnstakeUnitPrice();
+        vm.deal(to, unstakePayment2);
+
         vm.startPrank(to);
-        tokenMock.unstake(tokenId, amount - amountToTransfer);
+        tokenMock.unstake{value: unstakePayment2}(tokenId, amount - amountToTransfer);
         vm.stopPrank();
 
         assertEq(tokenMock.balanceOf(to, tokenId), 0);
