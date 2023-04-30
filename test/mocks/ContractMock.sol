@@ -2,7 +2,9 @@
 
 pragma solidity 0.8.9;
 
-contract ContractMock {
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+
+contract ContractMock is ERC1155Holder {
     
     constructor() {}
 }
