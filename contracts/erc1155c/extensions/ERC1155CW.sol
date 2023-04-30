@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import "../ERC1155C.sol";
 import "../../utils/WithdrawETH.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 /**
@@ -16,7 +17,7 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
  * @dev The base version of CreatorERC721 wrapper allows smart contract accounts and EOAs to stake to wrap tokens.
  * For developers that have a reason to restrict staking to EOA accounts only, see UncomposableCreatorERC721.
  */
-abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH {
+abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyGuard {
 
     error ERC1155CW__AmountMustBeGreaterThanZero();
     error ERC1155CW__InsufficientBalanceOfWrappedToken();
@@ -57,7 +58,7 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH {
     /// The staker's token is now owned by this contract.
     /// The staker has received a wrapper token on this contract with the same token id.
     /// A `Staked` event has been emitted.
-    function stake(uint256 id, uint256 amount) public virtual payable {
+    function stake(uint256 id, uint256 amount) public virtual payable nonReentrant {
         if (amount == 0) {
             revert ERC1155CW__AmountMustBeGreaterThanZero();
         }
@@ -85,7 +86,7 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH {
     /// The wrapper token has been burned.
     /// The wrapped token with the same token id has been transferred to the address that owned the wrapper token.
     /// An `Unstaked` event has been emitted.
-    function unstake(uint256 id, uint256 amount) public virtual payable {
+    function unstake(uint256 id, uint256 amount) public virtual payable nonReentrant {
         if (amount == 0) {
             revert ERC1155CW__AmountMustBeGreaterThanZero();
         }
