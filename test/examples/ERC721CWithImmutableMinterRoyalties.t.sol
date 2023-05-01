@@ -133,10 +133,6 @@ contract ERC721CWithImmutableMinterRoyaltiesTest is CreatorTokenTransferValidato
         vm.assume(minter.code.length == 0);
         vm.assume(salePrice < type(uint256).max / tokenMock.royaltyFeeNumerator());
 
-        (address recipient1, uint256 value1) = tokenMock.royaltyInfo(tokenId, salePrice);
-        console.log("recipient1 ", recipient1);
-        console.log("value1 ", value1);
-
         _safeMintToken(address(tokenMock), minter, tokenId);
 
         (address recipient, uint256 value) = tokenMock.royaltyInfo(tokenId, salePrice);

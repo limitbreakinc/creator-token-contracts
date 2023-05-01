@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "../../erc721c/ERC721AC.sol";
 import "../../programmable-royalties/MinterRoyaltiesReassignableRightsNFT.sol";
 
-contract ERC721CWithReassignableMinterRoyalties is ERC721AC, MinterRoyaltiesReassignableRightsNFT {
+contract ERC721ACWithReassignableMinterRoyalties is ERC721AC, MinterRoyaltiesReassignableRightsNFT {
 
     constructor(
         uint256 royaltyFeeNumerator_,
