@@ -177,15 +177,25 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
      * @return       The address of the payment splitter.
      */
     function _createPaymentSplitter(address minter) private returns (address) {
-        address[] memory payees = new address[](2);
-        payees[0] = minter;
-        payees[1] = creator;
+        if (minter == creator) {
+            address[] memory payees = new address[](1);
+            payees[0] = creator;
 
-        uint256[] memory shares = new uint256[](2);
-        shares[0] = minterShares;
-        shares[1] = creatorShares;
+            uint256[] memory shares = new uint256[](1);
+            shares[0] = minterShares + creatorShares;
 
-        return address(new PaymentSplitter(payees, shares));
+            return address(new PaymentSplitter(payees, shares));
+        } else {
+            address[] memory payees = new address[](2);
+            payees[0] = minter;
+            payees[1] = creator;
+
+            uint256[] memory shares = new uint256[](2);
+            shares[0] = minterShares;
+            shares[1] = creatorShares;
+
+            return address(new PaymentSplitter(payees, shares));
+        }
     }
 
     function _getPaymentSplitterForTokenOrRevert(uint256 tokenId) private view returns (PaymentSplitter) {
