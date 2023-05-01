@@ -9,8 +9,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 abstract contract MinterRoyaltiesReassignableRightsNFT is IERC2981, ERC165 {
 
-    error MinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
-    error MinterRoyalties__RoyaltyFeeWillExceedSalePrice();
+    error MinterRoyaltiesReassignableRightsNFT__RoyaltyFeeWillExceedSalePrice();
 
     uint256 public constant FEE_DENOMINATOR = 10_000;
     uint256 public immutable royaltyFeeNumerator;
@@ -18,7 +17,7 @@ abstract contract MinterRoyaltiesReassignableRightsNFT is IERC2981, ERC165 {
 
     constructor(uint256 royaltyFeeNumerator_, address royaltyRightsNFTReference_) {
         if(royaltyFeeNumerator_ > FEE_DENOMINATOR) {
-            revert MinterRoyalties__RoyaltyFeeWillExceedSalePrice();
+            revert MinterRoyaltiesReassignableRightsNFT__RoyaltyFeeWillExceedSalePrice();
         }
 
         royaltyFeeNumerator = royaltyFeeNumerator_;
