@@ -7,8 +7,6 @@ import "../utils/TransferValidation.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
-import "forge-std/console.sol";
-
 /**
  * @title CreatorTokenBase
  * @author Limit Break, Inc.

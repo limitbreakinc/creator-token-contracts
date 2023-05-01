@@ -4,8 +4,6 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
-import "forge-std/console.sol";
-
 abstract contract MutableMinterRoyalties is IERC2981, ERC165 {
 
     error MutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
@@ -62,8 +60,6 @@ abstract contract MutableMinterRoyalties is IERC2981, ERC165 {
     }
 
     function _onMinted(address minter, uint256 tokenId) internal {
-        console.log("_onMinted(%s, %s)", minter, tokenId);
-        console.log("_tokenRoyaltyInfo[%s].receiver = %s", tokenId, _tokenRoyaltyInfo[tokenId].receiver);
         if (_tokenRoyaltyInfo[tokenId].receiver != address(0)) {
             revert MutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
         }
