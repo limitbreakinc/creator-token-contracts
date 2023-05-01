@@ -20,14 +20,17 @@ contract ERC721CWPermanentWithReassignableMinterRoyalties is ERC721CWPermanent, 
         return super.supportsInterface(interfaceId);
     }
 
+    function mint(address to, uint256 tokenId) external {
+        _mint(to, tokenId);
+    }
+
+    function safeMint(address to, uint256 tokenId) external {
+        _safeMint(to, tokenId);
+    }
+
     function _mint(address to, uint256 tokenId) internal virtual override {
         _onMinted(to, tokenId);
         super._mint(to, tokenId);
-    }
-
-    function _safeMint(address to, uint256 tokenId) internal virtual override {
-        _onMinted(to, tokenId);
-        super._safeMint(to, tokenId);
     }
 
     function _burn(uint256 tokenId) internal virtual override {

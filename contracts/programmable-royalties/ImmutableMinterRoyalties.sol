@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 abstract contract ImmutableMinterRoyalties is IERC2981, ERC165 {
 
-    error MinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
-    error MinterRoyalties__RoyaltyFeeWillExceedSalePrice();
+    error ImmutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
+    error ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
 
     uint256 public constant FEE_DENOMINATOR = 10_000;
     uint256 public immutable royaltyFeeNumerator;
@@ -16,13 +16,13 @@ abstract contract ImmutableMinterRoyalties is IERC2981, ERC165 {
 
     constructor(uint256 royaltyFeeNumerator_) {
         if(royaltyFeeNumerator_ > FEE_DENOMINATOR) {
-            revert MinterRoyalties__RoyaltyFeeWillExceedSalePrice();
+            revert ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
         }
 
         royaltyFeeNumerator = royaltyFeeNumerator_;
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
     }
 
@@ -35,7 +35,7 @@ abstract contract ImmutableMinterRoyalties is IERC2981, ERC165 {
 
     function _onMinted(address minter, uint256 tokenId) internal {
         if (_minters[tokenId] != address(0)) {
-            revert MinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
+            revert ImmutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
         }
 
         _minters[tokenId] = minter;

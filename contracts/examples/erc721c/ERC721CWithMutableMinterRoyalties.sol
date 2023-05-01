@@ -7,7 +7,7 @@ import "../../programmable-royalties/MutableMinterRoyalties.sol";
 contract ERC721CWithMutableMinterRoyalties is ERC721C, MutableMinterRoyalties {
 
     constructor(
-        uint256 defaultRoyaltyFeeNumerator_,
+        uint96 defaultRoyaltyFeeNumerator_,
         string memory name_,
         string memory symbol_) 
         ERC721C(name_, symbol_) 
@@ -18,14 +18,21 @@ contract ERC721CWithMutableMinterRoyalties is ERC721C, MutableMinterRoyalties {
         return super.supportsInterface(interfaceId);
     }
 
+    function mint(address to, uint256 tokenId) external {
+        _mint(to, tokenId);
+    }
+
+    function safeMint(address to, uint256 tokenId) external {
+        _safeMint(to, tokenId);
+    }
+
+    function burn(uint256 tokenId) external {
+        _burn(tokenId);
+    }
+
     function _mint(address to, uint256 tokenId) internal virtual override {
         _onMinted(to, tokenId);
         super._mint(to, tokenId);
-    }
-
-    function _safeMint(address to, uint256 tokenId) internal virtual override {
-        _onMinted(to, tokenId);
-        super._safeMint(to, tokenId);
     }
 
     function _burn(uint256 tokenId) internal virtual override {
