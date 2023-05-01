@@ -8,6 +8,9 @@ contract ContractMock is ERC1155Holder {
     
     constructor() {}
 
+    fallback() external payable {}
+    receive() external payable {}
+
     function foo() external pure returns (string memory) {
         return "foo";
     }
