@@ -1191,7 +1191,7 @@ contract CreatorTokenTransferValidatorERC1155Test is Test {
         assertEq(token.balanceOf(to, tokenId), amount);
     }
 
-    function _verifyEOA(uint160 toKey) private returns (address to) {
+    function _verifyEOA(uint160 toKey) internal returns (address to) {
         vm.assume(toKey > 0 && toKey < type(uint160).max);
         to = vm.addr(toKey);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(toKey, ECDSA.toEthSignedMessageHash(bytes(validator.MESSAGE_TO_SIGN())));
@@ -1200,7 +1200,7 @@ contract CreatorTokenTransferValidatorERC1155Test is Test {
     }
 
     function _sanitizeAddress(address addr) internal {
-        vm.assume(uint160(addr) > 0xA);
+        vm.assume(uint160(addr) > 0xFF);
         vm.assume(addr != address(0x000000000000000000636F6e736F6c652e6c6f67));
     }
 }

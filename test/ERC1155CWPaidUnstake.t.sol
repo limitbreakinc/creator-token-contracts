@@ -9,6 +9,10 @@ import "./CreatorTokenTransferValidatorERC1155.t.sol";
 
 contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
 
+    event Staked(uint256 indexed tokenId, address indexed account, uint256 amount);
+    event Unstaked(uint256 indexed tokenId, address indexed account, uint256 amount);
+    event StakerConstraintsSet(StakerConstraints stakerConstraints);
+
     ERC1155Mock public wrappedTokenMock;
     ERC1155CWPaidUnstakeMock public tokenMock;
 
@@ -330,5 +334,130 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         assertEq(wrappedTokenMock.balanceOf(to, tokenId), amount - amountToTransfer);
         assertEq(wrappedTokenMock.balanceOf(secondaryHolder, tokenId), amountToTransfer);
         assertEq(wrappedTokenMock.balanceOf(address(tokenMock), tokenId), 0);
+    }
+
+    function testCanSetStakerConstraints(uint8 constraintsUint8) public {
+        vm.assume(constraintsUint8 <= 2);
+        StakerConstraints constraints = StakerConstraints(constraintsUint8);
+
+        vm.expectEmit(false, false, false, true);
+        emit StakerConstraintsSet(constraints);
+        tokenMock.setStakerConstraints(constraints);
+        assertEq(uint8(tokenMock.getStakerConstraints()), uint8(constraints));
+    }
+
+    function testRevertsWhenUnauthorizedUserAttemptsToSetStakerConstraints(address unauthorizedUser, uint8 constraintsUint8) public {
+        vm.assume(unauthorizedUser != address(0));
+        vm.assume(constraintsUint8 <= 2);
+        StakerConstraints constraints = StakerConstraints(constraintsUint8);
+
+        vm.prank(unauthorizedUser);
+        vm.expectRevert("Ownable: caller is not the owner");
+        tokenMock.setStakerConstraints(constraints);
+    }
+
+    function testEOACanStakeTokensWhenStakerConstraintsAreInEffect(address to, uint256 tokenId, uint256 amount) public {
+        _sanitizeAddress(to);
+        vm.assume(to != address(0));
+        vm.assume(to != address(tokenMock));
+        vm.assume(to.code.length == 0);
+        vm.assume(amount > 0);
+
+        vm.startPrank(to);
+        wrappedTokenMock.mint(to, tokenId, amount);
+        wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
+        vm.stopPrank();
+
+        tokenMock.setStakerConstraints(StakerConstraints.CallerIsTxOrigin);
+
+        vm.startPrank(to, to);
+        tokenMock.stake(tokenId, amount);
+        vm.stopPrank();
+
+        assertEq(tokenMock.balanceOf(to, tokenId), amount);
+        assertEq(wrappedTokenMock.balanceOf(to, tokenId), 0);
+        assertEq(wrappedTokenMock.balanceOf(address(tokenMock), tokenId), amount);
+    }
+
+    function testEOACanStakeTokensWhenEOAStakerConstraintsAreInEffectButValidatorIsUnset(address to, uint256 tokenId, uint256 amount) public {
+        _sanitizeAddress(to);
+        vm.assume(to != address(0));
+        vm.assume(to != address(tokenMock));
+        vm.assume(to.code.length == 0);
+        vm.assume(amount > 0);
+
+        tokenMock.setTransferValidator(address(0));
+
+        vm.startPrank(to);
+        wrappedTokenMock.mint(to, tokenId, amount);
+        wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
+        vm.stopPrank();
+
+        tokenMock.setStakerConstraints(StakerConstraints.EOA);
+
+        vm.startPrank(to, to);
+        tokenMock.stake(tokenId, amount);
+        vm.stopPrank();
+
+        assertEq(tokenMock.balanceOf(to, tokenId), amount);
+        assertEq(wrappedTokenMock.balanceOf(to, tokenId), 0);
+        assertEq(wrappedTokenMock.balanceOf(address(tokenMock), tokenId), amount);
+    }
+    
+    function testVerifiedEOACanStakeTokensWhenEOAStakerConstraintsAreInEffect(uint160 toKey, uint256 tokenId, uint256 amount) public {
+        address to = _verifyEOA(toKey);
+        _sanitizeAddress(to);
+        vm.assume(to != address(0));
+        vm.assume(amount > 0);
+
+        vm.startPrank(to);
+        wrappedTokenMock.mint(to, tokenId, amount);
+        wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
+        vm.stopPrank();
+
+        tokenMock.setStakerConstraints(StakerConstraints.EOA);
+
+        vm.startPrank(to);
+        tokenMock.stake(tokenId, amount);
+        vm.stopPrank();
+
+        assertEq(tokenMock.balanceOf(to, tokenId), amount);
+        assertEq(wrappedTokenMock.balanceOf(to, tokenId), 0);
+        assertEq(wrappedTokenMock.balanceOf(address(tokenMock), tokenId), amount);
+    }
+    
+    function testRevertsWhenCallerIsTxOriginConstraintIsInEffectIfCallerIsNotOrigin(address to, address origin, uint256 tokenId, uint256 amount) public {
+        _sanitizeAddress(to);
+        _sanitizeAddress(origin);
+        vm.assume(to != address(0));
+        vm.assume(origin != address(0));
+        vm.assume(to != origin);
+
+        vm.startPrank(to);
+        wrappedTokenMock.mint(to, tokenId, amount);
+        wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
+        vm.stopPrank();
+
+        tokenMock.setStakerConstraints(StakerConstraints.CallerIsTxOrigin);
+
+        vm.prank(to, origin);
+        vm.expectRevert(ERC1155CW.ERC1155CW__SmartContractsNotPermittedToStake.selector);
+        tokenMock.stake(tokenId, amount);
+    }
+
+    function testRevertsWhenCallerIsEOAConstraintIsInEffectIfCallerHasNotVerifiedSignature(address to, uint256 tokenId, uint256 amount) public {
+        _sanitizeAddress(to);
+        vm.assume(to != address(0));
+
+        vm.startPrank(to);
+        wrappedTokenMock.mint(to, tokenId, amount);
+        wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
+        vm.stopPrank();
+
+        tokenMock.setStakerConstraints(StakerConstraints.EOA);
+
+        vm.prank(to);
+        vm.expectRevert(ERC1155CW.ERC1155CW__CallerSignatureNotVerifiedInEOARegistry.selector);
+        tokenMock.stake(tokenId, amount);
     }
 }

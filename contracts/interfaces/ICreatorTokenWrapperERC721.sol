@@ -12,5 +12,6 @@ interface ICreatorTokenWrapperERC721 is ICreatorToken {
     function stake(uint256 tokenId) external payable;
     function unstake(uint256 tokenId) external payable;
     function canUnstake(uint256 tokenId) external view returns (bool);
+    function getStakerConstraints() external view returns (StakerConstraints);
     function getWrappedCollectionAddress() external view returns (address);
 }
