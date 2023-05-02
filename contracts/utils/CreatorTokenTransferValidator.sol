@@ -520,7 +520,7 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
     }
 
     /// @notice ERC-165 Interface Support
-    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(EOARegistry, IERC165) returns (bool) {
         return
             interfaceId == type(ITransferValidator).interfaceId ||
             interfaceId == type(ITransferSecurityRegistry).interfaceId ||

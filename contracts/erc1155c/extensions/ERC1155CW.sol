@@ -20,20 +20,28 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyGuard {
 
     error ERC1155CW__AmountMustBeGreaterThanZero();
+    error ERC1155CW__CallerSignatureNotVerifiedInEOARegistry();
     error ERC1155CW__InsufficientBalanceOfWrappedToken();
     error ERC1155CW__InsufficientBalanceOfWrappingToken();
     error ERC1155CW__DefaultImplementationOfStakeDoesNotAcceptPayment();
     error ERC1155CW__DefaultImplementationOfUnstakeDoesNotAcceptPayment();
     error ERC1155CW__InvalidERC1155Collection();
+    error ERC1155CW__SmartContractsNotPermittedToStake();
 
     /// @dev Points to an external ERC721 contract that will be wrapped via staking.
     IERC1155 immutable private wrappedCollection;
+
+    /// @dev The staking constraints that will be used to determine if an address is eligible to stake tokens.
+    StakerConstraints private stakerConstraints;
 
     /// @dev Emitted when a user stakes their token to receive a creator token.
     event Staked(uint256 indexed id, address indexed account, uint256 amount);
 
     /// @dev Emitted when a user unstakes their creator token to receive the original token.
     event Unstaked(uint256 indexed id, address indexed account, uint256 amount);
+
+    /// @dev Emitted when the staker constraints are updated.
+    event StakerConstraintsSet(StakerConstraints stakerConstraints);
 
     /// @dev Constructor - specify the name, symbol, and wrapped contract addresses here
     constructor(address wrappedCollectionAddress_, string memory uri_) ERC1155C(uri_) {
@@ -42,6 +50,19 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyG
         }
 
         wrappedCollection = IERC1155(wrappedCollectionAddress_);
+    }
+
+    /// @notice Allows the contract owner to update the staker constraints.
+    ///
+    /// @dev    Throws when caller is not the contract owner.
+    ///
+    /// Postconditions:
+    /// ---------------
+    /// The staker constraints have been updated.
+    /// A `StakerConstraintsSet` event has been emitted.
+    function setStakerConstraints(StakerConstraints stakerConstraints_) public onlyOwner {
+        stakerConstraints = stakerConstraints_;
+        emit StakerConstraintsSet(stakerConstraints_);
     }
 
     /// @notice Allows holders of the wrapped ERC721 token to stake into this enhanced ERC721 token.
@@ -59,6 +80,21 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyG
     /// The staker has received a wrapper token on this contract with the same token id.
     /// A `Staked` event has been emitted.
     function stake(uint256 id, uint256 amount) public virtual payable nonReentrant {
+        StakerConstraints stakerConstraints_ = stakerConstraints;
+
+        if (stakerConstraints_ == StakerConstraints.CallerIsTxOrigin) {
+            if(_msgSender() != tx.origin) {
+                revert ERC1155CW__SmartContractsNotPermittedToStake();
+            }
+        } else if (stakerConstraints_ == StakerConstraints.EOA) {
+            ICreatorTokenTransferValidator transferValidator_ = getTransferValidator();
+            if (address(transferValidator_) != address(0)) {
+                if (!transferValidator_.isVerifiedEOA(_msgSender())) {
+                    revert ERC1155CW__CallerSignatureNotVerifiedInEOARegistry();
+                }
+            }
+        }
+
         if (amount == 0) {
             revert ERC1155CW__AmountMustBeGreaterThanZero();
         }

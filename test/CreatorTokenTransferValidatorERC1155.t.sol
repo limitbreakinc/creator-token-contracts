@@ -48,7 +48,7 @@ contract CreatorTokenTransferValidatorERC1155Test is Test {
     }
 
     function testDeterministicAddressForCreatorTokenValidator() public {
-        assertEq(address(validator), 0xCbBFCe012a96b01a53881616F8A524aE5e44cc25);
+        assertEq(address(validator), 0x559567c6B0771750e6bE3052169843f13b2f1654);
     }
 
     function testTransferSecurityLevelZero() public {

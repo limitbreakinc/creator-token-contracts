@@ -19,18 +19,26 @@ abstract contract ERC721CW is ERC721C, WithdrawETH {
 
     error ERC721CW__CallerNotOwnerOfWrappingToken();
     error ERC721CW__CallerNotOwnerOfWrappedToken();
+    error ERC721CW__CallerSignatureNotVerifiedInEOARegistry();
     error ERC721CW__DefaultImplementationOfStakeDoesNotAcceptPayment();
     error ERC721CW__DefaultImplementationOfUnstakeDoesNotAcceptPayment();
     error ERC721CW__InvalidERC721Collection();
+    error ERC721CW__SmartContractsNotPermittedToStake();
 
     /// @dev Points to an external ERC721 contract that will be wrapped via staking.
     IERC721 immutable private wrappedCollection;
+
+    /// @dev The staking constraints that will be used to determine if an address is eligible to stake tokens.
+    StakerConstraints private stakerConstraints;
 
     /// @dev Emitted when a user stakes their token to receive a creator token.
     event Staked(uint256 indexed tokenId, address indexed account);
 
     /// @dev Emitted when a user unstakes their creator token to receive the original token.
     event Unstaked(uint256 indexed tokenId, address indexed account);
+
+    /// @dev Emitted when the staker constraints are updated.
+    event StakerConstraintsSet(StakerConstraints stakerConstraints);
 
     /// @dev Constructor - specify the name, symbol, and wrapped contract addresses here
     constructor(
@@ -43,6 +51,19 @@ abstract contract ERC721CW is ERC721C, WithdrawETH {
         }
 
         wrappedCollection = IERC721(wrappedCollectionAddress_);
+    }
+
+    /// @notice Allows the contract owner to update the staker constraints.
+    ///
+    /// @dev    Throws when caller is not the contract owner.
+    ///
+    /// Postconditions:
+    /// ---------------
+    /// The staker constraints have been updated.
+    /// A `StakerConstraintsSet` event has been emitted.
+    function setStakerConstraints(StakerConstraints stakerConstraints_) public onlyOwner {
+        stakerConstraints = stakerConstraints_;
+        emit StakerConstraintsSet(stakerConstraints_);
     }
 
     /// @notice Allows holders of the wrapped ERC721 token to stake into this enhanced ERC721 token.
@@ -60,6 +81,21 @@ abstract contract ERC721CW is ERC721C, WithdrawETH {
     /// The staker has received a wrapper token on this contract with the same token id.
     /// A `Staked` event has been emitted.
     function stake(uint256 tokenId) public virtual payable {
+        StakerConstraints stakerConstraints_ = stakerConstraints;
+
+        if (stakerConstraints_ == StakerConstraints.CallerIsTxOrigin) {
+            if(_msgSender() != tx.origin) {
+                revert ERC721CW__SmartContractsNotPermittedToStake();
+            }
+        } else if (stakerConstraints_ == StakerConstraints.EOA) {
+            ICreatorTokenTransferValidator transferValidator_ = getTransferValidator();
+            if (address(transferValidator_) != address(0)) {
+                if (!transferValidator_.isVerifiedEOA(_msgSender())) {
+                    revert ERC721CW__CallerSignatureNotVerifiedInEOARegistry();
+                }
+            }
+        }
+
         address tokenOwner = wrappedCollection.ownerOf(tokenId);
         if(tokenOwner != _msgSender()) {
             revert ERC721CW__CallerNotOwnerOfWrappedToken();
