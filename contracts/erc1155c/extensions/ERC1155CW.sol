@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "../ERC1155C.sol";
+import "../../interfaces/ICreatorTokenWrapperERC1155.sol";
 import "../../utils/WithdrawETH.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
@@ -17,7 +18,7 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
  * @dev The base version of CreatorERC721 wrapper allows smart contract accounts and EOAs to stake to wrap tokens.
  * For developers that have a reason to restrict staking to EOA accounts only, see UncomposableCreatorERC721.
  */
-abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyGuard {
+abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyGuard, ICreatorTokenWrapperERC1155 {
 
     error ERC1155CW__AmountMustBeGreaterThanZero();
     error ERC1155CW__CallerSignatureNotVerifiedInEOARegistry();
@@ -33,15 +34,6 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyG
 
     /// @dev The staking constraints that will be used to determine if an address is eligible to stake tokens.
     StakerConstraints private stakerConstraints;
-
-    /// @dev Emitted when a user stakes their token to receive a creator token.
-    event Staked(uint256 indexed id, address indexed account, uint256 amount);
-
-    /// @dev Emitted when a user unstakes their creator token to receive the original token.
-    event Unstaked(uint256 indexed id, address indexed account, uint256 amount);
-
-    /// @dev Emitted when the staker constraints are updated.
-    event StakerConstraintsSet(StakerConstraints stakerConstraints);
 
     /// @dev Constructor - specify the name, symbol, and wrapped contract addresses here
     constructor(address wrappedCollectionAddress_, string memory uri_) ERC1155C(uri_) {
@@ -79,7 +71,7 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyG
     /// The staker's token is now owned by this contract.
     /// The staker has received a wrapper token on this contract with the same token id.
     /// A `Staked` event has been emitted.
-    function stake(uint256 id, uint256 amount) public virtual payable nonReentrant {
+    function stake(uint256 id, uint256 amount) public virtual payable override nonReentrant {
         StakerConstraints stakerConstraints_ = stakerConstraints;
 
         if (stakerConstraints_ == StakerConstraints.CallerIsTxOrigin) {
@@ -122,7 +114,7 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyG
     /// The wrapper token has been burned.
     /// The wrapped token with the same token id has been transferred to the address that owned the wrapper token.
     /// An `Unstaked` event has been emitted.
-    function unstake(uint256 id, uint256 amount) public virtual payable nonReentrant {
+    function unstake(uint256 id, uint256 amount) public virtual payable override nonReentrant {
         if (amount == 0) {
             revert ERC1155CW__AmountMustBeGreaterThanZero();
         }
@@ -138,21 +130,21 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyG
         wrappedCollection.safeTransferFrom(address(this), _msgSender(), id, amount, "");
     }
 
-    /// @notice Returns the address of the wrapped ERC721 contract.
-    function getWrappedCollectionAddress() public view returns (address) {
-        return address(wrappedCollection);
-    }
-
     /// @notice Returns true if the specified token id is available to be unstaked, false otherwise.
     /// @dev This should be overridden in most cases by inheriting contracts to implement the proper constraints.
     /// In the base implementation, a token is available to be unstaked if the wrapped token is owned by this contract
     /// and the wrapper token exists.
-    function canUnstake(uint256 id, uint256 amount) public virtual view returns (bool) {
+    function canUnstake(uint256 id, uint256 amount) public virtual view override returns (bool) {
         return wrappedCollection.balanceOf(address(this), id) >= amount;
     }
 
+    /// @notice Returns the address of the wrapped ERC721 contract.
+    function getWrappedCollectionAddress() public view override returns (address) {
+        return address(wrappedCollection);
+    }
+
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155C, ERC1155Receiver) returns (bool) {
-        return super.supportsInterface(interfaceId);
+        return interfaceId == type(ICreatorTokenWrapperERC1155).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// @dev Optional logic hook that fires during stake transaction.

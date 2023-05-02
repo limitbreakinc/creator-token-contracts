@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "../ERC721C.sol";
+import "../../interfaces/ICreatorTokenWrapperERC721.sol";
 import "../../utils/WithdrawETH.sol";
 
 /**
@@ -15,7 +16,7 @@ import "../../utils/WithdrawETH.sol";
  * @dev The base version of CreatorERC721 wrapper allows smart contract accounts and EOAs to stake to wrap tokens.
  * For developers that have a reason to restrict staking to EOA accounts only, see UncomposableCreatorERC721.
  */
-abstract contract ERC721CW is ERC721C, WithdrawETH {
+abstract contract ERC721CW is ERC721C, WithdrawETH, ICreatorTokenWrapperERC721 {
 
     error ERC721CW__CallerNotOwnerOfWrappingToken();
     error ERC721CW__CallerNotOwnerOfWrappedToken();
@@ -30,15 +31,6 @@ abstract contract ERC721CW is ERC721C, WithdrawETH {
 
     /// @dev The staking constraints that will be used to determine if an address is eligible to stake tokens.
     StakerConstraints private stakerConstraints;
-
-    /// @dev Emitted when a user stakes their token to receive a creator token.
-    event Staked(uint256 indexed tokenId, address indexed account);
-
-    /// @dev Emitted when a user unstakes their creator token to receive the original token.
-    event Unstaked(uint256 indexed tokenId, address indexed account);
-
-    /// @dev Emitted when the staker constraints are updated.
-    event StakerConstraintsSet(StakerConstraints stakerConstraints);
 
     /// @dev Constructor - specify the name, symbol, and wrapped contract addresses here
     constructor(
@@ -80,7 +72,7 @@ abstract contract ERC721CW is ERC721C, WithdrawETH {
     /// The staker's token is now owned by this contract.
     /// The staker has received a wrapper token on this contract with the same token id.
     /// A `Staked` event has been emitted.
-    function stake(uint256 tokenId) public virtual payable {
+    function stake(uint256 tokenId) public virtual payable override {
         StakerConstraints stakerConstraints_ = stakerConstraints;
 
         if (stakerConstraints_ == StakerConstraints.CallerIsTxOrigin) {
@@ -119,7 +111,7 @@ abstract contract ERC721CW is ERC721C, WithdrawETH {
     /// The wrapper token has been burned.
     /// The wrapped token with the same token id has been transferred to the address that owned the wrapper token.
     /// An `Unstaked` event has been emitted.
-    function unstake(uint256 tokenId) public virtual payable {
+    function unstake(uint256 tokenId) public virtual payable override {
         address tokenOwner = ownerOf(tokenId);
         if(tokenOwner != _msgSender()) {
             revert ERC721CW__CallerNotOwnerOfWrappingToken();
@@ -131,17 +123,21 @@ abstract contract ERC721CW is ERC721C, WithdrawETH {
         wrappedCollection.transferFrom(address(this), tokenOwner, tokenId);
     }
 
-    /// @notice Returns the address of the wrapped ERC721 contract.
-    function getWrappedCollectionAddress() public view returns (address) {
-        return address(wrappedCollection);
-    }
-
     /// @notice Returns true if the specified token id is available to be unstaked, false otherwise.
     /// @dev This should be overridden in most cases by inheriting contracts to implement the proper constraints.
     /// In the base implementation, a token is available to be unstaked if the wrapped token is owned by this contract
     /// and the wrapper token exists.
-    function canUnstake(uint256 tokenId) public virtual view returns (bool) {
+    function canUnstake(uint256 tokenId) public virtual view override returns (bool) {
         return _exists(tokenId) && wrappedCollection.ownerOf(tokenId) == address(this);
+    }
+
+    /// @notice Returns the address of the wrapped ERC721 contract.
+    function getWrappedCollectionAddress() public view override returns (address) {
+        return address(wrappedCollection);
+    }
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return interfaceId == type(ICreatorTokenWrapperERC721).interfaceId || super.supportsInterface(interfaceId);
     }
 
     /// @dev Optional logic hook that fires during stake transaction.

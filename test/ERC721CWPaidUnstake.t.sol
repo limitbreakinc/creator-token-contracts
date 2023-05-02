@@ -39,6 +39,7 @@ contract ERC721CWPaidUnstakeTest is CreatorTokenTransferValidatorERC721Test {
 
     function testSupportedTokenInterfaces() public {
         assertEq(tokenMock.supportsInterface(type(ICreatorToken).interfaceId), true);
+        assertEq(tokenMock.supportsInterface(type(ICreatorTokenWrapperERC721).interfaceId), true);
         assertEq(tokenMock.supportsInterface(type(IERC721).interfaceId), true);
         assertEq(tokenMock.supportsInterface(type(IERC721Metadata).interfaceId), true);
         assertEq(tokenMock.supportsInterface(type(IERC165).interfaceId), true);

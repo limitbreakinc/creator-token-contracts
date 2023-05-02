@@ -39,6 +39,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
 
     function testSupportedTokenInterfaces() public {
         assertEq(tokenMock.supportsInterface(type(ICreatorToken).interfaceId), true);
+        assertEq(tokenMock.supportsInterface(type(ICreatorTokenWrapperERC1155).interfaceId), true);
         assertEq(tokenMock.supportsInterface(type(IERC1155).interfaceId), true);
         assertEq(tokenMock.supportsInterface(type(IERC1155MetadataURI).interfaceId), true);
         assertEq(tokenMock.supportsInterface(type(IERC1155Receiver).interfaceId), true);
