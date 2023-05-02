@@ -26,7 +26,8 @@ abstract contract ERC1155C is ERC1155, CreatorTokenBaseDefault {
         uint256[] memory /*amounts*/,
         bytes memory /*data*/
     ) internal virtual override {
-        for (uint256 i = 0; i < ids.length;) {
+        uint256 idsArrayLength = ids.length;
+        for (uint256 i = 0; i < idsArrayLength;) {
             _validateBeforeTransfer(from, to, ids[i]);
 
             unchecked {
@@ -44,7 +45,8 @@ abstract contract ERC1155C is ERC1155, CreatorTokenBaseDefault {
         uint256[] memory /*amounts*/,
         bytes memory /*data*/
     ) internal virtual override {
-        for (uint256 i = 0; i < ids.length;) {
+        uint256 idsArrayLength = ids.length;
+        for (uint256 i = 0; i < idsArrayLength;) {
             _validateAfterTransfer(from, to, ids[i]);
 
             unchecked {
