@@ -8,6 +8,8 @@ import "contracts/examples/erc721c/ERC721CWithMutableMinterRoyalties.sol";
 
 contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorERC721Test {
 
+    event RoyaltySet(uint256 indexed tokenId, address indexed receiver, uint96 feeNumerator);
+
     ERC721CWithMutableMinterRoyalties public tokenMock;
     uint96 public constant DEFAULT_ROYALTY_FEE_NUMERATOR = 1000;
 
@@ -24,10 +26,16 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
     }
 
     function _mintToken(address tokenAddress, address to, uint256 tokenId) internal virtual override {
+        uint96 defaultRoyaltyFee = ERC721CWithMutableMinterRoyalties(tokenAddress).defaultRoyaltyFeeNumerator();
+        vm.expectEmit(true, true, false, true);
+        emit RoyaltySet(tokenId, to, defaultRoyaltyFee);
         ERC721CWithMutableMinterRoyalties(tokenAddress).mint(to, tokenId);
     }
 
     function _safeMintToken(address tokenAddress, address to, uint256 tokenId) internal {
+        uint96 defaultRoyaltyFee = ERC721CWithMutableMinterRoyalties(tokenAddress).defaultRoyaltyFeeNumerator();
+        vm.expectEmit(true, true, false, true);
+        emit RoyaltySet(tokenId, to, defaultRoyaltyFee);
         ERC721CWithMutableMinterRoyalties(tokenAddress).safeMint(to, tokenId);
     }
 
@@ -90,6 +98,9 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
         tokenMock.transferFrom(minter, secondaryOwner, tokenId);
 
         vm.prank(secondaryOwner);
+        uint96 defaultRoyaltyFee = tokenMock.defaultRoyaltyFeeNumerator();
+        vm.expectEmit(true, true, false, true);
+        emit RoyaltySet(tokenId, address(0), defaultRoyaltyFee);
         tokenMock.burn(tokenId);
 
         (address recipient, uint256 value) = tokenMock.royaltyInfo(tokenId, salePrice);
@@ -104,7 +115,7 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
         _mintToken(address(tokenMock), minter, tokenId);
 
         vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId.selector);
-        _mintToken(address(tokenMock), minter, tokenId);
+        tokenMock.mint(minter, tokenId);
     }
 
     function testBurnedTokenIdsCanBeReminted(address minter, address secondaryOwner, address reminter, uint256 tokenId, uint256 salePrice) public {
@@ -119,6 +130,9 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
         tokenMock.transferFrom(minter, secondaryOwner, tokenId);
 
         vm.prank(secondaryOwner);
+        uint96 defaultRoyaltyFee = tokenMock.defaultRoyaltyFeeNumerator();
+        vm.expectEmit(true, true, false, true);
+        emit RoyaltySet(tokenId, address(0), defaultRoyaltyFee);
         tokenMock.burn(tokenId);
 
         _mintToken(address(tokenMock), reminter, tokenId);
@@ -136,6 +150,8 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
         _mintToken(address(tokenMock), minter, tokenId);
 
         vm.prank(minter);
+        vm.expectEmit(true, true, false, true);
+        emit RoyaltySet(tokenId, minter, updatedFee);
         tokenMock.setRoyaltyFee(tokenId, updatedFee);
 
         (address recipient, uint256 value) = tokenMock.royaltyInfo(tokenId, salePrice);

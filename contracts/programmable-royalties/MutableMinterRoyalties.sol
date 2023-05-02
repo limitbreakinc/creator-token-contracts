@@ -20,6 +20,9 @@ abstract contract MutableMinterRoyalties is IERC2981, ERC165 {
 
     mapping (uint256 => RoyaltyInfo) private _tokenRoyaltyInfo;
 
+    /// @dev Emitted when royalty is set.
+    event RoyaltySet(uint256 indexed tokenId, address indexed receiver, uint96 feeNumerator);
+
     constructor(uint96 defaultRoyaltyFeeNumerator_) {
         if(defaultRoyaltyFeeNumerator_ > FEE_DENOMINATOR) {
             revert MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
@@ -40,6 +43,8 @@ abstract contract MutableMinterRoyalties is IERC2981, ERC165 {
         }
 
         royalty.royaltyFraction = royaltyFeeNumerator;
+
+        emit RoyaltySet(tokenId, msg.sender, royaltyFeeNumerator);
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
@@ -68,9 +73,13 @@ abstract contract MutableMinterRoyalties is IERC2981, ERC165 {
             receiver: minter,
             royaltyFraction: defaultRoyaltyFeeNumerator
         });
+
+        emit RoyaltySet(tokenId, minter, defaultRoyaltyFeeNumerator);
     }
 
     function _onBurned(uint256 tokenId) internal {
         delete _tokenRoyaltyInfo[tokenId];
+
+        emit RoyaltySet(tokenId, address(0), defaultRoyaltyFeeNumerator);
     }
 }
