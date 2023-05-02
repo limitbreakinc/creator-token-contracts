@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import "./OrderFulfillmentOnchainRoyaltiesDataTypes.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 
@@ -155,7 +156,7 @@ abstract contract OrderFulfillmentOnchainRoyalties {
         IERC20 paymentMethod, 
         uint256 proceeds, 
         uint256 /*gasLimit_*/) internal {
-        paymentMethod.transferFrom(payer, payee, proceeds);
+        SafeERC20.safeTransferFrom(paymentMethod, payer, payee, proceeds);
     }
 
     function _dispenseERC721Token(
