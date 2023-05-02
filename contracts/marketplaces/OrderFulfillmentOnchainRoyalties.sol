@@ -11,11 +11,9 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 abstract contract OrderFulfillmentOnchainRoyalties {
 
     error OrderFulfillmentOnchainRoyalties__FailedToTransferProceeds();
-    error OrderFulfillmentOnchainRoyalties__NativePaymentsNotSupportedForSells();
     error OrderFulfillmentOnchainRoyalties__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee();
     error OrderFulfillmentOnchainRoyalties__PlatformAndRoyaltyFeesWillExceedSalePrice();
     error OrderFulfillmentOnchainRoyalties__PlatformFeesExceededOriginalSalePrice();
-    error OrderFulfillmentOnchainRoyalties__RoyaltyFeesWillExceedSalePrice();
 
     uint256 public constant FEE_DENOMINATOR = 10_000;
 
