@@ -18,6 +18,12 @@ enum CallerConstraints {
     OperatorWhitelistDisableOTC
 }
 
+enum StakerConstraints {
+    None,
+    CallerIsTxOrigin,
+    EOA
+}
+
 enum TransferSecurityLevels {
     Zero,
     One,

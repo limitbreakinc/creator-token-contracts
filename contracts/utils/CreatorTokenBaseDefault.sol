@@ -5,7 +5,7 @@ import "./CreatorTokenBase.sol";
 
 abstract contract CreatorTokenBaseDefault is CreatorTokenBase {
 
-    address public constant DEFAULT_TRANSFER_VALIDATOR = address(0x6583De8C67705Ef6B968EAEB88366eC969A05060);
+    address public constant DEFAULT_TRANSFER_VALIDATOR = address(0xCbBFCe012a96b01a53881616F8A524aE5e44cc25);
     TransferSecurityLevels public constant DEFAULT_TRANSFER_SECURITY_LEVEL = TransferSecurityLevels.One;
     uint120 public constant DEFAULT_OPERATOR_WHITELIST_ID = uint120(1);
 

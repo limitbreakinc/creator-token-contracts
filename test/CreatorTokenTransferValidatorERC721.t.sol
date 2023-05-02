@@ -48,7 +48,7 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
     }
 
     function testDeterministicAddressForCreatorTokenValidator() public {
-        assertEq(address(validator), 0x6583De8C67705Ef6B968EAEB88366eC969A05060);
+        assertEq(address(validator), 0xCbBFCe012a96b01a53881616F8A524aE5e44cc25);
     }
 
     function testTransferSecurityLevelZero() public {
