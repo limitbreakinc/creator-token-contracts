@@ -131,6 +131,11 @@ abstract contract ERC721CW is ERC721C, WithdrawETH, ICreatorTokenWrapperERC721 {
         return _exists(tokenId) && wrappedCollection.ownerOf(tokenId) == address(this);
     }
 
+    /// @notice Returns the staker constraints that are currently in effect.
+    function getStakerConstraints() public view override returns (StakerConstraints) {
+        return stakerConstraints;
+    }
+
     /// @notice Returns the address of the wrapped ERC721 contract.
     function getWrappedCollectionAddress() public view override returns (address) {
         return address(wrappedCollection);

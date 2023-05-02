@@ -138,6 +138,11 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyG
         return wrappedCollection.balanceOf(address(this), id) >= amount;
     }
 
+    /// @notice Returns the staker constraints that are currently in effect.
+    function getStakerConstraints() public view override returns (StakerConstraints) {
+        return stakerConstraints;
+    }
+
     /// @notice Returns the address of the wrapped ERC721 contract.
     function getWrappedCollectionAddress() public view override returns (address) {
         return address(wrappedCollection);
