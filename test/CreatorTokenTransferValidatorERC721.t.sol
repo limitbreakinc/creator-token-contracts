@@ -1173,4 +1173,9 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         vm.prank(to);
         validator.verifySignatureVRS(v, r, s);
     }
+
+    function _sanitizeAddress(address addr) internal {
+        vm.assume(uint160(addr) > 0xA);
+        vm.assume(addr != address(0x000000000000000000636F6e736F6c652e6c6f67));
+    }
 }

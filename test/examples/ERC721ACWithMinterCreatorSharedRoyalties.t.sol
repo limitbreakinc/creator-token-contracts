@@ -68,6 +68,7 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
     }
 
     function testRoyaltyInfoForMintedTokenIds(address minter, uint256 quantity, uint256 salePrice) public {
+        _sanitizeAddress(minter);
         vm.assume(quantity > 0 && quantity < 5);
         vm.assume(minter != address(0));
         vm.assume(minter.code.length == 0);
@@ -116,6 +117,8 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
     }
 
     function testRoyaltyInfoForMintedTokenIdsAfterTransfer(address minter, address secondaryOwner, uint256 quantity, uint256 salePrice) public {
+        _sanitizeAddress(minter);
+        _sanitizeAddress(secondaryOwner);
         vm.assume(quantity > 0 && quantity < 5);
         vm.assume(minter != address(0));
         vm.assume(minter.code.length == 0);
@@ -169,7 +172,8 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
 
     function testRoyaltyRecipientResetsToAddressZeroAfterBurns(address minter, address secondaryOwner, uint256 quantity, uint256 salePrice) public {
         vm.assume(quantity > 0 && quantity < 5);
-
+        _sanitizeAddress(minter);
+        _sanitizeAddress(secondaryOwner);
         vm.assume(minter != address(0));
         vm.assume(secondaryOwner != address(0));
         vm.assume(salePrice < type(uint256).max / tokenMock.royaltyFeeNumerator());
@@ -194,6 +198,7 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
 
     function testRoyaltyInfoForSafeMintedTokenIds(address minter, uint256 quantity, uint256 salePrice) public {
         vm.assume(quantity > 0 && quantity < 5);
+        _sanitizeAddress(minter);
         vm.assume(minter != address(0));
         vm.assume(minter.code.length == 0);
         vm.assume(minter != defaultTokenCreator);
@@ -241,6 +246,7 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
     }
 
     function testRevertsWhenQueryingReleasableFundsForNonExistentTokenId(address minter, uint256 tokenId) public {
+        _sanitizeAddress(minter);
         vm.assume(minter != address(0));
         vm.assume(minter.code.length == 0);
         vm.assume(minter != defaultTokenCreator);
@@ -259,6 +265,7 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
     }
 
     function testRevertsWhenReleasingFundsForNonExistentTokenId(address minter, uint256 tokenId) public {
+        _sanitizeAddress(minter);
         vm.assume(minter != address(0));
         vm.assume(minter.code.length == 0);
         vm.assume(minter != defaultTokenCreator);
