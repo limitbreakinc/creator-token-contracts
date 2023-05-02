@@ -20,4 +20,4 @@ out/
 forge-cache/
 docs/
 
-lcov.info
+lcov.info*

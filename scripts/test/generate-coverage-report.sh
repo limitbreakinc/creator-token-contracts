@@ -1,5 +1,7 @@
-forge coverage --report lcov
+forge coverage --no-match-path "./test/mocks/*" --report lcov
 
-genhtml lcov.info --output-directory coverage
+lcov --remove ./lcov.info -o ./lcov.info.pruned '/test/mocks/*' 'test/mocks/*'
+
+genhtml lcov.info.pruned --output-directory coverage
 
 open coverage/index.html
