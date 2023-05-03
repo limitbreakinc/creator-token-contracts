@@ -6,7 +6,7 @@ test = 'test'
 cache_path  = 'forge-cache'
 
 optimizer = true
-optimizer_runs = 1500
+optimizer_runs = 200
 
 [fuzz]
 runs = 256
