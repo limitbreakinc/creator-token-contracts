@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 /**
  * @title OrderFulfillmentOnchainRoyalties
  * @author Limit Break, Inc.
- * @dev This contract allows for on-chain royalties management during NFT sales.
+ * @dev This mix-in contract allows for on-chain royalties management during NFT sales.
  *      It can be used as-is or as an example for third-party marketplace contracts to read
  *      on-chain royalties and payout proceeds from NFT sales to the royalty recipient, seller,
  *      and dispense the NFTs to the buyer.
@@ -32,7 +32,7 @@ abstract contract OrderFulfillmentOnchainRoyalties {
      *         passing along the original sale price and the amount of platform fees withheld to this function.
      * @param orderDetails Struct containing the order details.
      * @param pushPaymentGasLimit Gas limit for pushing native payments.
-*/
+     */
     function fulfillSingleItemOrder(
         OrderDetails memory orderDetails,
         uint256 pushPaymentGasLimit) internal {
