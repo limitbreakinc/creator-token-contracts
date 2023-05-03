@@ -79,7 +79,7 @@ Clone the repository
 
 * **Infrastructure**
    * [EOARegistry](./contracts/utils/EOARegistry.sol) - A deployable contract where users can sign a message to prove they are an EOA. A global community-use EOA registry will be deployed and made available as there is no real need for users to prove they are an EOA in more than one contract.
-   * [CreatorTokenTransferValidator](./contracts/utils/CreatorTokenTransferValidator.sol) - Extends EOA registry and enables creators to set transfer security levels, create and manage whitliests/contract receiver allow lists, and apply their creator-defined policies to one or more creator token collections they own.  All the differenet implementations of creator token standards point to this registry for application of transfer security policies.
+   * [CreatorTokenTransferValidator](./contracts/utils/CreatorTokenTransferValidator.sol) - Extends EOA registry and enables creators to set transfer security levels, create and manage whitelists/contract receiver allow lists, and apply their creator-defined policies to one or more creator token collections they own.  All the different implementations of creator token standards point to this registry for application of transfer security policies.
 
 * **Programmable Royalty Sample Mix-Ins for ERC-721**
     * [ImmutableMinterRoyalties](./contracts/programmable-royalties/ImmutableMinterRoyalties.sol) - A mix-in that grants minters permanent royalty rights to the NFT token ID they minted.  Royalty fee cannot be changed.
@@ -284,7 +284,7 @@ The `CreatorTokenTransferValidator` contract defines 7 transfer security levels,
 
 These predefined transfer security levels can be applied to collections to implement varying levels of transfer security based on the collection's requirements.
 
-### How To Build, Deploy, and Setup a Wrapper Creator Token (Updgrade a Prior Collection Using Staking)
+### How To Build, Deploy, and Setup a Wrapper Creator Token (Upgrade a Prior Collection Using Staking)
 
 1. Choose a wrapper standard (ERC721-CW, AdventureERC721-CW, or ERC1155-CW)
 2. Inherit the selected standard, for example:
