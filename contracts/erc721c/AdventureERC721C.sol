@@ -24,7 +24,7 @@ abstract contract AdventureERC721C is AdventureERC721, CreatorTokenBaseDefault {
         return interfaceId == type(ICreatorToken).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    /// @dev Ties the open-zeppelin _beforeTokenTransfer hook to more granular transfer validation logic
+    /// @dev Ties the adventure erc721 _beforeTokenTransfer hook to more granular transfer validation logic
     function _beforeTokenTransfer(
         address from,
         address to,
@@ -48,7 +48,7 @@ abstract contract AdventureERC721C is AdventureERC721, CreatorTokenBaseDefault {
         }
     }
 
-    /// @dev Ties the open-zeppelin _afterTokenTransfer hook to more granular transfer validation logic
+    /// @dev Ties the adventure erc721 _afterTokenTransfer hook to more granular transfer validation logic
     function _afterTokenTransfer(
         address from,
         address to,

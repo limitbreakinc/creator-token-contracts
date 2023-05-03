@@ -34,7 +34,7 @@ abstract contract ERC721AC is ERC721A, CreatorTokenBaseDefault {
         }
     }
 
-    /// @dev Ties the open-zeppelin _afterTokenTransfer hook to more granular transfer validation logic
+    /// @dev Ties the erc721a _afterTokenTransfer hook to more granular transfer validation logic
     function _afterTokenTransfers(
         address from,
         address to,
