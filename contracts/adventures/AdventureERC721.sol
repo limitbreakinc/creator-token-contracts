@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
  * @author Limit Break, Inc.
  * @notice Implements the {IAdventurous} token standard for ERC721-compliant tokens.
  * Includes a user approval mechanism specific to {IAdventurous} functionality.
- * @dev Inherits {InitializableERC721} to provide the option to support EIP-1167.
  */
 abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
 
