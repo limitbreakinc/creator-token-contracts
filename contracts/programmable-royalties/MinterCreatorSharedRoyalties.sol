@@ -5,6 +5,11 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
 
+/**
+ * @title MinterCreatorSharedRoyalties
+ * @author Limit Break, Inc.
+ * @dev An NFT mix-in contract implementing programmable royalties.  Royalties are shared between creators and minters.
+ */
 abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
     error MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice();
     error MinterCreatorSharedRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
@@ -25,6 +30,14 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
     mapping (uint256 => address) private _paymentSplitters;
     mapping (address => address[]) private _minterPaymentSplitters;
 
+    /**
+     * @dev Constructor that sets the royalty fee numerator, creator, and minter/creator shares.
+     * @dev Throws when defaultRoyaltyFeeNumerator_ is greater than FEE_DENOMINATOR
+     * @param royaltyFeeNumerator_ The royalty fee numerator
+     * @param minterShares_  The number of shares minters get allocated in payment processors
+     * @param creatorShares_ The number of shares creators get allocated in payment processors
+     * @param creator_       The NFT creator's royalty wallet
+     */
     constructor(uint256 royaltyFeeNumerator_, uint256 minterShares_, uint256 creatorShares_, address creator_) {
         if(royaltyFeeNumerator_ > FEE_DENOMINATOR) {
             revert MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice();
@@ -36,6 +49,12 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
         creator = creator_;
     }
 
+    /**
+     * @notice Indicates whether the contract implements the specified interface.
+     * @dev Overrides supportsInterface in ERC165.
+     * @param interfaceId The interface id
+     * @return true if the contract implements the specified interface, false otherwise
+     */
     function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165, ERC165) returns (bool) {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
     }
@@ -198,6 +217,9 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
         }
     }
 
+    /**
+     * @dev Gets the payment splitter for the specified token id or reverts if it does not exist.
+     */
     function _getPaymentSplitterForTokenOrRevert(uint256 tokenId) private view returns (PaymentSplitter) {
         address paymentSplitterForToken = _paymentSplitters[tokenId];
         if(paymentSplitterForToken == address(0)) {

@@ -6,15 +6,16 @@ import "../../interfaces/ICreatorTokenWrapperERC721.sol";
 import "../../utils/WithdrawETH.sol";
 
 /**
- * @title CreatorERC721
+ * @title ERC721CW
  * @author Limit Break, Inc.
- * @notice Extends whitelist-transferrable ERC721 contracts and adds a staking feature used to wrap a basic ERC721 contract.
- * This token can only be transferred by a whitelisted caller.  Holders opt-in to this contract by staking, and it is possible
- * for holders to unstake at the developers' discretion.  The intent of this contract is to allow developers to upgrade existing
- * NFT collections and provide enhanced features.
+ * @notice Extends AdventureERC721-C contracts and adds a staking feature used to wrap another ERC721 contract.
+ * The wrapper token gives the developer access to the same set of controls present in the ERC721-C standard.
+ * in addition to Limit Break's AdventureERC721 staking features.  
+ * Holders opt-in to this contract by staking, and it is possible for holders to unstake at the developers' discretion. 
+ * The intent of this contract is to allow developers to upgrade existing NFT collections and provide enhanced features.
  *
- * @dev The base version of CreatorERC721 wrapper allows smart contract accounts and EOAs to stake to wrap tokens.
- * For developers that have a reason to restrict staking to EOA accounts only, see UncomposableCreatorERC721.
+ * @notice Creators also have discretion to set optional staker constraints should they wish to restrict staking to 
+ *         EOA accounts only.
  */
 abstract contract AdventureERC721CW is AdventureERC721C, WithdrawETH, ICreatorTokenWrapperERC721 {
 
@@ -32,7 +33,8 @@ abstract contract AdventureERC721CW is AdventureERC721C, WithdrawETH, ICreatorTo
     /// @dev The staking constraints that will be used to determine if an address is eligible to stake tokens.
     StakerConstraints private stakerConstraints;
 
-    /// @dev Constructor - specify the name, symbol, and wrapped contract addresses here
+    /// @dev Constructor - specify the name, symbol, and wrapped contract addresses here as well as max number of 
+    ///      simultaneous quests per adventure contract.
     constructor(
         address wrappedCollectionAddress_, 
         uint256 maxSimultaneousQuests_,
@@ -60,13 +62,16 @@ abstract contract AdventureERC721CW is AdventureERC721C, WithdrawETH, ICreatorTo
     }
 
     /// @notice Allows holders of the wrapped ERC721 token to stake into this enhanced ERC721 token.
-    /// The out of the box enhancement is the capability enabled by the whitelisted transfer system.
-    /// Developers can extend the functionality of this contract with additional powered up features.
+    /// The out of the box enhancements are AdventureERC721 staking features and the ERC721-C standard, but developers 
+    /// can further extend the functionality of this contract with additional powered up features.
     ///
+    /// Throws when staker constraints is `CallerIsTxOrigin` and the caller is not the tx.origin.
+    /// Throws when staker constraints is `EOA` and the caller has not verified their signature in the transfer
+    /// validator contract.
     /// Throws when caller does not own the token id on the wrapped collection.
     /// Throws when inheriting contract reverts in the _onStake function (for example, in a pay to stake scenario).
     /// Throws when _mint function reverts (for example, when additional mint validation logic reverts).
-    /// Throws when transferFrom function reverts (for example, if this contract does not have approval to transfer token).
+    /// Throws when transferFrom function reverts (e.g. if this contract does not have approval to transfer token).
     /// 
     /// Postconditions:
     /// ---------------
@@ -101,6 +106,7 @@ abstract contract AdventureERC721CW is AdventureERC721C, WithdrawETH, ICreatorTo
     }
 
     /// @notice Allows holders of this wrapper ERC721 token to unstake and receive the original wrapped token.
+    /// @dev    In certain scenarios the user may have to exit all quests before unstaking.
     /// 
     /// Throws when caller does not own the token id of this wrapper collection.
     /// Throws when inheriting contract reverts in the _onUnstake function (for example, in a pay to unstake scenario).

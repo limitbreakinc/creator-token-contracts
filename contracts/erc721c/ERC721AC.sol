@@ -7,7 +7,9 @@ import "erc721a/contracts/ERC721A.sol";
 /**
  * @title ERC721AC
  * @author Limit Break, Inc.
- * @notice 
+ * @notice Extends Azuki's ERC721-A implementation with Creator Token functionality, which
+ *         allows the contract owner to update the transfer validation logic by managing a security policy in
+ *         an external transfer validation security policy registry.  See {CreatorTokenTransferValidator}.
  */
 abstract contract ERC721AC is ERC721A, CreatorTokenBaseDefault {
 

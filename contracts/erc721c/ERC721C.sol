@@ -7,7 +7,9 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 /**
  * @title ERC721C
  * @author Limit Break, Inc.
- * @notice 
+ * @notice Extends OpenZeppelin's ERC721 implementation with Creator Token functionality, which
+ *         allows the contract owner to update the transfer validation logic by managing a security policy in
+ *         an external transfer validation security policy registry.  See {CreatorTokenTransferValidator}.
  */
 abstract contract ERC721C is ERC721, CreatorTokenBaseDefault {
 

@@ -7,7 +7,9 @@ import "../adventures/AdventureERC721.sol";
 /**
  * @title AdventureERC721C
  * @author Limit Break, Inc.
- * @notice 
+ * @notice Extends Limit Break's AdventureERC721 implementation with Creator Token functionality, which
+ *         allows the contract owner to update the transfer validation logic by managing a security policy in
+ *         an external transfer validation security policy registry.  See {CreatorTokenTransferValidator}.
  */
 abstract contract AdventureERC721C is AdventureERC721, CreatorTokenBaseDefault {
 
