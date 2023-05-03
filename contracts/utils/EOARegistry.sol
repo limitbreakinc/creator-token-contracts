@@ -2,10 +2,11 @@
 
 pragma solidity ^0.8.4;
 
-import "./IEOARegistry.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "../interfaces/IEOARegistry.sol";
+import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+
 
 error CallerDidNotSignTheMessage();
 error SignatureAlreadyVerified();
@@ -18,7 +19,7 @@ error SignatureAlreadyVerified();
  * so if Defi composability is an objective, this is not a good option.  Be advised that in the future, EOA accounts might not be a thing
  * but this is yet to be determined.  See https://eips.ethereum.org/EIPS/eip-4337 for more information.
  */
-contract EOARegistry is ERC165, IEOARegistry {
+contract EOARegistry is Context, ERC165, IEOARegistry {
 
     /// @dev A pre-cached signed message hash used for gas-efficient signature recovery
     bytes32 immutable private signedMessageHash;
@@ -45,17 +46,17 @@ contract EOARegistry is ERC165, IEOARegistry {
     /// ---------------
     /// The verified signature mapping has been updated to `true` for the caller.
     function verifySignature(bytes calldata signature) external {
-        if(eoaSignatureVerified[msg.sender]) {
+        if(eoaSignatureVerified[_msgSender()]) {
             revert SignatureAlreadyVerified();
         }
 
-        if(msg.sender != ECDSA.recover(signedMessageHash, signature)) {
+        if(_msgSender() != ECDSA.recover(signedMessageHash, signature)) {
             revert CallerDidNotSignTheMessage();
         }
 
-        eoaSignatureVerified[msg.sender] = true;
+        eoaSignatureVerified[_msgSender()] = true;
 
-        emit VerifiedEOASignature(msg.sender);
+        emit VerifiedEOASignature(_msgSender());
     }
 
     /// @notice Allows a user to verify an ECDSA signature to definitively prove they are an EOA account.
@@ -83,7 +84,7 @@ contract EOARegistry is ERC165, IEOARegistry {
     }
 
     /// @notice Returns true if the specified account has verified a signature on this registry, false otherwise.
-    function isVerifiedEOA(address account) external view override returns (bool) {
+    function isVerifiedEOA(address account) public view override returns (bool) {
         return eoaSignatureVerified[account];
     }
 

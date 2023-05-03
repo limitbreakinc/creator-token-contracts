@@ -14,3 +14,10 @@ artifacts
 # NPM Build Output
 build
 *.tgz
+
+# Foundry
+out/
+forge-cache/
+docs/
+
+lcov.info*
