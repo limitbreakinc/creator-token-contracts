@@ -12,6 +12,7 @@ import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
  */
 abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
     error MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice();
+    error MinterCreatorSharedRoyalties__MinterCannotBeZeroAddress();
     error MinterCreatorSharedRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
     error MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId();
 
@@ -170,6 +171,10 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
      * @param tokenId The id of the token that was minted.
      */
     function _onMinted(address minter, uint256 tokenId) internal {
+        if (minter == address(0)) {
+            revert MinterCreatorSharedRoyalties__MinterCannotBeZeroAddress();
+        }
+
         if (_minters[tokenId] != address(0)) {
             revert MinterCreatorSharedRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
         }

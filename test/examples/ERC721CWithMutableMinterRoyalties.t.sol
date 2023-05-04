@@ -17,7 +17,7 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
         super.setUp();
         
         tokenMock = new ERC721CWithMutableMinterRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, "Test", "TEST");
-        tokenMock.setToCustomSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
+        tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
     }
 
     function _deployNewToken(address creator) internal virtual override returns (ITestCreatorToken) {

@@ -33,8 +33,63 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 abstract contract CreatorTokenBase is Ownable, TransferValidation, ICreatorToken {
     
     error CreatorTokenBase__InvalidTransferValidatorContract();
+    error CreatorTokenBase__SetTransferValidatorFirst();
+
+    address public constant DEFAULT_TRANSFER_VALIDATOR = address(0xD679fBb2C884Eb28ED08B33e7095caFd63C76e99);
+    TransferSecurityLevels public constant DEFAULT_TRANSFER_SECURITY_LEVEL = TransferSecurityLevels.One;
+    uint120 public constant DEFAULT_OPERATOR_WHITELIST_ID = uint120(1);
 
     ICreatorTokenTransferValidator private transferValidator;
+
+    /**
+     * @notice Allows the contract owner to set the transfer validator to the official validator contract
+     *         and set the security policy to the recommended default settings.
+     * @dev    May be overridden to change the default behavior of an individual collection.
+     */
+    function setToDefaultSecurityPolicy() public virtual onlyOwner {
+        setTransferValidator(DEFAULT_TRANSFER_VALIDATOR);
+        ICreatorTokenTransferValidator(DEFAULT_TRANSFER_VALIDATOR).setTransferSecurityLevelOfCollection(address(this), DEFAULT_TRANSFER_SECURITY_LEVEL);
+        ICreatorTokenTransferValidator(DEFAULT_TRANSFER_VALIDATOR).setOperatorWhitelistOfCollection(address(this), DEFAULT_OPERATOR_WHITELIST_ID);
+    }
+
+    /**
+     * @notice Allows the contract owner to set the transfer validator to a custom validator contract
+     *         and set the security policy to their own custom settings.
+     */
+    function setToCustomValidatorAndSecurityPolicy(
+        address validator, 
+        TransferSecurityLevels level, 
+        uint120 operatorWhitelistId, 
+        uint120 permittedContractReceiversAllowlistId) public onlyOwner {
+        setTransferValidator(validator);
+
+        ICreatorTokenTransferValidator(validator).
+            setTransferSecurityLevelOfCollection(address(this), level);
+
+        ICreatorTokenTransferValidator(validator).
+            setOperatorWhitelistOfCollection(address(this), operatorWhitelistId);
+
+        ICreatorTokenTransferValidator(validator).
+            setPermittedContractReceiverAllowlistOfCollection(address(this), permittedContractReceiversAllowlistId);
+    }
+
+    /**
+     * @notice Allows the contract owner to set the security policy to their own custom settings.
+     * @dev    Reverts if the transfer validator has not been set.
+     */
+    function setToCustomSecurityPolicy(
+        TransferSecurityLevels level, 
+        uint120 operatorWhitelistId, 
+        uint120 permittedContractReceiversAllowlistId) public onlyOwner {
+        ICreatorTokenTransferValidator validator = getTransferValidator();
+        if (address(validator) == address(0)) {
+            revert CreatorTokenBase__SetTransferValidatorFirst();
+        }
+
+        validator.setTransferSecurityLevelOfCollection(address(this), level);
+        validator.setOperatorWhitelistOfCollection(address(this), operatorWhitelistId);
+        validator.setPermittedContractReceiverAllowlistOfCollection(address(this), permittedContractReceiversAllowlistId);
+    }
 
     /**
      * @notice Sets the transfer validator for the token contract.

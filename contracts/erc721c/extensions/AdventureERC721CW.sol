@@ -100,8 +100,8 @@ abstract contract AdventureERC721CW is AdventureERC721C, WithdrawETH, ICreatorTo
         }
         
         _onStake(tokenId, msg.value);
-        _mint(tokenOwner, tokenId);
         emit Staked(tokenId, tokenOwner);
+        _mint(tokenOwner, tokenId);
         wrappedCollection.transferFrom(tokenOwner, address(this), tokenId);
     }
 
@@ -125,8 +125,8 @@ abstract contract AdventureERC721CW is AdventureERC721C, WithdrawETH, ICreatorTo
         }
 
         _onUnstake(tokenId, msg.value);
-        _burn(tokenId);
         emit Unstaked(tokenId, tokenOwner);
+        _burn(tokenId);
         wrappedCollection.transferFrom(address(this), tokenOwner, tokenId);
     }
 

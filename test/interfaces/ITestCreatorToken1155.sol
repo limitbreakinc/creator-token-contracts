@@ -9,7 +9,7 @@ interface ITestCreatorToken1155 is IERC1155, ICreatorToken {
     function setTransferValidator(address transferValidator_) external;
     function setToDefaultSecurityPolicy() external;
     
-    function setToCustomSecurityPolicy(
+    function setToCustomValidatorAndSecurityPolicy(
         address validator, 
         TransferSecurityLevels level, 
         uint120 operatorWhitelistId, 

@@ -97,8 +97,8 @@ abstract contract ERC721CW is ERC721C, WithdrawETH, ICreatorTokenWrapperERC721 {
         }
         
         _onStake(tokenId, msg.value);
-        _mint(tokenOwner, tokenId);
         emit Staked(tokenId, tokenOwner);
+        _mint(tokenOwner, tokenId);
         wrappedCollection.transferFrom(tokenOwner, address(this), tokenId);
     }
 
@@ -121,8 +121,8 @@ abstract contract ERC721CW is ERC721C, WithdrawETH, ICreatorTokenWrapperERC721 {
         }
 
         _onUnstake(tokenId, msg.value);
-        _burn(tokenId);
         emit Unstaked(tokenId, tokenOwner);
+        _burn(tokenId);
         wrappedCollection.transferFrom(address(this), tokenOwner, tokenId);
     }
 

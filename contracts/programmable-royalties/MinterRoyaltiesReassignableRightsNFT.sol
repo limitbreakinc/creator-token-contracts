@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 abstract contract MinterRoyaltiesReassignableRightsNFT is IERC2981, ERC165 {
 
+    error MinterRoyaltiesReassignableRightsNFT__MinterCannotBeZeroAddress();
     error MinterRoyaltiesReassignableRightsNFT__RoyaltyFeeWillExceedSalePrice();
 
     uint256 public constant FEE_DENOMINATOR = 10_000;
@@ -49,6 +50,10 @@ abstract contract MinterRoyaltiesReassignableRightsNFT is IERC2981, ERC165 {
     }
 
     function _onMinted(address minter, uint256 tokenId) internal {
+        if (minter == address(0)) {
+            revert MinterRoyaltiesReassignableRightsNFT__MinterCannotBeZeroAddress();
+        }
+
         royaltyRightsNFT.mint(minter, tokenId);
     }
 
