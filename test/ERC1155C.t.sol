@@ -14,7 +14,7 @@ contract ERC1155CTest is CreatorTokenTransferValidatorERC1155Test {
         super.setUp();
         
         tokenMock = new ERC1155CMock();
-        tokenMock.setToCustomSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
+        tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
     }
 
     function _deployNewToken(address creator) internal virtual override returns (ITestCreatorToken1155) {

@@ -14,7 +14,7 @@ contract ERC721CTest is CreatorTokenTransferValidatorERC721Test {
         super.setUp();
         
         tokenMock = new ERC721CMock();
-        tokenMock.setToCustomSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
+        tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
     }
 
     function _deployNewToken(address creator) internal virtual override returns (ITestCreatorToken) {

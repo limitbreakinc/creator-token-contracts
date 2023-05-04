@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "../utils/CreatorTokenBaseDefault.sol";
+import "../utils/CreatorTokenBase.sol";
 import "../adventures/AdventureERC721.sol";
 
 /**
@@ -11,13 +11,13 @@ import "../adventures/AdventureERC721.sol";
  *         allows the contract owner to update the transfer validation logic by managing a security policy in
  *         an external transfer validation security policy registry.  See {CreatorTokenTransferValidator}.
  */
-abstract contract AdventureERC721C is AdventureERC721, CreatorTokenBaseDefault {
+abstract contract AdventureERC721C is AdventureERC721, CreatorTokenBase {
 
     constructor(
         uint256 maxSimultaneousQuests_,
         string memory name_, 
         string memory symbol_) 
-    CreatorTokenBaseDefault() 
+    CreatorTokenBase() 
     AdventureERC721(maxSimultaneousQuests_, name_, symbol_) {}
 
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {

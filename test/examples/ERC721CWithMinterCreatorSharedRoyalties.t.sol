@@ -24,7 +24,7 @@ contract ERC721CWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVali
 
         vm.startPrank(defaultTokenCreator);
         tokenMock = new ERC721CWithMinterCreatorSharedRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, 25, 75, defaultTokenCreator, "Test", "TEST");
-        tokenMock.setToCustomSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
+        tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
         vm.stopPrank();
     }
 

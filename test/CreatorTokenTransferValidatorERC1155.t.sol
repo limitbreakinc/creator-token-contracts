@@ -48,7 +48,7 @@ contract CreatorTokenTransferValidatorERC1155Test is Test {
     }
 
     function testDeterministicAddressForCreatorTokenValidator() public {
-        assertEq(address(validator), 0x559567c6B0771750e6bE3052169843f13b2f1654);
+        assertEq(address(validator), 0xD679fBb2C884Eb28ED08B33e7095caFd63C76e99);
     }
 
     function testTransferSecurityLevelZero() public {
@@ -373,7 +373,7 @@ contract CreatorTokenTransferValidatorERC1155Test is Test {
         vm.startPrank(creator);
         uint120 operatorWhitelistId = validator.createOperatorWhitelist("");
         uint120 permittedReceiversListId = validator.createPermittedContractReceiverAllowlist("");
-        token.setToCustomSecurityPolicy(address(validator), level, operatorWhitelistId, permittedReceiversListId);
+        token.setToCustomValidatorAndSecurityPolicy(address(validator), level, operatorWhitelistId, permittedReceiversListId);
         vm.stopPrank();
 
         assertEq(address(token.getTransferValidator()), address(validator));
@@ -1199,7 +1199,7 @@ contract CreatorTokenTransferValidatorERC1155Test is Test {
         validator.verifySignatureVRS(v, r, s);
     }
 
-    function _sanitizeAddress(address addr) internal {
+    function _sanitizeAddress(address addr) internal view virtual {
         vm.assume(uint160(addr) > 0xFF);
         vm.assume(addr != address(0x000000000000000000636F6e736F6c652e6c6f67));
     }

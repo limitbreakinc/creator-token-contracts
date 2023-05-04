@@ -21,7 +21,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         
         wrappedTokenMock = new ERC721Mock();
         tokenMock = new ERC721CWTimeLockedUnstakeMock(1 days, address(wrappedTokenMock));
-        tokenMock.setToCustomSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
+        tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
     }
 
     function _deployNewToken(address creator) internal virtual override returns (ITestCreatorToken) {
@@ -379,6 +379,8 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.assume(to != address(0));
         vm.assume(origin != address(0));
         vm.assume(to != origin);
+        vm.assume(to.code.length == 0);
+        vm.assume(to != address(tokenMock));
 
         vm.startPrank(to);
         wrappedTokenMock.mint(to, tokenId);
@@ -406,5 +408,11 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.prank(to);
         vm.expectRevert(ERC721CW.ERC721CW__CallerSignatureNotVerifiedInEOARegistry.selector);
         tokenMock.stake(tokenId);
+    }
+
+    function _sanitizeAddress(address addr) internal view virtual override {
+        super._sanitizeAddress(addr);
+        vm.assume(addr != address(tokenMock));
+        vm.assume(addr != address(wrappedTokenMock));
     }
 }

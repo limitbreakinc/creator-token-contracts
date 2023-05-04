@@ -101,8 +101,8 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyG
         }
         
         _onStake(id, amount, msg.value);
-        _mint(_msgSender(), id, amount, "");
         emit Staked(id, _msgSender(), amount);
+        _mint(_msgSender(), id, amount, "");
         wrappedCollection.safeTransferFrom(_msgSender(), address(this), id, amount, "");
     }
 
@@ -130,8 +130,8 @@ abstract contract ERC1155CW is ERC1155C, ERC1155Holder, WithdrawETH, ReentrancyG
         }
 
         _onUnstake(id, amount, msg.value);
-        _burn(_msgSender(), id, amount);
         emit Unstaked(id, _msgSender(), amount);
+        _burn(_msgSender(), id, amount);
         wrappedCollection.safeTransferFrom(address(this), _msgSender(), id, amount, "");
     }
 

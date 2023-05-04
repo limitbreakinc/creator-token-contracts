@@ -533,9 +533,12 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
         if(tokenAddress.code.length > 0) {
             callerHasPermissions = _msgSender() == tokenAddress;
             if(!callerHasPermissions) {
+
                 try IOwnable(tokenAddress).owner() returns (address contractOwner) {
                     callerHasPermissions = _msgSender() == contractOwner;
-                } catch {
+                } catch {}
+
+                if(!callerHasPermissions) {
                     try IAccessControl(tokenAddress).hasRole(DEFAULT_ACCESS_CONTROL_ADMIN_ROLE, _msgSender()) 
                         returns (bool callerIsContractAdmin) {
                         callerHasPermissions = callerIsContractAdmin;
