@@ -368,4 +368,10 @@ contract ERC721CWPaidUnstakeTest is CreatorTokenTransferValidatorERC721Test {
         vm.expectRevert(ERC721CW.ERC721CW__CallerSignatureNotVerifiedInEOARegistry.selector);
         tokenMock.stake(tokenId);
     }
+
+    function _sanitizeAddress(address addr) internal view virtual override {
+        super._sanitizeAddress(addr);
+        vm.assume(addr != address(tokenMock));
+        vm.assume(addr != address(wrappedTokenMock));
+    }
 }

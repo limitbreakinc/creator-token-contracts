@@ -430,4 +430,10 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         vm.expectRevert(ERC1155CW.ERC1155CW__CallerSignatureNotVerifiedInEOARegistry.selector);
         tokenMock.stake(tokenId, amount);
     }
+
+    function _sanitizeAddress(address addr) internal view virtual override {
+        super._sanitizeAddress(addr);
+        vm.assume(addr != address(tokenMock));
+        vm.assume(addr != address(wrappedTokenMock));
+    }
 }

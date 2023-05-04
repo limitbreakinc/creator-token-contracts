@@ -1174,7 +1174,7 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
         validator.verifySignatureVRS(v, r, s);
     }
 
-    function _sanitizeAddress(address addr) internal pure {
+    function _sanitizeAddress(address addr) internal view virtual {
         vm.assume(uint160(addr) > 0xFF);
         vm.assume(addr != address(0x000000000000000000636F6e736F6c652e6c6f67));
     }
