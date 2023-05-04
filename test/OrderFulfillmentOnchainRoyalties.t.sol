@@ -481,5 +481,7 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
     function _sanitizeAddress(address addr) private {
         vm.assume(uint160(addr) > 0xFF);
         vm.assume(addr != address(0x000000000000000000636F6e736F6c652e6c6f67));
+        vm.assume(addr != address(marketplace));
+        vm.assume(addr != address(paymentToken));
     }
 }
