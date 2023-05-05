@@ -74,9 +74,7 @@ abstract contract ClaimableHolderMint is ClaimPeriodBase, MaxSupplyBase {
     constructor(
         address[] memory rootCollections_, 
         uint256[] memory rootCollectionMaxSupplies_, 
-        uint256[] memory tokensPerClaimArray_,
-        uint256 maxSupply_, 
-        uint256 maxOwnerMints_) MaxSupplyBase(maxSupply_, maxOwnerMints_) {
+        uint256[] memory tokensPerClaimArray_) {
         uint256 rootCollectionsArrayLength = rootCollections_.length;
 
         _requireInputArrayLengthsMatch(rootCollectionsArrayLength, rootCollectionMaxSupplies_.length);

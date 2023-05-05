@@ -45,9 +45,7 @@ abstract contract SignedApprovalMint is MaxSupplyBase, EIP712 {
 
     constructor(
         address signer_, 
-        uint256 maxSignedMints_, 
-        uint256 maxSupply_, 
-        uint256 maxOwnerMints_) MaxSupplyBase(maxSupply_, maxOwnerMints_) EIP712("SignedApprovalMint", "1") {
+        uint256 maxSignedMints_) EIP712("SignedApprovalMint", "1") {
         if(signer_ == address(0)) {
             revert SignedApprovalMint__SignerCannotBeInitializedAsAddressZero();
         }

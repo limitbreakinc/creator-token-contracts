@@ -20,10 +20,7 @@ abstract contract AirdropMint is MaxSupplyBase {
     /// @dev The current amount of tokens mintable via airdrop.
     uint256 private _remainingAirdropSupply;
 
-    constructor(
-        uint256 maxAirdropMints_,
-        uint256 maxSupply_, 
-        uint256 maxOwnerMints_) MaxSupplyBase(maxSupply_, maxOwnerMints_) {
+    constructor(uint256 maxAirdropMints_) {
         
         if(maxAirdropMints_ == 0) {
             revert AirdropMint__MaxAirdropSupplyCannotBeSetToZero();

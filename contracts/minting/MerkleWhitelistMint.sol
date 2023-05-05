@@ -39,9 +39,7 @@ abstract contract MerkleWhitelistMint is ClaimPeriodBase, MaxSupplyBase {
 
     constructor(
         uint256 maxMerkleMints_, 
-        uint256 permittedNumberOfMerkleRootChanges_, 
-        uint256 maxSupply_, 
-        uint256 maxOwnerMints_) MaxSupplyBase(maxSupply_, maxOwnerMints_) {
+        uint256 permittedNumberOfMerkleRootChanges_) {
         if(maxMerkleMints_ == 0) {
             revert MerkleWhitelistMint__MaxMintsMustBeGreaterThanZero();
         }
