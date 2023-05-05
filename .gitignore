@@ -21,3 +21,6 @@ forge-cache/
 docs/
 
 lcov.info*
+
+.env*
+broadcast/

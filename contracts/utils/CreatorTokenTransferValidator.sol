@@ -94,7 +94,7 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
     mapping (uint120 => EnumerableSet.AddressSet) private operatorWhitelists;
     mapping (uint120 => EnumerableSet.AddressSet) private permittedContractReceiverAllowlists;
 
-    constructor() EOARegistry() {
+    constructor(address defaultOwner) EOARegistry() {
         transferSecurityPolicies[TransferSecurityLevels.Zero] = TransferSecurityPolicy({
             callerConstraints: CallerConstraints.None,
             receiverConstraints: ReceiverConstraints.None
@@ -132,10 +132,10 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
 
         uint120 id = ++lastOperatorWhitelistId;
 
-        operatorWhitelistOwners[id] = _msgSender();
+        operatorWhitelistOwners[id] = defaultOwner;
 
         emit CreatedAllowlist(AllowlistTypes.Operators, id, "DEFAULT OPERATOR WHITELIST");
-        emit ReassignedAllowlistOwnership(AllowlistTypes.Operators, id, _msgSender());
+        emit ReassignedAllowlistOwnership(AllowlistTypes.Operators, id, defaultOwner);
     }
 
     /**
