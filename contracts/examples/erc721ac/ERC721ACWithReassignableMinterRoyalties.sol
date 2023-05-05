@@ -19,12 +19,12 @@ contract ERC721ACWithReassignableMinterRoyalties is ERC721AC, MinterRoyaltiesRea
         return super.supportsInterface(interfaceId);
     }
 
-    function mint(address to, uint256 tokenId) external {
-        _mint(to, tokenId);
+    function mint(address to, uint256 quantity) external {
+        _mint(to, quantity);
     }
 
-    function safeMint(address to, uint256 tokenId) external {
-        _safeMint(to, tokenId);
+    function safeMint(address to, uint256 quantity) external {
+        _safeMint(to, quantity);
     }
 
     function burn(uint256 tokenId) external {
