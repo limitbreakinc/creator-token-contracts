@@ -539,14 +539,10 @@ It is crucial to thoroughly test the integration of this mixin with your specifi
 
 To be considered for the whitelist or to propose a new exchange, teams can reach out to blockchain@limitbreak.com.
 
-## Security
+## Security and License
 
-This project is maintained by [Limit Break](https://limitbreak.com/).  
+This project is made available by Limit Break in an effort to provide an open-source functional library of smart contract components to be used by other parties as precedent for individual user’s creation and deployment of smart contracts in the Etherium ecosystem (the “Limit Break Contracts”). Limit Break is committed to following, and has sought to apply, commercially reasonable best practices as it pertains to safety and security in making the Limit Break Contracts publicly available for use as precedent. Nevertheless, smart contracts are a new and emerging technology and carry a high level of technical risk and uncertainty. Despite Limit Break’s commitment and efforts to foster safety and security in their adoption, using the precedent contracts made available by this project is not a substitute for a security audit conducted by the end user. Please report any actual or suspected security vulnerabilities to our team at [security@limitbreak.com](security@limitbreak.com).
 
-Creator Token Contracts is made available under the MIT License, which disclaims all warranties in relations to the project and which limits the liability of those that contribute and maintain the project, including Limit Break.  You are solely responsible for any use of Creator Token Contracts and you assume all risks associated with any such use.
+The Limit Break Contracts are made available under the [MIT License](LICENSE), which disclaims all warranties in relation to the project and which limits the liability of those that contribute and maintain the project, including Limit Break. As set out further in Limit Break’s [Terms of Service](https://limitbreak.com/tos.html), as may be amended and revised from time to time, you acknowledge that you are solely responsible for any use of the Limit Break Contracts and you assume all risks associated with any such use. For the avoidance of doubt, such assumption of risk by the user also implies all risks associated with the legality or related implications tied to the use of smart contracts in any given jurisdiction, whether now known or yet to be determined.
 
-We take no responsibility for your implementation decisions and any security problems you might experience.
-
-## License
-
-Creator Token Contracts is released under the [MIT License](LICENSE).
+Limit Break's offering of the code in Creator Token Contracts has no bearing on Limit Break's own implementations of programmable royalties.
