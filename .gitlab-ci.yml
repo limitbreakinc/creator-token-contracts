@@ -4,43 +4,58 @@ variables:
   NPM_CONFIG: "$NPM_CONFIG"
 
 stages:
- - run_tests
+ - install_foundry
  - code_coverage
+ - run_tests 
  - push_to_github
  - build_push_npm 
 
-run_tests:
-  retry:
-    max: 2
-  stage: run_tests
-  image: 
-    name: node:16.18
-  services:
-   - docker:dind
-  script:
-    - npm install
-    - npx hardhat compile
-    - npx hardhat test
-  tags:
-    - infra-docker
-  rules:
-    - if: $CI_COMMIT_REF_NAME != 'public-release'
+before_script:
+  - apt-get update -y
+  - apt-get install -y curl
+  - curl -L https://foundry.paradigm.xyz | bash
+  - source /root/.bashrc
+  - foundryup
 
 code_coverage:
   retry:
     max: 2
   stage: code_coverage
   image: 
-    name: node:16.18
+    name: node:18.16.0
   services:
    - docker:dind
   script:
-    - npm install
-    - npx hardhat compile
-    - npx hardhat coverage
+    - npm install hardhat-foundry
+    - echo "Installing lcov and genhtml for coverage reports..."
+    - apt-get update -y && apt-get install -y lcov   # This line installs lcov
+    - forge coverage --report lcov
+    - lcov --remove ./lcov.info -o ./lcov.info.pruned '/test/mocks/*' 'test/mocks/*'
+    - genhtml -o coverage/ --branch-coverage lcov.info.pruned
+    - echo "Deploying to GitLab Pages..."
+    - mkdir .coverage
+    - cp -r coverage/* .coverage
+    - mv .coverage coverage
   artifacts:
     paths:
       - coverage
+  tags:
+    - infra-docker
+  rules:
+    - if: $CI_COMMIT_REF_NAME != 'public-release'
+
+run_tests:
+  retry:
+    max: 2
+  stage: run_tests
+  image: 
+    name: node:18.16.0
+  services:
+   - docker:dind
+  script:
+    - npm install hardhat-foundry
+    - forge build
+    - forge test
   tags:
     - infra-docker
   rules:

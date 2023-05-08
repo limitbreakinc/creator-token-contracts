@@ -10,10 +10,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  */
 abstract contract WithdrawETH is Ownable {
 
-    error AmountMustBeGreaterThanZero();
-    error RecipientMustBeNonZeroAddress();
-    error InsufficientBalance();
-    error WithdrawalUnsuccessful();
+    error WithdrawETH__AmountMustBeGreaterThanZero();
+    error WithdrawETH__RecipientMustBeNonZeroAddress();
+    error WithdrawETH__InsufficientBalance();
+    error WithdrawETH__WithdrawalUnsuccessful();
+
+    event Withdrawal(address indexed recipient, uint256 amount); 
 
     /// @notice Allows contract owner to withdraw ETH that has been paid into the contract.
     /// This allows inadvertantly lost ETH to be recovered and it also allows the contract owner
@@ -30,21 +32,23 @@ abstract contract WithdrawETH is Ownable {
     /// The specified amount of ETH has been sent to the specified recipient.
     function withdrawETH(address payable recipient, uint256 amount) external onlyOwner {
         if(amount == 0) {
-            revert AmountMustBeGreaterThanZero();
+            revert WithdrawETH__AmountMustBeGreaterThanZero();
         }
 
         if(recipient == address(0)) {
-            revert RecipientMustBeNonZeroAddress();
+            revert WithdrawETH__RecipientMustBeNonZeroAddress();
         }
 
         if(address(this).balance < amount) {
-            revert InsufficientBalance();
+            revert WithdrawETH__InsufficientBalance();
         }
 
         //slither-disable-next-line arbitrary-send        
         (bool success,) = recipient.call{value: amount}("");
         if(!success) {
-            revert WithdrawalUnsuccessful();
+            revert WithdrawETH__WithdrawalUnsuccessful();
         }
+
+        emit Withdrawal(recipient, amount);
     }
 }
