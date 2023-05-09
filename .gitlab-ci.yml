@@ -67,7 +67,7 @@ build_push_npm:
     max: 2
   stage: build_push_npm
   image: 
-    name: node:16.18.1-slim
+    name: node:18.16.0
   services:
   - docker:dind
   script:
