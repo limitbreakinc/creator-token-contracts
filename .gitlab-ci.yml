@@ -93,8 +93,6 @@ push_repo_github:
       when: manual
 
 build_push_npm:
-  needs:
-    - job: push_repo_github
   retry:
     max: 2
   stage: build_push_npm
@@ -105,8 +103,7 @@ build_push_npm:
   script:
    - echo $NPM_CONFIG > ~/.npmrc
    - npm whoami
-   - npm install
-   - npm publish --access public
+   - npm publish ./limitbreak-creator-token-contracts-1.1.0.tgz --access public
   tags:
     - infra-docker
   rules:
