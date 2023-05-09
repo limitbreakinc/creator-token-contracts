@@ -74,6 +74,8 @@ build_push_npm:
    - npm whoami
    - npm install
    - npx hardhat compile
+   - pwd
+   - ls -la
    - npm publish --access public
   tags:
     - infra-docker
