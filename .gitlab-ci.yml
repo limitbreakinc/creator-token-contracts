@@ -99,10 +99,11 @@ build_push_npm:
     max: 2
   stage: build_push_npm
   image: 
-    name: node:16.18
+    name: node:16.18.1-buster
   services:
   - docker:dind
   script:
+   - apt-get update && apt-get install build-essential -y
    - echo $NPM_CONFIG > ~/.npmrc
    - npm whoami
    - npm install
