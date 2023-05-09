@@ -65,7 +65,7 @@ build_push_npm:
     max: 2
   stage: build_push_npm
   image: 
-    name: node:buster-16.18.1
+    name: node:16.18.1-buster
   services:
   - docker:dind
   script:
