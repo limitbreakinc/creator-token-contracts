@@ -169,7 +169,7 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
                 }
             }
         } else if (transferSecurityPolicy.receiverConstraints == ReceiverConstraints.EOA) {
-            if (!isVerifiedEOA(to)) {
+            if (to != tx.origin && !isVerifiedEOA(to)) {
                 if (!isContractReceiverPermitted(collectionSecurityPolicy.permittedContractReceiversId, to)) {
                     revert CreatorTokenTransferValidator__ReceiverProofOfEOASignatureUnverified();
                 }
