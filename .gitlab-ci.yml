@@ -70,13 +70,8 @@ build_push_npm:
   - docker:dind
   script:
    - echo $NPM_CONFIG > ~/.npmrc
-   - git submodule update --init --recursive
    - npm whoami
-   - npm install
-   - npx hardhat compile
-   - pwd
-   - ls -la
-   - npm publish --access public
+   - npm publish ./limitbreak-creator-token-contracts-1.1.0.tgz --access public
   tags:
     - infra-docker
   rules:
