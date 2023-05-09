@@ -69,7 +69,7 @@ build_push_npm:
   services:
   - docker:dind
   script:
-   - apt-get update && apt-get install build-essential -y
+   - apt-get update && apt-get install build-essential git -y
    - echo $NPM_CONFIG > ~/.npmrc
    - npm whoami
    - npm install
