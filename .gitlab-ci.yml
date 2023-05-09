@@ -73,6 +73,7 @@ build_push_npm:
    - git submodule update --init --recursive
    - npm whoami
    - npm install
+   - npx hardhat compile
    - npm publish --access public
   tags:
     - infra-docker
