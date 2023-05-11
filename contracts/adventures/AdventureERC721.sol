@@ -3,15 +3,9 @@ pragma solidity ^0.8.4;
 
 import "./IAdventurous.sol";
 import "./AdventureWhitelist.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "../token/erc721/ERC721OpenZeppelin.sol";
 
-/**
- * @title AdventureERC721
- * @author Limit Break, Inc.
- * @notice Implements the {IAdventurous} token standard for ERC721-compliant tokens.
- * Includes a user approval mechanism specific to {IAdventurous} functionality.
- */
-abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
+abstract contract AdventureBase is AdventureWhitelist, IAdventurous {
 
     error AdventureERC721__AdventureApprovalToCaller();
     error AdventureERC721__AlreadyInitializedAdventureERC721();
@@ -35,7 +29,7 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
     uint256 internal constant TRANSFERRING_VIA_ADVENTURE = 2;
 
     /// @dev The most simultaneous quests the token may participate in at a time
-    uint256 public immutable maxSimultaneousQuests;
+    uint256 private _maxSimultaneousQuests;
 
     /// @dev Specifies the type of transfer that is actively being used
     uint256 internal transferType;
@@ -52,30 +46,12 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
     /// @dev Maps each token id to a mapping from adventure address to a mapping of quest ids to quest details
     mapping (uint256 => mapping (address => mapping (uint32 => Quest))) public activeQuestLookup;
 
-    constructor(
-        uint256 maxSimultaneousQuests_, 
-        string memory name_, 
-        string memory symbol_) ERC721(name_, symbol_) {
-
-        _validateMaxSimultaneousQuests(maxSimultaneousQuests_);
-        maxSimultaneousQuests = maxSimultaneousQuests_;
-
-        transferType = TRANSFERRING_VIA_ERC721;
-    }
-
-    /// @dev ERC-165 interface support
-    function supportsInterface(bytes4 interfaceId) public view virtual override (ERC721, IERC165) returns (bool) {
-        return 
-        interfaceId == type(IAdventurous).interfaceId || 
-        super.supportsInterface(interfaceId);
-    }
-
     /// @notice Transfers a player's token if they have opted into an authorized, whitelisted adventure.
     function adventureTransferFrom(address from, address to, uint256 tokenId) external override {
         _requireCallerIsWhitelistedAdventure();
         _requireCallerApprovedForAdventure(tokenId);
         transferType = TRANSFERRING_VIA_ADVENTURE;
-        _transfer(from, to, tokenId);
+        _doTransfer(from, to, tokenId);
         transferType = TRANSFERRING_VIA_ERC721;
     }
 
@@ -84,7 +60,7 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
         _requireCallerIsWhitelistedAdventure();
         _requireCallerApprovedForAdventure(tokenId);
         transferType = TRANSFERRING_VIA_ADVENTURE;
-        _safeTransfer(from, to, tokenId, "");
+        _doSafeTransfer(from, to, tokenId, "");
         transferType = TRANSFERRING_VIA_ERC721;
     }
 
@@ -93,7 +69,7 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
         _requireCallerIsWhitelistedAdventure();
         _requireCallerApprovedForAdventure(tokenId);
         transferType = TRANSFERRING_VIA_ADVENTURE;
-        _burn(tokenId);
+        _doBurn(tokenId);
         transferType = TRANSFERRING_VIA_ERC721;
     }
 
@@ -116,7 +92,8 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
     /// @notice Admin-only ability to boot a token from all quests on an adventure.
     /// This ability is only unlocked in the event that an adventure has been unwhitelisted, as early exiting
     /// from quests can cause out of sync state between the ERC721 token contract and the adventure/quest.
-    function bootFromAllQuests(uint256 tokenId, address adventure) external onlyOwner {
+    function bootFromAllQuests(uint256 tokenId, address adventure) external {
+        _requireCallerIsContractOwner();
         _requireAdventureRemovedFromWhitelist(adventure);
         _exitAllQuests(tokenId, adventure, true);
     }
@@ -192,6 +169,10 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
         return activeQuests;
     }
 
+    function maxSimultaneousQuests() public view returns (uint256) {
+        return _maxSimultaneousQuests;
+    }
+
     /// @dev Enters the specified quest for a token id.
     /// Throws if the token is already participating in the specified quest.
     /// Throws if the number of active quests exceeds the max allowable for the given adventure.
@@ -203,7 +184,7 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
         }
 
         uint256 currentQuestCount = getQuestCount(tokenId, adventure);
-        if(currentQuestCount >= maxSimultaneousQuests) {
+        if(currentQuestCount >= _maxSimultaneousQuests) {
             revert AdventureERC721__TooManyActiveQuests();
         }
 
@@ -214,7 +195,7 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
         activeQuestLookup[tokenId][adventure][castedQuestId].questId = castedQuestId;
         activeQuestLookup[tokenId][adventure][castedQuestId].arrayIndex = uint32(currentQuestCount);
 
-        address ownerOfToken = ownerOf(tokenId);
+        address ownerOfToken = _ownerOfToken(tokenId);
         emit QuestUpdated(tokenId, ownerOfToken, adventure, questId, true, false);
 
         if(IAdventure(adventure).questsLockTokens()) {
@@ -246,7 +227,7 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
         activeQuestList[tokenId][adventure].pop();
         delete activeQuestLookup[tokenId][adventure][castedQuestId];
 
-        address ownerOfToken = ownerOf(tokenId);
+        address ownerOfToken = _ownerOfToken(tokenId);
         emit QuestUpdated(tokenId, ownerOfToken, adventure, questId, false, false);
 
         if(IAdventure(adventure).questsLockTokens()) {
@@ -259,7 +240,7 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
 
     /// @dev Removes the specified token id from all quests on the specified adventure
     function _exitAllQuests(uint256 tokenId, address adventure, bool booted) internal {
-        address tokenOwner = ownerOf(tokenId);
+        address tokenOwner = _ownerOfToken(tokenId);
         uint256 questCount = getQuestCount(tokenId, adventure);
 
         if(IAdventure(adventure).questsLockTokens()) {
@@ -286,25 +267,10 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
         delete activeQuestList[tokenId][adventure];
     }
 
-    /// @dev By default, tokens that are participating in quests are transferrable.  However, if a token is participating
-    /// in a quest on an adventure that was designated as a token locker, the transfer will revert and keep the token
-    /// locked.
-    function _beforeTokenTransfer(address /*from*/, address /*to*/, uint256 firstTokenId, uint256 batchSize) internal virtual override {
-        for (uint256 i = 0; i < batchSize;) {
-            if(blockingQuestCounts[firstTokenId + i] > 0) {
-                revert AdventureERC721__AnActiveQuestIsPreventingTransfers();
-            }
-
-            unchecked {
-                ++i;
-            }
-        }
-    }
-
     /// @dev Validates that the caller is approved for adventure on the specified token id
     /// Throws when the caller has not been approved by the user.
     function _requireCallerApprovedForAdventure(uint256 tokenId) internal view {
-        if(!areAdventuresApprovedForAll(ownerOf(tokenId), _msgSender())) {
+        if(!areAdventuresApprovedForAll(_ownerOfToken(tokenId), _msgSender())) {
             revert AdventureERC721__CallerNotApprovedForAdventure();
         }
     }
@@ -312,7 +278,7 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
     /// @dev Validates that the caller owns the specified token
     /// Throws when the caller does not own the specified token.
     function _requireCallerOwnsToken(uint256 tokenId) internal view {
-        if(ownerOf(tokenId) != _msgSender()) {
+        if(_ownerOfToken(tokenId) != _msgSender()) {
             revert AdventureERC721__CallerNotTokenOwner();
         }
     }
@@ -327,6 +293,122 @@ abstract contract AdventureERC721 is ERC721, AdventureWhitelist, IAdventurous {
 
         if(maxSimultaneousQuests_ > MAX_CONCURRENT_QUESTS) {
             revert AdventureERC721__MaxSimultaneousQuestsExceeded();
+        }
+    }
+
+    function _setMaxSimultaneousQuestsAndInitializeTransferType(uint256 maxSimultaneousQuests_) internal {
+        _validateMaxSimultaneousQuests(maxSimultaneousQuests_);
+        _maxSimultaneousQuests = maxSimultaneousQuests_;
+        transferType = TRANSFERRING_VIA_ERC721;
+    }
+
+    function _doBurn(uint256 tokenId) internal virtual;
+
+    function _doTransfer(address from, address to, uint256 tokenId) internal virtual;
+
+    function _doSafeTransfer(address from, address to, uint256 tokenId, bytes memory data) internal virtual;
+
+    function _ownerOfToken(uint256 tokenId) internal view virtual returns (address);
+}
+
+abstract contract AdventureERC721 is AdventureBase, ERC721OpenZeppelin {
+
+    constructor(uint256 maxSimultaneousQuests_) {
+        _setMaxSimultaneousQuestsAndInitializeTransferType(maxSimultaneousQuests_);
+    }
+
+    /// @dev ERC-165 interface support
+    function supportsInterface(bytes4 interfaceId) public view virtual override (ERC721, IERC165) returns (bool) {
+        return 
+        interfaceId == type(IAdventurous).interfaceId || 
+        super.supportsInterface(interfaceId);
+    }
+
+    function _doBurn(uint256 tokenId) internal virtual override {
+        _burn(tokenId);
+    }
+
+    function _doTransfer(address from, address to, uint256 tokenId) internal virtual override {
+        _transfer(from, to, tokenId);
+    }
+
+    function _doSafeTransfer(address from, address to, uint256 tokenId, bytes memory data) internal virtual override {
+        _safeTransfer(from, to, tokenId, data);
+    }
+
+    function _ownerOfToken(uint256 tokenId) internal view virtual override returns (address) {
+        return ownerOf(tokenId);
+    }
+
+    /// @dev By default, tokens that are participating in quests are transferrable.  However, if a token is participating
+    /// in a quest on an adventure that was designated as a token locker, the transfer will revert and keep the token
+    /// locked.
+    function _beforeTokenTransfer(address /*from*/, address /*to*/, uint256 firstTokenId, uint256 batchSize) internal virtual override {
+        for (uint256 i = 0; i < batchSize;) {
+            if(blockingQuestCounts[firstTokenId + i] > 0) {
+                revert AdventureERC721__AnActiveQuestIsPreventingTransfers();
+            }
+
+            unchecked {
+                ++i;
+            }
+        }
+    }
+}
+
+abstract contract AdventureERC721Initializable is AdventureBase, ERC721OpenZeppelinInitializable {
+
+    error AdventureERC721Initializable__AlreadyInitializedMaxSimultaneousQuestsAndTransferType();
+
+    bool private _maxSimultaneousQuestsInitialized;
+
+    function initializeMaxSimultaneousQuestsAndTransferType(uint256 maxSimultaneousQuests_) public {
+        _requireCallerIsContractOwner();
+
+        if(_maxSimultaneousQuestsInitialized) {
+            revert AdventureERC721Initializable__AlreadyInitializedMaxSimultaneousQuestsAndTransferType();
+        }
+
+        _maxSimultaneousQuestsInitialized = true;
+
+        _setMaxSimultaneousQuestsAndInitializeTransferType(maxSimultaneousQuests_);
+    }
+
+    /// @dev ERC-165 interface support
+    function supportsInterface(bytes4 interfaceId) public view virtual override (ERC721, IERC165) returns (bool) {
+        return 
+        interfaceId == type(IAdventurous).interfaceId || 
+        super.supportsInterface(interfaceId);
+    }
+
+    function _doBurn(uint256 tokenId) internal virtual override {
+        _burn(tokenId);
+    }
+
+    function _doTransfer(address from, address to, uint256 tokenId) internal virtual override {
+        _transfer(from, to, tokenId);
+    }
+
+    function _doSafeTransfer(address from, address to, uint256 tokenId, bytes memory data) internal virtual override {
+        _safeTransfer(from, to, tokenId, data);
+    }
+
+    function _ownerOfToken(uint256 tokenId) internal view virtual override returns (address) {
+        return ownerOf(tokenId);
+    }
+
+    /// @dev By default, tokens that are participating in quests are transferrable.  However, if a token is participating
+    /// in a quest on an adventure that was designated as a token locker, the transfer will revert and keep the token
+    /// locked.
+    function _beforeTokenTransfer(address /*from*/, address /*to*/, uint256 firstTokenId, uint256 batchSize) internal virtual override {
+        for (uint256 i = 0; i < batchSize;) {
+            if(blockingQuestCounts[firstTokenId + i] > 0) {
+                revert AdventureERC721__AnActiveQuestIsPreventingTransfers();
+            }
+
+            unchecked {
+                ++i;
+            }
         }
     }
 }

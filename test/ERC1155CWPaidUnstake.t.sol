@@ -117,7 +117,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         wrappedTokenMock.mint(to, tokenId, amount);
         wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
         vm.deal(to, value);
-        vm.expectRevert(ERC1155CW.ERC1155CW__DefaultImplementationOfStakeDoesNotAcceptPayment.selector);
+        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__DefaultImplementationOfStakeDoesNotAcceptPayment.selector);
         tokenMock.stake{value: value}(tokenId, amountToStake);
         vm.stopPrank();
     }
@@ -138,7 +138,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
 
         vm.startPrank(unauthorizedUser);
-        vm.expectRevert(ERC1155CW.ERC1155CW__InsufficientBalanceOfWrappedToken.selector);
+        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__InsufficientBalanceOfWrappedToken.selector);
         tokenMock.stake(tokenId, amountToStake);
         vm.stopPrank();
     }
@@ -160,7 +160,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
 
         vm.startPrank(approvedOperator);
-        vm.expectRevert(ERC1155CW.ERC1155CW__InsufficientBalanceOfWrappedToken.selector);
+        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__InsufficientBalanceOfWrappedToken.selector);
         tokenMock.stake(tokenId, amountToStake);
         vm.stopPrank();
     }
@@ -175,7 +175,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         vm.startPrank(to);
         wrappedTokenMock.mint(to, tokenId, amount);
         wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
-        vm.expectRevert(ERC1155CW.ERC1155CW__AmountMustBeGreaterThanZero.selector);
+        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__AmountMustBeGreaterThanZero.selector);
         tokenMock.stake(tokenId, 0);
         vm.stopPrank();
     }
@@ -197,7 +197,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
 
         vm.startPrank(unauthorizedUser);
-        vm.expectRevert(ERC1155CW.ERC1155CW__InsufficientBalanceOfWrappingToken.selector);
+        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__InsufficientBalanceOfWrappingToken.selector);
         tokenMock.unstake(tokenId, amountToStake);
         vm.stopPrank();
     }
@@ -221,7 +221,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
 
         vm.startPrank(approvedOperator);
-        vm.expectRevert(ERC1155CW.ERC1155CW__InsufficientBalanceOfWrappingToken.selector);
+        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__InsufficientBalanceOfWrappingToken.selector);
         tokenMock.unstake(tokenId, amountToStake);
         vm.stopPrank();
     }
@@ -238,7 +238,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         wrappedTokenMock.mint(to, tokenId, amount);
         wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
         tokenMock.stake(tokenId, amount);
-        vm.expectRevert(ERC1155CW.ERC1155CW__InsufficientBalanceOfWrappingToken.selector);
+        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__InsufficientBalanceOfWrappingToken.selector);
         tokenMock.unstake(tokenId, amountToUnstake);
         vm.stopPrank();
     }
@@ -320,7 +320,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         wrappedTokenMock.mint(to, tokenId, amount);
         wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
         tokenMock.stake(tokenId, amount);
-        vm.expectRevert(ERC1155CW.ERC1155CW__AmountMustBeGreaterThanZero.selector);
+        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__AmountMustBeGreaterThanZero.selector);
         tokenMock.unstake{value: 0}(tokenId, 0);
         vm.stopPrank();
     }
@@ -474,7 +474,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         tokenMock.setStakerConstraints(StakerConstraints.CallerIsTxOrigin);
 
         vm.prank(to, origin);
-        vm.expectRevert(ERC1155CW.ERC1155CW__SmartContractsNotPermittedToStake.selector);
+        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__SmartContractsNotPermittedToStake.selector);
         tokenMock.stake(tokenId, amount);
     }
 
@@ -492,7 +492,7 @@ contract ERC1155CWPaidUnstakeTest is CreatorTokenTransferValidatorERC1155Test {
         tokenMock.setStakerConstraints(StakerConstraints.EOA);
 
         vm.prank(to);
-        vm.expectRevert(ERC1155CW.ERC1155CW__CallerSignatureNotVerifiedInEOARegistry.selector);
+        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__CallerSignatureNotVerifiedInEOARegistry.selector);
         tokenMock.stake(tokenId, amount);
     }
 

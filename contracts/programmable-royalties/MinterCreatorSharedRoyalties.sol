@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../access/OwnablePermissions.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
@@ -10,7 +11,7 @@ import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
  * @author Limit Break, Inc.
  * @dev An NFT mix-in contract implementing programmable royalties.  Royalties are shared between creators and minters.
  */
-abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
+abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
     error MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice();
     error MinterCreatorSharedRoyalties__MinterCannotBeZeroAddress();
     error MinterCreatorSharedRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
@@ -22,33 +23,14 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
     }
 
     uint256 public constant FEE_DENOMINATOR = 10_000;
-    uint256 public immutable royaltyFeeNumerator;
-    uint256 public immutable minterShares;
-    uint256 public immutable creatorShares;
-    address public immutable creator;
+    uint256 public royaltyFeeNumerator;
+    uint256 public minterShares;
+    uint256 public creatorShares;
+    address public creator;
 
     mapping (uint256 => address) private _minters;
     mapping (uint256 => address) private _paymentSplitters;
     mapping (address => address[]) private _minterPaymentSplitters;
-
-    /**
-     * @dev Constructor that sets the royalty fee numerator, creator, and minter/creator shares.
-     * @dev Throws when defaultRoyaltyFeeNumerator_ is greater than FEE_DENOMINATOR
-     * @param royaltyFeeNumerator_ The royalty fee numerator
-     * @param minterShares_  The number of shares minters get allocated in payment processors
-     * @param creatorShares_ The number of shares creators get allocated in payment processors
-     * @param creator_       The NFT creator's royalty wallet
-     */
-    constructor(uint256 royaltyFeeNumerator_, uint256 minterShares_, uint256 creatorShares_, address creator_) {
-        if(royaltyFeeNumerator_ > FEE_DENOMINATOR) {
-            revert MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice();
-        }
-
-        royaltyFeeNumerator = royaltyFeeNumerator_;
-        minterShares = minterShares_;
-        creatorShares = creatorShares_;
-        creator = creator_;
-    }
 
     /**
      * @notice Indicates whether the contract implements the specified interface.
@@ -232,5 +214,54 @@ abstract contract MinterCreatorSharedRoyalties is IERC2981, ERC165 {
         }
 
         return PaymentSplitter(payable(paymentSplitterForToken));
+    }
+
+    function _setRoyaltyFeeNumeratorAndShares(uint256 royaltyFeeNumerator_, uint256 minterShares_, uint256 creatorShares_, address creator_) internal {
+        if(royaltyFeeNumerator_ > FEE_DENOMINATOR) {
+            revert MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice();
+        }
+
+        royaltyFeeNumerator = royaltyFeeNumerator_;
+        minterShares = minterShares_;
+        creatorShares = creatorShares_;
+        creator = creator_;
+    }
+}
+
+abstract contract MinterCreatorSharedRoyalties is MinterCreatorSharedRoyaltiesBase {
+
+    /**
+     * @dev Constructor that sets the royalty fee numerator, creator, and minter/creator shares.
+     * @dev Throws when defaultRoyaltyFeeNumerator_ is greater than FEE_DENOMINATOR
+     * @param royaltyFeeNumerator_ The royalty fee numerator
+     * @param minterShares_  The number of shares minters get allocated in payment processors
+     * @param creatorShares_ The number of shares creators get allocated in payment processors
+     * @param creator_       The NFT creator's royalty wallet
+     */
+    constructor(uint256 royaltyFeeNumerator_, uint256 minterShares_, uint256 creatorShares_, address creator_) {
+        _setRoyaltyFeeNumeratorAndShares(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_);
+    }
+}
+
+abstract contract MinterCreatorSharedRoyaltiesInitializable is OwnablePermissions, MinterCreatorSharedRoyaltiesBase {
+
+    error MinterCreatorSharedRoyaltiesInitializable__RoyaltyFeeAndSharesAlreadyInitialized();
+
+    bool private _royaltyFeeAndSharesInitialized;
+
+    function initializeMinterRoyaltyFee(
+        uint256 royaltyFeeNumerator_, 
+        uint256 minterShares_, 
+        uint256 creatorShares_, 
+        address creator_) public {
+        _requireCallerIsContractOwner();
+
+        if(_royaltyFeeAndSharesInitialized) {
+            revert MinterCreatorSharedRoyaltiesInitializable__RoyaltyFeeAndSharesAlreadyInitialized();
+        }
+
+        _royaltyFeeAndSharesInitialized = true;
+
+        _setRoyaltyFeeNumeratorAndShares(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_);
     }
 }

@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../../access/OwnableBasic.sol";
 import "../../erc721c/AdventureERC721C.sol";
 import "../../programmable-royalties/MinterRoyaltiesReassignableRightsNFT.sol";
 
-contract AdventureERC721CWithReassignableMinterRoyalties is AdventureERC721C, MinterRoyaltiesReassignableRightsNFT {
+contract AdventureERC721CWithReassignableMinterRoyalties is OwnableBasic, AdventureERC721C, MinterRoyaltiesReassignableRightsNFT {
 
     constructor(
         uint256 royaltyFeeNumerator_,
@@ -12,7 +13,8 @@ contract AdventureERC721CWithReassignableMinterRoyalties is AdventureERC721C, Mi
         uint256 maxSimultaneousQuests_,
         string memory name_,
         string memory symbol_) 
-        AdventureERC721C(maxSimultaneousQuests_, name_, symbol_) 
+        AdventureERC721(maxSimultaneousQuests_)
+        ERC721OpenZeppelin(name_, symbol_) 
         MinterRoyaltiesReassignableRightsNFT(royaltyFeeNumerator_, royaltyRightsNFTReference_) {
     }
 

@@ -2,9 +2,10 @@
 
 pragma solidity 0.8.9;
 
+import "../../contracts/access/OwnableBasic.sol";
 import "../../contracts/erc1155c/presets/ERC1155CWPaidUnstake.sol";
 
-contract ERC1155CWPaidUnstakeMock is ERC1155CWPaidUnstake {
+contract ERC1155CWPaidUnstakeMock is OwnableBasic, ERC1155CWPaidUnstake {
     
     constructor(
         uint256 unstakeUnitPrice_, 

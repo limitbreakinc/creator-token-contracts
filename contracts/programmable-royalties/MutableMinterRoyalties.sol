@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../access/OwnablePermissions.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
@@ -10,7 +11,7 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
  * @dev An NFT mix-in contract implementing programmable royalties for minters, allowing the minter of each token ID to 
  *      update the royalty fee percentage.
  */
-abstract contract MutableMinterRoyalties is IERC2981, ERC165 {
+abstract contract MutableMinterRoyaltiesBase is IERC2981, ERC165 {
 
     error MutableMinterRoyalties__MinterCannotBeZeroAddress();
     error MutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
@@ -23,25 +24,12 @@ abstract contract MutableMinterRoyalties is IERC2981, ERC165 {
     }
 
     uint96 public constant FEE_DENOMINATOR = 10_000;
-    uint96 public immutable defaultRoyaltyFeeNumerator;
+    uint96 public defaultRoyaltyFeeNumerator;
 
     mapping (uint256 => RoyaltyInfo) private _tokenRoyaltyInfo;
 
     /// @dev Emitted when royalty is set.
     event RoyaltySet(uint256 indexed tokenId, address indexed receiver, uint96 feeNumerator);
-
-    /**
-     * @dev Constructor that sets the default royalty fee numerator.
-     * @dev Throws when defaultRoyaltyFeeNumerator_ is greater than FEE_DENOMINATOR
-     * @param defaultRoyaltyFeeNumerator_ The default royalty fee numerator
-     */
-    constructor(uint96 defaultRoyaltyFeeNumerator_) {
-        if(defaultRoyaltyFeeNumerator_ > FEE_DENOMINATOR) {
-            revert MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
-        }
-
-        defaultRoyaltyFeeNumerator = defaultRoyaltyFeeNumerator_;
-    }
 
     /**
      * @notice Allows the minter to update the royalty fee percentage for a specific token ID.
@@ -133,5 +121,38 @@ abstract contract MutableMinterRoyalties is IERC2981, ERC165 {
         delete _tokenRoyaltyInfo[tokenId];
 
         emit RoyaltySet(tokenId, address(0), defaultRoyaltyFeeNumerator);
+    }
+
+    function _setDefaultRoyaltyFee(uint96 defaultRoyaltyFeeNumerator_) internal {
+        if(defaultRoyaltyFeeNumerator_ > FEE_DENOMINATOR) {
+            revert MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
+        }
+
+        defaultRoyaltyFeeNumerator = defaultRoyaltyFeeNumerator_;
+    }
+}
+
+abstract contract MutableMinterRoyalties is MutableMinterRoyaltiesBase {
+    constructor(uint96 defaultRoyaltyFeeNumerator_) {
+        _setDefaultRoyaltyFee(defaultRoyaltyFeeNumerator_);
+    }
+}
+
+abstract contract MutableMinterRoyaltiesInitializable is OwnablePermissions, MutableMinterRoyaltiesBase {
+
+    error MutableMinterRoyaltiesInitializable__DefaultMinterRoyaltyFeeAlreadyInitialized();
+
+    bool private _defaultMinterRoyaltyFeeInitialized;
+
+    function initializeDefaultMinterRoyaltyFee(uint96 defaultRoyaltyFeeNumerator_) public {
+        _requireCallerIsContractOwner();
+
+        if(_defaultMinterRoyaltyFeeInitialized) {
+            revert MutableMinterRoyaltiesInitializable__DefaultMinterRoyaltyFeeAlreadyInitialized();
+        }
+
+        _defaultMinterRoyaltyFeeInitialized = true;
+
+        _setDefaultRoyaltyFee(defaultRoyaltyFeeNumerator_);
     }
 }

@@ -1,21 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../../access/OwnableBasic.sol";
 import "../../erc721c/AdventureERC721C.sol";
 import "../../programmable-royalties/MutableMinterRoyalties.sol";
 
-contract ERC721CWithMutableMinterRoyalties is AdventureERC721C, MutableMinterRoyalties {
+contract ERC721CWithMutableMinterRoyalties is OwnableBasic, AdventureERC721C, MutableMinterRoyalties {
 
     constructor(
         uint96 defaultRoyaltyFeeNumerator_,
         uint256 maxSimultaneousQuests_,
         string memory name_,
         string memory symbol_) 
-        AdventureERC721C(maxSimultaneousQuests_, name_, symbol_) 
+        AdventureERC721(maxSimultaneousQuests_)
+        ERC721OpenZeppelin(name_, symbol_) 
         MutableMinterRoyalties(defaultRoyaltyFeeNumerator_) {
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AdventureERC721C, MutableMinterRoyalties) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AdventureERC721C, MutableMinterRoyaltiesBase) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

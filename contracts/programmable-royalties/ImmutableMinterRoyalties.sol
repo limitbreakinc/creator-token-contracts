@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../access/OwnablePermissions.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
@@ -9,28 +10,16 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
  * @author Limit Break, Inc.
  * @dev An NFT mix-in contract implementing programmable royalties for minters
  */
-abstract contract ImmutableMinterRoyalties is IERC2981, ERC165 {
+abstract contract ImmutableMinterRoyaltiesBase is IERC2981, ERC165 {
 
     error ImmutableMinterRoyalties__MinterCannotBeZeroAddress();
     error ImmutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
     error ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
 
     uint256 public constant FEE_DENOMINATOR = 10_000;
-    uint256 public immutable royaltyFeeNumerator;
+    uint256 public royaltyFeeNumerator;
 
     mapping (uint256 => address) private _minters;
-
-    /**
-     * @dev Constructor that sets the royalty fee numerator.
-     * @param royaltyFeeNumerator_ The royalty fee numerator
-     */
-    constructor(uint256 royaltyFeeNumerator_) {
-        if(royaltyFeeNumerator_ > FEE_DENOMINATOR) {
-            revert ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
-        }
-
-        royaltyFeeNumerator = royaltyFeeNumerator_;
-    }
 
     /**
      * @notice Indicates whether the contract implements the specified interface.
@@ -83,5 +72,38 @@ abstract contract ImmutableMinterRoyalties is IERC2981, ERC165 {
      */
     function _onBurned(uint256 tokenId) internal {
         delete _minters[tokenId];
+    }
+
+    function _setRoyaltyFeeNumerator(uint256 royaltyFeeNumerator_) internal {
+        if(royaltyFeeNumerator_ > FEE_DENOMINATOR) {
+            revert ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
+        }
+
+        royaltyFeeNumerator = royaltyFeeNumerator_;
+    }
+}
+
+abstract contract ImmutableMinterRoyalties is ImmutableMinterRoyaltiesBase {
+    constructor(uint256 royaltyFeeNumerator_) {
+        _setRoyaltyFeeNumerator(royaltyFeeNumerator_);
+    }
+}
+
+abstract contract ImmutableMinterRoyaltiesInitializable is OwnablePermissions, ImmutableMinterRoyaltiesBase {
+
+    error ImmutableMinterRoyaltiesInitializable__MinterRoyaltyFeeAlreadyInitialized();
+
+    bool private _minterRoyaltyFeeInitialized;
+
+    function initializeMinterRoyaltyFee(uint256 royaltyFeeNumerator_) public {
+        _requireCallerIsContractOwner();
+
+        if(_minterRoyaltyFeeInitialized) {
+            revert ImmutableMinterRoyaltiesInitializable__MinterRoyaltyFeeAlreadyInitialized();
+        }
+
+        _minterRoyaltyFeeInitialized = true;
+
+        _setRoyaltyFeeNumerator(royaltyFeeNumerator_);
     }
 }
