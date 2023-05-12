@@ -9,13 +9,15 @@ abstract contract OwnableInitializable is OwnablePermissions, Ownable {
 
     error InitializableOwnable__OwnerAlreadyInitialized();
 
+    bool private _ownerInitialized;
+
     /**
      * @dev When EIP-1167 is used to clone a contract that inherits Ownable permissions,
      * this is required to assign the initial contract owner, as the constructor is
      * not called during the cloning process.
      */
     function initializeOwner(address owner_) public {
-      if(owner() != address(0)) {
+      if (owner() != address(0) || _ownerInitialized) {
           revert InitializableOwnable__OwnerAlreadyInitialized();
       }
 
