@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../../access/OwnableBasic.sol";
 import "../../erc721c/ERC721C.sol";
 import "../../programmable-royalties/MinterRoyaltiesReassignableRightsNFT.sol";
 
-contract ERC721CWithReassignableMinterRoyalties is ERC721C, MinterRoyaltiesReassignableRightsNFT {
+contract ERC721CWithReassignableMinterRoyalties is OwnableBasic, ERC721C, MinterRoyaltiesReassignableRightsNFT {
 
     constructor(
         uint256 royaltyFeeNumerator_,
         address royaltyRightsNFTReference_,
         string memory name_,
         string memory symbol_) 
-        ERC721C(name_, symbol_) 
+        ERC721OpenZeppelin(name_, symbol_) 
         MinterRoyaltiesReassignableRightsNFT(royaltyFeeNumerator_, royaltyRightsNFTReference_) {
     }
 

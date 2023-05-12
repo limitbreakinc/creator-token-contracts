@@ -62,7 +62,7 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
 
     function testRevertsWhenFeeNumeratorExceedsSalesPrice(uint96 royaltyFeeNumerator) public {
         vm.assume(royaltyFeeNumerator > tokenMock.FEE_DENOMINATOR());
-        vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
+        vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
         new ERC721ACWithMutableMinterRoyalties(royaltyFeeNumerator, "Test", "TEST");
     }
 
@@ -174,7 +174,7 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
         _mintToken(address(tokenMock), minter, quantity);
 
         for (uint256 tokenId = nextTokenId; tokenId <= lastTokenId; ++tokenId) {
-            vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
+            vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
             tokenMock.setRoyaltyFee(tokenId, royaltyFeeNumerator);
         }
     }
@@ -192,7 +192,7 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
         _mintToken(address(tokenMock), minter, quantity);
 
         for (uint256 tokenId = nextTokenId; tokenId <= lastTokenId; ++tokenId) {
-            vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
+            vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
             tokenMock.setRoyaltyFee(tokenId, royaltyFeeNumerator);
         }
     }
@@ -215,13 +215,13 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
         _mintToken(address(tokenMock), minter2, quantity2);
 
         for (uint256 tokenId = nextTokenId; tokenId <= lastTokenId; ++tokenId) {
-            vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
+            vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
             vm.prank(minter2);
             tokenMock.setRoyaltyFee(tokenId, royaltyFeeNumerator);
         }
 
         for (uint256 tokenIdMinter2 = nextTokenId2; tokenIdMinter2 <= lastTokenId2; ++tokenIdMinter2) {
-            vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
+            vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
             vm.prank(minter);
             tokenMock.setRoyaltyFee(tokenIdMinter2, royaltyFeeNumerator);
         }

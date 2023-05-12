@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../access/OwnablePermissions.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
@@ -9,28 +10,16 @@ import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
  * @author Limit Break, Inc.
  * @dev An NFT mix-in contract implementing programmable royalties for minters
  */
-abstract contract ImmutableMinterRoyalties is IERC2981, ERC165 {
+abstract contract ImmutableMinterRoyaltiesBase is IERC2981, ERC165 {
 
     error ImmutableMinterRoyalties__MinterCannotBeZeroAddress();
     error ImmutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
     error ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
 
     uint256 public constant FEE_DENOMINATOR = 10_000;
-    uint256 public immutable royaltyFeeNumerator;
+    uint256 private _royaltyFeeNumerator;
 
     mapping (uint256 => address) private _minters;
-
-    /**
-     * @dev Constructor that sets the royalty fee numerator.
-     * @param royaltyFeeNumerator_ The royalty fee numerator
-     */
-    constructor(uint256 royaltyFeeNumerator_) {
-        if(royaltyFeeNumerator_ > FEE_DENOMINATOR) {
-            revert ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
-        }
-
-        royaltyFeeNumerator = royaltyFeeNumerator_;
-    }
 
     /**
      * @notice Indicates whether the contract implements the specified interface.
@@ -40,6 +29,10 @@ abstract contract ImmutableMinterRoyalties is IERC2981, ERC165 {
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function royaltyFeeNumerator() public virtual view returns (uint256) {
+        return _royaltyFeeNumerator;
     }
 
     /**
@@ -54,7 +47,7 @@ abstract contract ImmutableMinterRoyalties is IERC2981, ERC165 {
         uint256 tokenId,
         uint256 salePrice
     ) external view override returns (address receiver, uint256 royaltyAmount) {
-        return (_minters[tokenId], (salePrice * royaltyFeeNumerator) / FEE_DENOMINATOR);
+        return (_minters[tokenId], (salePrice * royaltyFeeNumerator()) / FEE_DENOMINATOR);
     }
 
     /**
@@ -83,5 +76,46 @@ abstract contract ImmutableMinterRoyalties is IERC2981, ERC165 {
      */
     function _onBurned(uint256 tokenId) internal {
         delete _minters[tokenId];
+    }
+
+    function _setRoyaltyFeeNumerator(uint256 royaltyFeeNumerator_) internal {
+        if(royaltyFeeNumerator_ > FEE_DENOMINATOR) {
+            revert ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
+        }
+
+        _royaltyFeeNumerator = royaltyFeeNumerator_;
+    }
+}
+
+abstract contract ImmutableMinterRoyalties is ImmutableMinterRoyaltiesBase {
+
+    uint256 private immutable _royaltyFeeNumeratorImmutable;
+
+    constructor(uint256 royaltyFeeNumerator_) {
+        _setRoyaltyFeeNumerator(royaltyFeeNumerator_);
+        _royaltyFeeNumeratorImmutable = royaltyFeeNumerator_;
+    }
+
+    function royaltyFeeNumerator() public view override returns (uint256) {
+        return _royaltyFeeNumeratorImmutable;
+    }
+}
+
+abstract contract ImmutableMinterRoyaltiesInitializable is OwnablePermissions, ImmutableMinterRoyaltiesBase {
+
+    error ImmutableMinterRoyaltiesInitializable__MinterRoyaltyFeeAlreadyInitialized();
+
+    bool private _minterRoyaltyFeeInitialized;
+
+    function initializeMinterRoyaltyFee(uint256 royaltyFeeNumerator_) public {
+        _requireCallerIsContractOwner();
+
+        if(_minterRoyaltyFeeInitialized) {
+            revert ImmutableMinterRoyaltiesInitializable__MinterRoyaltyFeeAlreadyInitialized();
+        }
+
+        _minterRoyaltyFeeInitialized = true;
+
+        _setRoyaltyFeeNumerator(royaltyFeeNumerator_);
     }
 }

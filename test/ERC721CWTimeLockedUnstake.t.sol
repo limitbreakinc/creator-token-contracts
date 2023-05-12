@@ -99,7 +99,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         wrappedTokenMock.mint(to, tokenId);
         wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
         vm.deal(to, value);
-        vm.expectRevert(ERC721CW.ERC721CW__DefaultImplementationOfStakeDoesNotAcceptPayment.selector);
+        vm.expectRevert(ERC721WrapperBase.ERC721WrapperBase__DefaultImplementationOfStakeDoesNotAcceptPayment.selector);
         tokenMock.stake{value: value}(tokenId);
         vm.stopPrank();
     }
@@ -116,7 +116,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.stopPrank();
 
         vm.startPrank(unauthorizedUser);
-        vm.expectRevert(ERC721CW.ERC721CW__CallerNotOwnerOfWrappedToken.selector);
+        vm.expectRevert(ERC721WrapperBase.ERC721WrapperBase__CallerNotOwnerOfWrappedToken.selector);
         tokenMock.stake(tokenId);
         vm.stopPrank();
     }
@@ -134,7 +134,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.stopPrank();
 
         vm.startPrank(approvedOperator);
-        vm.expectRevert(ERC721CW.ERC721CW__CallerNotOwnerOfWrappedToken.selector);
+        vm.expectRevert(ERC721WrapperBase.ERC721WrapperBase__CallerNotOwnerOfWrappedToken.selector);
         tokenMock.stake(tokenId);
         vm.stopPrank();
     }
@@ -152,7 +152,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.stopPrank();
 
         vm.startPrank(unauthorizedUser);
-        vm.expectRevert(ERC721CW.ERC721CW__CallerNotOwnerOfWrappingToken.selector);
+        vm.expectRevert(ERC721WrapperBase.ERC721WrapperBase__CallerNotOwnerOfWrappingToken.selector);
         tokenMock.unstake(tokenId);
         vm.stopPrank();
     }
@@ -172,7 +172,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.stopPrank();
 
         vm.startPrank(approvedOperator);
-        vm.expectRevert(ERC721CW.ERC721CW__CallerNotOwnerOfWrappingToken.selector);
+        vm.expectRevert(ERC721WrapperBase.ERC721WrapperBase__CallerNotOwnerOfWrappingToken.selector);
         tokenMock.unstake(tokenId);
         vm.stopPrank();
     }
@@ -284,7 +284,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         uint256 maxSecondsPast = type(uint256).max - expirationTimestamp;
         vm.assume(secondsPastExpiration < maxSecondsPast);
         vm.warp(expirationTimestamp + secondsPastExpiration);
-        vm.expectRevert(ERC721CW.ERC721CW__DefaultImplementationOfUnstakeDoesNotAcceptPayment.selector);
+        vm.expectRevert(ERC721WrapperBase.ERC721WrapperBase__DefaultImplementationOfUnstakeDoesNotAcceptPayment.selector);
         tokenMock.unstake{value: value}(tokenId);
         vm.stopPrank();
     }
@@ -390,7 +390,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         tokenMock.setStakerConstraints(StakerConstraints.CallerIsTxOrigin);
 
         vm.prank(to, origin);
-        vm.expectRevert(ERC721CW.ERC721CW__SmartContractsNotPermittedToStake.selector);
+        vm.expectRevert(ERC721WrapperBase.ERC721WrapperBase__SmartContractsNotPermittedToStake.selector);
         tokenMock.stake(tokenId);
     }
 
@@ -406,7 +406,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         tokenMock.setStakerConstraints(StakerConstraints.EOA);
 
         vm.prank(to);
-        vm.expectRevert(ERC721CW.ERC721CW__CallerSignatureNotVerifiedInEOARegistry.selector);
+        vm.expectRevert(ERC721WrapperBase.ERC721WrapperBase__CallerSignatureNotVerifiedInEOARegistry.selector);
         tokenMock.stake(tokenId);
     }
 

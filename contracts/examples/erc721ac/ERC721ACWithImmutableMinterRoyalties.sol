@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../../access/OwnableBasic.sol";
 import "../../erc721c/ERC721AC.sol";
 import "../../programmable-royalties/ImmutableMinterRoyalties.sol";
 
-contract ERC721ACWithImmutableMinterRoyalties is ERC721AC, ImmutableMinterRoyalties {
+contract ERC721ACWithImmutableMinterRoyalties is OwnableBasic, ERC721AC, ImmutableMinterRoyalties {
 
     constructor(
         uint256 royaltyFeeNumerator_,
@@ -14,7 +15,7 @@ contract ERC721ACWithImmutableMinterRoyalties is ERC721AC, ImmutableMinterRoyalt
         ImmutableMinterRoyalties(royaltyFeeNumerator_) {
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, ImmutableMinterRoyalties) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, ImmutableMinterRoyaltiesBase) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

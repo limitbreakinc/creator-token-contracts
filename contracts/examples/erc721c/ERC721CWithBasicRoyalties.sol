@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../../access/OwnableBasic.sol";
 import "../../erc721c/ERC721C.sol";
 import "../../programmable-royalties/BasicRoyalties.sol";
 
-contract ERC721CWithBasicRoyalties is ERC721C, BasicRoyalties {
+contract ERC721CWithBasicRoyalties is OwnableBasic, ERC721C, BasicRoyalties {
 
     constructor(
         address royaltyReceiver_,
         uint96 royaltyFeeNumerator_,
         string memory name_,
         string memory symbol_) 
-        ERC721C(name_, symbol_) 
+        ERC721OpenZeppelin(name_, symbol_) 
         BasicRoyalties(royaltyReceiver_, royaltyFeeNumerator_) {
     }
 
@@ -31,11 +32,13 @@ contract ERC721CWithBasicRoyalties is ERC721C, BasicRoyalties {
         _burn(tokenId);
     }
 
-    function setDefaultRoyalty(address receiver, uint96 feeNumerator) public onlyOwner {
+    function setDefaultRoyalty(address receiver, uint96 feeNumerator) public {
+        _requireCallerIsContractOwner();
         _setDefaultRoyalty(receiver, feeNumerator);
     }
 
-    function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) public onlyOwner {
+    function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) public {
+        _requireCallerIsContractOwner();
         _setTokenRoyalty(tokenId, receiver, feeNumerator);
     }
 }

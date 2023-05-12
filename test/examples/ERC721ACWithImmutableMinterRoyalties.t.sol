@@ -42,7 +42,7 @@ contract ERC721ACWithImmutableMinterRoyaltiesTest is CreatorTokenTransferValidat
 
     function testRevertsWhenFeeNumeratorExceedsSalesPrice(uint256 royaltyFeeNumerator) public {
         vm.assume(royaltyFeeNumerator > tokenMock.FEE_DENOMINATOR());
-        vm.expectRevert(ImmutableMinterRoyalties.ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
+        vm.expectRevert(ImmutableMinterRoyaltiesBase.ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
         new ERC721ACWithImmutableMinterRoyalties(royaltyFeeNumerator, "Test", "TEST");
     }
 

@@ -2,8 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./ClaimPeriodBase.sol";
-import "./MaxSupplyBase.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "./MaxSupply.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 /**
@@ -12,7 +11,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
  * @notice A contract mix-in that may optionally be used with extend ERC-721 tokens with merkle-proof based whitelist minting capabilities.
  * @dev Inheriting contracts must implement `_mintToken`.
  */
-abstract contract MerkleWhitelistMint is ClaimPeriodBase, MaxSupplyBase {
+abstract contract MerkleWhitelistMintBase is ClaimPeriodBase, MaxSupplyBase {
     error MerkleWhitelistMint__AddressHasAlreadyClaimed();
     error MerkleWhitelistMint__CannotClaimMoreThanMaximumAmountOfMerkleMints();
     error MerkleWhitelistMint__InvalidProof();
@@ -36,21 +35,6 @@ abstract contract MerkleWhitelistMint is ClaimPeriodBase, MaxSupplyBase {
 
     /// @notice Emitted when a merkle root is updated
     event MerkleRootUpdated(bytes32 merkleRoot_);
-
-    constructor(
-        uint256 maxMerkleMints_, 
-        uint256 permittedNumberOfMerkleRootChanges_) {
-        if(maxMerkleMints_ == 0) {
-            revert MerkleWhitelistMint__MaxMintsMustBeGreaterThanZero();
-        }
-
-        if (permittedNumberOfMerkleRootChanges_ == 0) {
-            revert MerkleWhitelistMint__PermittedNumberOfMerkleRootChangesMustBeGreaterThanZero();
-        }
-
-        _remainingMerkleMints = maxMerkleMints_;
-        _remainingNumberOfMerkleRootChanges = permittedNumberOfMerkleRootChanges_;
-    }
 
     /// @notice Mints the specified quantity to the calling address if the submitted merkle proof successfully verifies the reserved quantity for the caller in the whitelist.
     ///
@@ -97,7 +81,9 @@ abstract contract MerkleWhitelistMint is ClaimPeriodBase, MaxSupplyBase {
     ///
     /// Throws if the `merkleRootChangable` boolean is false
     /// Throws if provided merkle root is 0
-    function setMerkleRoot(bytes32 merkleRoot_) external onlyOwner {
+    function setMerkleRoot(bytes32 merkleRoot_) external {
+        _requireCallerIsContractOwner();
+
         if(_remainingNumberOfMerkleRootChanges == 0) {
             revert MerkleWhitelistMint__MerkleRootImmutable();
         }
@@ -128,5 +114,61 @@ abstract contract MerkleWhitelistMint is ClaimPeriodBase, MaxSupplyBase {
     /// @notice Returns true if the account already claimed their whitelist mint, false otherwise
     function isWhitelistClaimed(address account) external view returns (bool) {
         return whitelistClaimed[account];
+    }
+
+    function _setMaxMerkleMintsAndPermittedNumberOfMerkleRootChanges(
+        uint256 maxMerkleMints_, 
+        uint256 permittedNumberOfMerkleRootChanges_) internal {
+
+        if(maxMerkleMints_ == 0) {
+            revert MerkleWhitelistMint__MaxMintsMustBeGreaterThanZero();
+        }
+
+        if (permittedNumberOfMerkleRootChanges_ == 0) {
+            revert MerkleWhitelistMint__PermittedNumberOfMerkleRootChangesMustBeGreaterThanZero();
+        }
+
+        _remainingMerkleMints = maxMerkleMints_;
+        _remainingNumberOfMerkleRootChanges = permittedNumberOfMerkleRootChanges_;
+
+        _initializeNextTokenIdCounter();
+    }
+}
+
+abstract contract MerkleWhitelistMint is MerkleWhitelistMintBase, MaxSupply {
+    constructor(uint256 maxMerkleMints_, uint256 permittedNumberOfMerkleRootChanges_) {
+        _setMaxMerkleMintsAndPermittedNumberOfMerkleRootChanges(
+            maxMerkleMints_,
+            permittedNumberOfMerkleRootChanges_
+        );
+    }
+
+    function maxSupply() public view override(MaxSupplyBase, MaxSupply) returns (uint256) {
+        return MaxSupply(address(this)).maxSupply();
+    }
+}
+
+abstract contract MerkleWhitelistMintInitializable is MerkleWhitelistMintBase, MaxSupplyInitializable {
+    
+    error MerkleWhitelistMintInitializable__MerkleSupplyAlreadyInitialized();
+
+    /// @dev Flag indicating that the merkle mint max supply has been initialized.
+    bool private _merkleSupplyInitialized;
+
+    function initializeMaxMerkleMintsAndPermittedNumberOfMerkleRootChanges(
+        uint256 maxMerkleMints_, 
+        uint256 permittedNumberOfMerkleRootChanges_) public {
+        _requireCallerIsContractOwner();
+
+        if(_merkleSupplyInitialized) {
+            revert MerkleWhitelistMintInitializable__MerkleSupplyAlreadyInitialized();
+        }
+
+        _merkleSupplyInitialized = true;
+
+        _setMaxMerkleMintsAndPermittedNumberOfMerkleRootChanges(
+            maxMerkleMints_,
+            permittedNumberOfMerkleRootChanges_
+        );
     }
 }

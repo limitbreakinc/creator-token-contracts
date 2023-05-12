@@ -55,7 +55,7 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
         vm.assume(minterShares > 0 && minterShares < 10000);
         vm.assume(creatorShares > 0 && creatorShares < 10000);
         vm.assume(royaltyFeeNumerator > tokenMock.FEE_DENOMINATOR());
-        vm.expectRevert(MinterCreatorSharedRoyalties.MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
+        vm.expectRevert(MinterCreatorSharedRoyaltiesBase.MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
         new ERC721ACWithMinterCreatorSharedRoyalties(royaltyFeeNumerator, minterShares, creatorShares, creator, "Test", "TEST");
     }
 
@@ -109,10 +109,10 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
             assertEq(minterShares, 25);
             assertEq(creatorShares, 75);
     
-            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyalties.ReleaseTo.Minter), 0.25 ether);
-            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyalties.ReleaseTo.Creator), 0.75 ether);
-            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyalties.ReleaseTo.Minter), 0.25 ether);
-            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyalties.ReleaseTo.Creator), 0.75 ether);
+            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyaltiesBase.ReleaseTo.Minter), 0.25 ether);
+            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyaltiesBase.ReleaseTo.Creator), 0.75 ether);
+            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyaltiesBase.ReleaseTo.Minter), 0.25 ether);
+            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyaltiesBase.ReleaseTo.Creator), 0.75 ether);
         }
     }
 
@@ -163,10 +163,10 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
             assertEq(minterShares, 25);
             assertEq(creatorShares, 75);
     
-            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyalties.ReleaseTo.Minter), 0.25 ether);
-            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyalties.ReleaseTo.Creator), 0.75 ether);
-            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyalties.ReleaseTo.Minter), 0.25 ether);
-            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyalties.ReleaseTo.Creator), 0.75 ether);
+            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyaltiesBase.ReleaseTo.Minter), 0.25 ether);
+            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyaltiesBase.ReleaseTo.Creator), 0.75 ether);
+            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyaltiesBase.ReleaseTo.Minter), 0.25 ether);
+            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyaltiesBase.ReleaseTo.Creator), 0.75 ether);
         }
     }
 
@@ -238,10 +238,10 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
             assertEq(minterShares, 25);
             assertEq(creatorShares, 75);
     
-            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyalties.ReleaseTo.Minter), 0.25 ether);
-            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyalties.ReleaseTo.Creator), 0.75 ether);
-            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyalties.ReleaseTo.Minter), 0.25 ether);
-            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyalties.ReleaseTo.Creator), 0.75 ether);
+            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyaltiesBase.ReleaseTo.Minter), 0.25 ether);
+            assertEq(tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyaltiesBase.ReleaseTo.Creator), 0.75 ether);
+            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyaltiesBase.ReleaseTo.Minter), 0.25 ether);
+            assertEq(tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyaltiesBase.ReleaseTo.Creator), 0.75 ether);
         }
     }
 
@@ -251,17 +251,17 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
         vm.assume(minter.code.length == 0);
         vm.assume(minter != defaultTokenCreator);
 
-        vm.expectRevert(MinterCreatorSharedRoyalties.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
-        tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyalties.ReleaseTo.Minter);
+        vm.expectRevert(MinterCreatorSharedRoyaltiesBase.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
+        tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyaltiesBase.ReleaseTo.Minter);
 
-        vm.expectRevert(MinterCreatorSharedRoyalties.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
-        tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyalties.ReleaseTo.Creator);
+        vm.expectRevert(MinterCreatorSharedRoyaltiesBase.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
+        tokenMock.releasableNativeFunds(tokenId, MinterCreatorSharedRoyaltiesBase.ReleaseTo.Creator);
 
-        vm.expectRevert(MinterCreatorSharedRoyalties.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
-        tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyalties.ReleaseTo.Minter);
+        vm.expectRevert(MinterCreatorSharedRoyaltiesBase.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
+        tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyaltiesBase.ReleaseTo.Minter);
 
-        vm.expectRevert(MinterCreatorSharedRoyalties.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
-        tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyalties.ReleaseTo.Creator);
+        vm.expectRevert(MinterCreatorSharedRoyaltiesBase.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
+        tokenMock.releasableERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyaltiesBase.ReleaseTo.Creator);
     }
 
     function testRevertsWhenReleasingFundsForNonExistentTokenId(address minter, uint256 tokenId) public {
@@ -270,16 +270,16 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
         vm.assume(minter.code.length == 0);
         vm.assume(minter != defaultTokenCreator);
 
-        vm.expectRevert(MinterCreatorSharedRoyalties.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
-        tokenMock.releaseNativeFunds(tokenId, MinterCreatorSharedRoyalties.ReleaseTo.Minter);
+        vm.expectRevert(MinterCreatorSharedRoyaltiesBase.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
+        tokenMock.releaseNativeFunds(tokenId, MinterCreatorSharedRoyaltiesBase.ReleaseTo.Minter);
 
-        vm.expectRevert(MinterCreatorSharedRoyalties.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
-        tokenMock.releaseNativeFunds(tokenId, MinterCreatorSharedRoyalties.ReleaseTo.Creator);
+        vm.expectRevert(MinterCreatorSharedRoyaltiesBase.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
+        tokenMock.releaseNativeFunds(tokenId, MinterCreatorSharedRoyaltiesBase.ReleaseTo.Creator);
 
-        vm.expectRevert(MinterCreatorSharedRoyalties.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
-        tokenMock.releaseERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyalties.ReleaseTo.Minter);
+        vm.expectRevert(MinterCreatorSharedRoyaltiesBase.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
+        tokenMock.releaseERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyaltiesBase.ReleaseTo.Minter);
 
-        vm.expectRevert(MinterCreatorSharedRoyalties.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
-        tokenMock.releaseERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyalties.ReleaseTo.Creator);
+        vm.expectRevert(MinterCreatorSharedRoyaltiesBase.MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId.selector);
+        tokenMock.releaseERC20Funds(tokenId, address(coinMock), MinterCreatorSharedRoyaltiesBase.ReleaseTo.Creator);
     }
 }

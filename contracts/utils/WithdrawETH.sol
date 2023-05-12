@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../access/OwnablePermissions.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
@@ -8,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @author Limit Break, Inc.
  * @notice A mix-in that can be combined with any ownable contract to enable the contract owner to withdraw ETH from the contract.
  */
-abstract contract WithdrawETH is Ownable {
+abstract contract WithdrawETH is OwnablePermissions {
 
     error WithdrawETH__AmountMustBeGreaterThanZero();
     error WithdrawETH__RecipientMustBeNonZeroAddress();
@@ -30,7 +31,9 @@ abstract contract WithdrawETH is Ownable {
     /// Postconditions:
     /// ---------------
     /// The specified amount of ETH has been sent to the specified recipient.
-    function withdrawETH(address payable recipient, uint256 amount) external onlyOwner {
+    function withdrawETH(address payable recipient, uint256 amount) external {
+        _requireCallerIsContractOwner();
+
         if(amount == 0) {
             revert WithdrawETH__AmountMustBeGreaterThanZero();
         }

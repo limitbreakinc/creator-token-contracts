@@ -49,7 +49,7 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
 
     function testRevertsWhenFeeNumeratorExceedsSalesPrice(uint96 royaltyFeeNumerator) public {
         vm.assume(royaltyFeeNumerator > tokenMock.FEE_DENOMINATOR());
-        vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
+        vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
         new ERC721CWithMutableMinterRoyalties(royaltyFeeNumerator, "Test", "TEST");
     }
 
@@ -114,7 +114,7 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
 
         _mintToken(address(tokenMock), minter, tokenId);
 
-        vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId.selector);
+        vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId.selector);
         tokenMock.mint(minter, tokenId);
     }
 
@@ -165,7 +165,7 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
         vm.assume(royaltyFeeNumerator > tokenMock.FEE_DENOMINATOR());
 
         _mintToken(address(tokenMock), minter, tokenId);
-        vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
+        vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
         tokenMock.setRoyaltyFee(tokenId, royaltyFeeNumerator);
     }
 
@@ -176,7 +176,7 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
         vm.assume(royaltyFeeNumerator <= tokenMock.FEE_DENOMINATOR());
 
         _mintToken(address(tokenMock), minter, tokenId);
-        vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
+        vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
         tokenMock.setRoyaltyFee(tokenId, royaltyFeeNumerator);
     }
 
@@ -190,11 +190,11 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
         _mintToken(address(tokenMock), minter, tokenId);
         _mintToken(address(tokenMock), minter2, tokenIdMinter2);
 
-        vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
+        vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
         vm.prank(minter2);
         tokenMock.setRoyaltyFee(tokenId, royaltyFeeNumerator);
 
-        vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
+        vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
         vm.prank(minter);
         tokenMock.setRoyaltyFee(tokenIdMinter2, royaltyFeeNumerator);
     }
@@ -206,7 +206,7 @@ contract ERC721CWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorE
 
         _mintToken(address(tokenMock), minter, tokenId);
 
-        vm.expectRevert(MutableMinterRoyalties.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
+        vm.expectRevert(MutableMinterRoyaltiesBase.MutableMinterRoyalties__OnlyMinterCanChangeRoyaltyFee.selector);
         vm.prank(minter);
         tokenMock.setRoyaltyFee(tokenIdUnminted, royaltyFeeNumerator);
     }

@@ -41,7 +41,7 @@ contract ERC721CWithImmutableMinterRoyaltiesTest is CreatorTokenTransferValidato
 
     function testRevertsWhenFeeNumeratorExceedsSalesPrice(uint256 royaltyFeeNumerator) public {
         vm.assume(royaltyFeeNumerator > tokenMock.FEE_DENOMINATOR());
-        vm.expectRevert(ImmutableMinterRoyalties.ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
+        vm.expectRevert(ImmutableMinterRoyaltiesBase.ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
         new ERC721CWithImmutableMinterRoyalties(royaltyFeeNumerator, "Test", "TEST");
     }
 
@@ -103,7 +103,7 @@ contract ERC721CWithImmutableMinterRoyaltiesTest is CreatorTokenTransferValidato
 
         _mintToken(address(tokenMock), minter, tokenId);
 
-        vm.expectRevert(ImmutableMinterRoyalties.ImmutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId.selector);
+        vm.expectRevert(ImmutableMinterRoyaltiesBase.ImmutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId.selector);
         _mintToken(address(tokenMock), minter, tokenId);
     }
 

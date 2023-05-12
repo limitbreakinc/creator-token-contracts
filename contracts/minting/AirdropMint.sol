@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "./MaxSupplyBase.sol";
+import "./MaxSupply.sol";
 
 /**
  * @title AirdropMint
@@ -9,7 +9,7 @@ import "./MaxSupplyBase.sol";
  * @notice A contract mix-in that may optionally be used with extend ERC-721 tokens with airdrop minting capabilities.
  * @dev Inheriting contracts must implement `_mintToken`.
  */
-abstract contract AirdropMint is MaxSupplyBase {
+abstract contract AirdropMintBase is MaxSupplyBase {
 
     error AirdropMint__AirdropBatchSizeMustBeGreaterThanZero();
     error AirdropMint__CannotMintToZeroAddress();
@@ -20,23 +20,12 @@ abstract contract AirdropMint is MaxSupplyBase {
     /// @dev The current amount of tokens mintable via airdrop.
     uint256 private _remainingAirdropSupply;
 
-    constructor(uint256 maxAirdropMints_) {
-        
-        if(maxAirdropMints_ == 0) {
-            revert AirdropMint__MaxAirdropSupplyCannotBeSetToZero();
-        }
-
-        if(maxAirdropMints_ == type(uint256).max) {
-            revert AirdropMint__MaxAirdropSupplyCannotBeSetToMaxUint256();
-        }
-
-        _remainingAirdropSupply = maxAirdropMints_;
-    }
-
     /// @notice Owner bulk mint to airdrop.
     /// Throws if length of `to` array is zero.
     /// Throws if minting batch would exceed the max supply.
-    function airdropMint(address[] calldata to) external onlyOwner {
+    function airdropMint(address[] calldata to) external {
+        _requireCallerIsContractOwner();
+
         uint256 batchSize = to.length;
         if(batchSize == 0) {
             revert AirdropMint__AirdropBatchSizeMustBeGreaterThanZero();
@@ -68,5 +57,49 @@ abstract contract AirdropMint is MaxSupplyBase {
     /// @notice Returns the remaining amount of tokens mintable via airdrop
     function remainingAirdropSupply() public view returns (uint256) {
         return _remainingAirdropSupply;
+    }
+
+    function _setMaxAirdropSupply(uint256 maxAirdropMints_) internal {
+        if(maxAirdropMints_ == 0) {
+            revert AirdropMint__MaxAirdropSupplyCannotBeSetToZero();
+        }
+
+        if(maxAirdropMints_ == type(uint256).max) {
+            revert AirdropMint__MaxAirdropSupplyCannotBeSetToMaxUint256();
+        }
+
+        _remainingAirdropSupply = maxAirdropMints_;
+
+        _initializeNextTokenIdCounter();
+    }
+}
+
+abstract contract AirdropMint is AirdropMintBase, MaxSupply {
+    constructor(uint256 maxAirdropMints_) {
+        _setMaxAirdropSupply(maxAirdropMints_);
+    }
+
+    function maxSupply() public view override(MaxSupplyBase, MaxSupply) returns (uint256) {
+        return MaxSupply(address(this)).maxSupply();
+    }
+}
+
+abstract contract AirdropMintInitializable is AirdropMintBase, MaxSupplyInitializable {
+
+    error AirdropMintInitializable__MaxAirdropSupplyAlreadyInitialized();
+    
+    /// @dev Flag indicating that the airdrop max supply has been initialized.
+    bool private _airdropSupplyInitialized;
+
+    function initializeMaxAirdropSupply(uint256 maxAirdropMints_) public {
+        _requireCallerIsContractOwner();
+
+        if(_airdropSupplyInitialized) {
+            revert AirdropMintInitializable__MaxAirdropSupplyAlreadyInitialized();
+        }
+
+        _airdropSupplyInitialized = true;
+
+        _setMaxAirdropSupply(maxAirdropMints_);
     }
 }

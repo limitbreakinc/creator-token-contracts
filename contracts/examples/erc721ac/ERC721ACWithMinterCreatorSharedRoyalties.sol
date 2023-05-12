@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../../access/OwnableBasic.sol";
 import "../../erc721c/ERC721AC.sol";
 import "../../programmable-royalties/MinterCreatorSharedRoyalties.sol";
 
-contract ERC721ACWithMinterCreatorSharedRoyalties is ERC721AC, MinterCreatorSharedRoyalties {
+contract ERC721ACWithMinterCreatorSharedRoyalties is OwnableBasic, ERC721AC, MinterCreatorSharedRoyalties {
 
     constructor(
         uint256 royaltyFeeNumerator_,
@@ -17,7 +18,7 @@ contract ERC721ACWithMinterCreatorSharedRoyalties is ERC721AC, MinterCreatorShar
         MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_) {
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, MinterCreatorSharedRoyalties) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, MinterCreatorSharedRoyaltiesBase) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
