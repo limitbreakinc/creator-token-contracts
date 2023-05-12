@@ -17,7 +17,7 @@ abstract contract ImmutableMinterRoyaltiesBase is IERC2981, ERC165 {
     error ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
 
     uint256 public constant FEE_DENOMINATOR = 10_000;
-    uint256 public royaltyFeeNumerator;
+    uint256 private _royaltyFeeNumerator;
 
     mapping (uint256 => address) private _minters;
 
@@ -29,6 +29,10 @@ abstract contract ImmutableMinterRoyaltiesBase is IERC2981, ERC165 {
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function royaltyFeeNumerator() public virtual view returns (uint256) {
+        return _royaltyFeeNumerator;
     }
 
     /**
@@ -43,7 +47,7 @@ abstract contract ImmutableMinterRoyaltiesBase is IERC2981, ERC165 {
         uint256 tokenId,
         uint256 salePrice
     ) external view override returns (address receiver, uint256 royaltyAmount) {
-        return (_minters[tokenId], (salePrice * royaltyFeeNumerator) / FEE_DENOMINATOR);
+        return (_minters[tokenId], (salePrice * royaltyFeeNumerator()) / FEE_DENOMINATOR);
     }
 
     /**
@@ -79,13 +83,21 @@ abstract contract ImmutableMinterRoyaltiesBase is IERC2981, ERC165 {
             revert ImmutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
         }
 
-        royaltyFeeNumerator = royaltyFeeNumerator_;
+        _royaltyFeeNumerator = royaltyFeeNumerator_;
     }
 }
 
 abstract contract ImmutableMinterRoyalties is ImmutableMinterRoyaltiesBase {
+
+    uint256 private immutable _royaltyFeeNumeratorImmutable;
+
     constructor(uint256 royaltyFeeNumerator_) {
         _setRoyaltyFeeNumerator(royaltyFeeNumerator_);
+        _royaltyFeeNumeratorImmutable = royaltyFeeNumerator_;
+    }
+
+    function royaltyFeeNumerator() public view override returns (uint256) {
+        return _royaltyFeeNumeratorImmutable;
     }
 }
 

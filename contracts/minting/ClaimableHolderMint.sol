@@ -392,6 +392,10 @@ abstract contract ClaimableHolderMint is ClaimableHolderMintBase, MaxSupply {
         uint256[] memory tokensPerClaimArray_) {
         _setRootCollections(rootCollections_, rootCollectionMaxSupplies_, tokensPerClaimArray_);
     }
+
+    function maxSupply() public view override(MaxSupplyBase, MaxSupply) returns (uint256) {
+        return MaxSupply(address(this)).maxSupply();
+    }
 }
 
 abstract contract ClaimableHolderMintInitializable is ClaimableHolderMintBase, MaxSupplyInitializable {

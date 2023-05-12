@@ -12,9 +12,13 @@ import "@openzeppelin/contracts/finance/PaymentSplitter.sol";
  * @dev An NFT mix-in contract implementing programmable royalties.  Royalties are shared between creators and minters.
  */
 abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
+
+    error MinterCreatorSharedRoyalties__CreatorCannotBeZeroAddress();
+    error MinterCreatorSharedRoyalties__CreatorSharesCannotBeZero();
     error MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice();
     error MinterCreatorSharedRoyalties__MinterCannotBeZeroAddress();
     error MinterCreatorSharedRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
+    error MinterCreatorSharedRoyalties__MinterSharesCannotBeZero();
     error MinterCreatorSharedRoyalties__PaymentSplitterDoesNotExistForSpecifiedTokenId();
 
     enum ReleaseTo {
@@ -23,10 +27,10 @@ abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
     }
 
     uint256 public constant FEE_DENOMINATOR = 10_000;
-    uint256 public royaltyFeeNumerator;
-    uint256 public minterShares;
-    uint256 public creatorShares;
-    address public creator;
+    uint256 private _royaltyFeeNumerator;
+    uint256 private _minterShares;
+    uint256 private _creatorShares;
+    address private _creator;
 
     mapping (uint256 => address) private _minters;
     mapping (uint256 => address) private _paymentSplitters;
@@ -42,6 +46,22 @@ abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
     }
 
+    function royaltyFeeNumerator() public virtual view returns (uint256) {
+        return _royaltyFeeNumerator;
+    }
+
+    function minterShares() public virtual view returns (uint256) {
+        return _minterShares;
+    }
+
+    function creatorShares() public virtual view returns (uint256) {
+        return _creatorShares;
+    }
+
+    function creator() public virtual view returns (address) {
+        return _creator;
+    }
+
     /**
      * @notice Returns the royalty fee and recipient for a given token.
      * @param  tokenId   The id of the token whose royalty info is being queried.
@@ -52,7 +72,7 @@ abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
         uint256 tokenId,
         uint256 salePrice
     ) external view override returns (address, uint256) {
-        return (_paymentSplitters[tokenId], (salePrice * royaltyFeeNumerator) / FEE_DENOMINATOR);
+        return (_paymentSplitters[tokenId], (salePrice * royaltyFeeNumerator()) / FEE_DENOMINATOR);
     }
 
     /**
@@ -94,7 +114,7 @@ abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
         if (releaseTo == ReleaseTo.Minter) {
             return paymentSplitter.releasable(payable(_minters[tokenId]));
         } else {
-            return paymentSplitter.releasable(payable(creator));
+            return paymentSplitter.releasable(payable(creator()));
         }
     }
 
@@ -111,7 +131,7 @@ abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
         if (releaseTo == ReleaseTo.Minter) {
             return paymentSplitter.releasable(IERC20(coin), _minters[tokenId]);
         } else {
-            return paymentSplitter.releasable(IERC20(coin), creator);
+            return paymentSplitter.releasable(IERC20(coin), creator());
         }
     }
 
@@ -126,7 +146,7 @@ abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
         if (releaseTo == ReleaseTo.Minter) {
             paymentSplitter.release(payable(_minters[tokenId]));
         } else {
-            paymentSplitter.release(payable(creator));
+            paymentSplitter.release(payable(creator()));
         }
     }
 
@@ -142,7 +162,7 @@ abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
         if(releaseTo == ReleaseTo.Minter) {
             paymentSplitter.release(IERC20(coin), _minters[tokenId]);
         } else {
-            paymentSplitter.release(IERC20(coin), creator);
+            paymentSplitter.release(IERC20(coin), creator());
         }
     }
 
@@ -183,22 +203,23 @@ abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
      * @return       The address of the payment splitter.
      */
     function _createPaymentSplitter(address minter) private returns (address) {
-        if (minter == creator) {
+        address creator_ = creator();
+        if (minter == creator_) {
             address[] memory payees = new address[](1);
-            payees[0] = creator;
+            payees[0] = creator_;
 
             uint256[] memory shares = new uint256[](1);
-            shares[0] = minterShares + creatorShares;
+            shares[0] = minterShares() + creatorShares();
 
             return address(new PaymentSplitter(payees, shares));
         } else {
             address[] memory payees = new address[](2);
             payees[0] = minter;
-            payees[1] = creator;
+            payees[1] = creator_;
 
             uint256[] memory shares = new uint256[](2);
-            shares[0] = minterShares;
-            shares[1] = creatorShares;
+            shares[0] = minterShares();
+            shares[1] = creatorShares();
 
             return address(new PaymentSplitter(payees, shares));
         }
@@ -221,14 +242,31 @@ abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
             revert MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice();
         }
 
-        royaltyFeeNumerator = royaltyFeeNumerator_;
-        minterShares = minterShares_;
-        creatorShares = creatorShares_;
-        creator = creator_;
+        if (minterShares_ == 0) {
+            revert MinterCreatorSharedRoyalties__MinterSharesCannotBeZero();
+        }
+
+        if (creatorShares_ == 0) {
+            revert MinterCreatorSharedRoyalties__CreatorSharesCannotBeZero();
+        }
+
+        if (creator_ == address(0)) {
+            revert MinterCreatorSharedRoyalties__CreatorCannotBeZeroAddress();
+        }
+
+        _royaltyFeeNumerator = royaltyFeeNumerator_;
+        _minterShares = minterShares_;
+        _creatorShares = creatorShares_;
+        _creator = creator_;
     }
 }
 
 abstract contract MinterCreatorSharedRoyalties is MinterCreatorSharedRoyaltiesBase {
+
+    uint256 private immutable _royaltyFeeNumeratorImmutable;
+    uint256 private immutable _minterSharesImmutable;
+    uint256 private immutable _creatorSharesImmutable;
+    address private immutable _creatorImmutable;
 
     /**
      * @dev Constructor that sets the royalty fee numerator, creator, and minter/creator shares.
@@ -240,6 +278,26 @@ abstract contract MinterCreatorSharedRoyalties is MinterCreatorSharedRoyaltiesBa
      */
     constructor(uint256 royaltyFeeNumerator_, uint256 minterShares_, uint256 creatorShares_, address creator_) {
         _setRoyaltyFeeNumeratorAndShares(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_);
+        _royaltyFeeNumeratorImmutable = royaltyFeeNumerator_;
+        _minterSharesImmutable = minterShares_;
+        _creatorSharesImmutable = creatorShares_;
+        _creatorImmutable = creator_;
+    }
+
+    function royaltyFeeNumerator() public view override returns (uint256) {
+        return _royaltyFeeNumeratorImmutable;
+    }
+
+    function minterShares() public view override returns (uint256) {
+        return _minterSharesImmutable;
+    }
+
+    function creatorShares() public view override returns (uint256) {
+        return _creatorSharesImmutable;
+    }
+
+    function creator() public view override returns (address) {
+        return _creatorImmutable;
     }
 }
 

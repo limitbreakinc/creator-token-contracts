@@ -142,6 +142,10 @@ abstract contract MerkleWhitelistMint is MerkleWhitelistMintBase, MaxSupply {
             permittedNumberOfMerkleRootChanges_
         );
     }
+
+    function maxSupply() public view override(MaxSupplyBase, MaxSupply) returns (uint256) {
+        return MaxSupply(address(this)).maxSupply();
+    }
 }
 
 abstract contract MerkleWhitelistMintInitializable is MerkleWhitelistMintBase, MaxSupplyInitializable {

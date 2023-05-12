@@ -78,6 +78,10 @@ abstract contract AirdropMint is AirdropMintBase, MaxSupply {
     constructor(uint256 maxAirdropMints_) {
         _setMaxAirdropSupply(maxAirdropMints_);
     }
+
+    function maxSupply() public view override(MaxSupplyBase, MaxSupply) returns (uint256) {
+        return MaxSupply(address(this)).maxSupply();
+    }
 }
 
 abstract contract AirdropMintInitializable is AirdropMintBase, MaxSupplyInitializable {

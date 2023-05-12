@@ -169,7 +169,7 @@ abstract contract AdventureBase is AdventureWhitelist, IAdventurous {
         return activeQuests;
     }
 
-    function maxSimultaneousQuests() public view returns (uint256) {
+    function maxSimultaneousQuests() public virtual view returns (uint256) {
         return _maxSimultaneousQuests;
     }
 
@@ -184,7 +184,7 @@ abstract contract AdventureBase is AdventureWhitelist, IAdventurous {
         }
 
         uint256 currentQuestCount = getQuestCount(tokenId, adventure);
-        if(currentQuestCount >= _maxSimultaneousQuests) {
+        if(currentQuestCount >= maxSimultaneousQuests()) {
             revert AdventureERC721__TooManyActiveQuests();
         }
 
@@ -313,8 +313,12 @@ abstract contract AdventureBase is AdventureWhitelist, IAdventurous {
 
 abstract contract AdventureERC721 is AdventureBase, ERC721OpenZeppelin {
 
+    /// @dev The most simultaneous quests the token may participate in at a time
+    uint256 private immutable _maxSimultaneousQuestsImmutable;
+
     constructor(uint256 maxSimultaneousQuests_) {
         _setMaxSimultaneousQuestsAndInitializeTransferType(maxSimultaneousQuests_);
+        _maxSimultaneousQuestsImmutable = maxSimultaneousQuests_;
     }
 
     /// @dev ERC-165 interface support
@@ -322,6 +326,10 @@ abstract contract AdventureERC721 is AdventureBase, ERC721OpenZeppelin {
         return 
         interfaceId == type(IAdventurous).interfaceId || 
         super.supportsInterface(interfaceId);
+    }
+
+    function maxSimultaneousQuests() public view override returns (uint256) {
+        return _maxSimultaneousQuestsImmutable;
     }
 
     function _doBurn(uint256 tokenId) internal virtual override {

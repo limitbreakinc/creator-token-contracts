@@ -53,7 +53,7 @@ abstract contract MaxSupplyBase is OwnablePermissions, MintTokenBase, Sequential
         _mintBatch(to, quantity);
     }
 
-    function maxSupply() public view returns (uint256) {
+    function maxSupply() public virtual view returns (uint256) {
         return _maxSupply;
     }
 
@@ -79,7 +79,7 @@ abstract contract MaxSupplyBase is OwnablePermissions, MintTokenBase, Sequential
     }
 
     function _requireLessThanMaxSupply(uint256 supplyAfterMint) internal view {
-        uint256 maxSupplyCache = _maxSupply;
+        uint256 maxSupplyCache = maxSupply();
         if (maxSupplyCache > 0) {
             if (supplyAfterMint > maxSupplyCache) {
                 revert MaxSupplyBase__MaxSupplyExceeded();
@@ -108,8 +108,16 @@ abstract contract MaxSupplyBase is OwnablePermissions, MintTokenBase, Sequential
 }
 
 abstract contract MaxSupply is MaxSupplyBase {
+
+    uint256 private immutable _maxSupplyImmutable;
+
     constructor(uint256 maxSupply_, uint256 maxOwnerMints_) {
         _setMaxSupplyAndOwnerMints(maxSupply_, maxOwnerMints_);
+        _maxSupplyImmutable = maxSupply_;
+    }
+
+    function maxSupply() public virtual view override returns (uint256) {
+        return _maxSupplyImmutable;
     }
 }
 

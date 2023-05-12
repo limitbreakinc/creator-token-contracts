@@ -164,6 +164,10 @@ abstract contract SignedApprovalMint is SignedApprovalMintBase, MaxSupply {
     constructor(address signer_, uint256 maxSignedMints_) {
         _setSignerAndMaxSignedMintSupply(signer_, maxSignedMints_);
     }
+
+    function maxSupply() public view override(MaxSupplyBase, MaxSupply) returns (uint256) {
+        return MaxSupply(address(this)).maxSupply();
+    }
 }
 
 abstract contract SignedApprovalMintInitializable is SignedApprovalMintBase, MaxSupplyInitializable {

@@ -17,9 +17,13 @@ import "./ERC721CW.sol";
  *         EOA accounts only.
  */
 abstract contract AdventureERC721CW is ERC721WrapperBase, AdventureERC721C {
+    
+    /// @dev Points to an external ERC721 contract that will be wrapped via staking.
+    IERC721 private immutable wrappedCollectionImmutable;
 
     constructor(address wrappedCollectionAddress_) {
         _setWrappedCollectionAddress(wrappedCollectionAddress_);
+        wrappedCollectionImmutable = IERC721(wrappedCollectionAddress_);
     }
 
     /**
@@ -30,6 +34,10 @@ abstract contract AdventureERC721CW is ERC721WrapperBase, AdventureERC721C {
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(ICreatorTokenWrapperERC721).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function getWrappedCollectionAddress() public virtual view override returns (address) {
+        return address(wrappedCollectionImmutable);
     }
 
     function _requireCallerIsVerifiedEOA() internal view virtual override {

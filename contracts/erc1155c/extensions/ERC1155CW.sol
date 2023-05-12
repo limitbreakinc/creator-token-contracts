@@ -81,7 +81,9 @@ abstract contract ERC1155WrapperBase is WithdrawETH, ReentrancyGuard, ICreatorTo
             revert ERC1155WrapperBase__AmountMustBeGreaterThanZero();
         }
 
-        uint256 tokenBalance = wrappedCollection.balanceOf(_msgSender(), id);
+        IERC1155 wrappedCollection_ = IERC1155(getWrappedCollectionAddress());
+
+        uint256 tokenBalance = wrappedCollection_.balanceOf(_msgSender(), id);
         if (tokenBalance < amount) {
             revert ERC1155WrapperBase__InsufficientBalanceOfWrappedToken();
         }
@@ -89,7 +91,7 @@ abstract contract ERC1155WrapperBase is WithdrawETH, ReentrancyGuard, ICreatorTo
         _onStake(id, amount, msg.value);
         emit Staked(id, _msgSender(), amount);
         _doTokenMint(_msgSender(), id, amount);
-        wrappedCollection.safeTransferFrom(_msgSender(), address(this), id, amount, "");
+        wrappedCollection_.safeTransferFrom(_msgSender(), address(this), id, amount, "");
     }
 
     /// @notice Allows holders of this wrapper ERC1155 token to unstake and receive the original wrapped tokens.
@@ -118,7 +120,7 @@ abstract contract ERC1155WrapperBase is WithdrawETH, ReentrancyGuard, ICreatorTo
         _onUnstake(id, amount, msg.value);
         emit Unstaked(id, _msgSender(), amount);
         _doTokenBurn(_msgSender(), id, amount);
-        wrappedCollection.safeTransferFrom(address(this), _msgSender(), id, amount, "");
+        IERC1155(getWrappedCollectionAddress()).safeTransferFrom(address(this), _msgSender(), id, amount, "");
     }
 
     /// @notice Returns true if the specified token id and amount is available to be unstaked, false otherwise.
@@ -126,7 +128,7 @@ abstract contract ERC1155WrapperBase is WithdrawETH, ReentrancyGuard, ICreatorTo
     /// In the base implementation, tokens are available to be unstaked if the contract's balance of 
     /// the wrapped token is greater than or equal to amount.
     function canUnstake(uint256 id, uint256 amount) public virtual view override returns (bool) {
-        return wrappedCollection.balanceOf(address(this), id) >= amount;
+        return IERC1155(getWrappedCollectionAddress()).balanceOf(address(this), id) >= amount;
     }
 
     /// @notice Returns the staker constraints that are currently in effect.
@@ -135,7 +137,7 @@ abstract contract ERC1155WrapperBase is WithdrawETH, ReentrancyGuard, ICreatorTo
     }
 
     /// @notice Returns the address of the wrapped ERC1155 contract.
-    function getWrappedCollectionAddress() public view override returns (address) {
+    function getWrappedCollectionAddress() public virtual view override returns (address) {
         return address(wrappedCollection);
     }
 
@@ -171,12 +173,20 @@ abstract contract ERC1155WrapperBase is WithdrawETH, ReentrancyGuard, ICreatorTo
 }
 
 abstract contract ERC1155CW is ERC1155Holder, ERC1155WrapperBase, ERC1155C {
+
+    IERC1155 private immutable wrappedCollectionImmutable;
+
     constructor(address wrappedCollectionAddress_) {
         _setWrappedCollectionAddress(wrappedCollectionAddress_);
+        wrappedCollectionImmutable = IERC1155(wrappedCollectionAddress_);
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155C, ERC1155Receiver) returns (bool) {
         return interfaceId == type(ICreatorTokenWrapperERC1155).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function getWrappedCollectionAddress() public virtual view override returns (address) {
+        return address(wrappedCollectionImmutable);
     }
 
     function _requireCallerIsVerifiedEOA() internal view virtual override {

@@ -73,7 +73,9 @@ abstract contract ERC721WrapperBase is WithdrawETH, ICreatorTokenWrapperERC721 {
             _requireCallerIsVerifiedEOA();
         }
 
-        address tokenOwner = wrappedCollection.ownerOf(tokenId);
+        IERC721 wrappedCollection_ = IERC721(getWrappedCollectionAddress());
+
+        address tokenOwner = wrappedCollection_.ownerOf(tokenId);
         if(tokenOwner != _msgSender()) {
             revert ERC721WrapperBase__CallerNotOwnerOfWrappedToken();
         }
@@ -81,7 +83,7 @@ abstract contract ERC721WrapperBase is WithdrawETH, ICreatorTokenWrapperERC721 {
         _onStake(tokenId, msg.value);
         emit Staked(tokenId, tokenOwner);
         _doTokenMint(tokenOwner, tokenId);
-        wrappedCollection.transferFrom(tokenOwner, address(this), tokenId);
+        wrappedCollection_.transferFrom(tokenOwner, address(this), tokenId);
     }
 
     /// @notice Allows holders of this wrapper ERC721 token to unstake and receive the original wrapped token.
@@ -105,7 +107,7 @@ abstract contract ERC721WrapperBase is WithdrawETH, ICreatorTokenWrapperERC721 {
         _onUnstake(tokenId, msg.value);
         emit Unstaked(tokenId, tokenOwner);
         _doTokenBurn(tokenId);
-        wrappedCollection.transferFrom(address(this), tokenOwner, tokenId);
+        IERC721(getWrappedCollectionAddress()).transferFrom(address(this), tokenOwner, tokenId);
     }
 
     /// @notice Returns true if the specified token id is available to be unstaked, false otherwise.
@@ -113,7 +115,7 @@ abstract contract ERC721WrapperBase is WithdrawETH, ICreatorTokenWrapperERC721 {
     /// In the base implementation, a token is available to be unstaked if the wrapped token is owned by this contract
     /// and the wrapper token exists.
     function canUnstake(uint256 tokenId) public virtual view override returns (bool) {
-        return _tokenExists(tokenId) && wrappedCollection.ownerOf(tokenId) == address(this);
+        return _tokenExists(tokenId) && IERC721(getWrappedCollectionAddress()).ownerOf(tokenId) == address(this);
     }
 
     /// @notice Returns the staker constraints that are currently in effect.
@@ -122,7 +124,7 @@ abstract contract ERC721WrapperBase is WithdrawETH, ICreatorTokenWrapperERC721 {
     }
 
     /// @notice Returns the address of the wrapped ERC721 contract.
-    function getWrappedCollectionAddress() public view override returns (address) {
+    function getWrappedCollectionAddress() public virtual view override returns (address) {
         return address(wrappedCollection);
     }
 
@@ -160,8 +162,12 @@ abstract contract ERC721WrapperBase is WithdrawETH, ICreatorTokenWrapperERC721 {
 }
 
 abstract contract ERC721CW is ERC721WrapperBase, ERC721C {
+    
+    IERC721 private immutable wrappedCollectionImmutable;
+
     constructor(address wrappedCollectionAddress_) {
         _setWrappedCollectionAddress(wrappedCollectionAddress_);
+        wrappedCollectionImmutable = IERC721(wrappedCollectionAddress_);
     }
 
     /**
@@ -172,6 +178,10 @@ abstract contract ERC721CW is ERC721WrapperBase, ERC721C {
      */
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(ICreatorTokenWrapperERC721).interfaceId || super.supportsInterface(interfaceId);
+    }
+
+    function getWrappedCollectionAddress() public virtual view override returns (address) {
+        return address(wrappedCollectionImmutable);
     }
 
     function _requireCallerIsVerifiedEOA() internal view virtual override {

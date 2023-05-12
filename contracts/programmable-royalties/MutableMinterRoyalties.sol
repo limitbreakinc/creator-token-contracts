@@ -24,7 +24,7 @@ abstract contract MutableMinterRoyaltiesBase is IERC2981, ERC165 {
     }
 
     uint96 public constant FEE_DENOMINATOR = 10_000;
-    uint96 public defaultRoyaltyFeeNumerator;
+    uint96 private _defaultRoyaltyFeeNumerator;
 
     mapping (uint256 => RoyaltyInfo) private _tokenRoyaltyInfo;
 
@@ -66,6 +66,10 @@ abstract contract MutableMinterRoyaltiesBase is IERC2981, ERC165 {
         return interfaceId == type(IERC2981).interfaceId || super.supportsInterface(interfaceId);
     }
 
+    function defaultRoyaltyFeeNumerator() public virtual view returns (uint96) {
+        return _defaultRoyaltyFeeNumerator;
+    }
+
     /**
      * @notice Returns the royalty info for a given token ID and sale price.
      * @dev Implements the IERC2981 interface.
@@ -81,7 +85,7 @@ abstract contract MutableMinterRoyaltiesBase is IERC2981, ERC165 {
         RoyaltyInfo memory royalty = _tokenRoyaltyInfo[tokenId];
 
         if (royalty.receiver == address(0)) {
-            royalty.royaltyFraction = defaultRoyaltyFeeNumerator;
+            royalty.royaltyFraction = defaultRoyaltyFeeNumerator();
         }
 
         return (royalty.receiver, (salePrice * royalty.royaltyFraction) / FEE_DENOMINATOR);
@@ -104,12 +108,14 @@ abstract contract MutableMinterRoyaltiesBase is IERC2981, ERC165 {
             revert MutableMinterRoyalties__MinterHasAlreadyBeenAssignedToTokenId();
         }
 
+        uint96 defaultRoyaltyFeeNumerator_ = defaultRoyaltyFeeNumerator();
+
         _tokenRoyaltyInfo[tokenId] = RoyaltyInfo({
             receiver: minter,
-            royaltyFraction: defaultRoyaltyFeeNumerator
+            royaltyFraction: defaultRoyaltyFeeNumerator_
         });
 
-        emit RoyaltySet(tokenId, minter, defaultRoyaltyFeeNumerator);
+        emit RoyaltySet(tokenId, minter, defaultRoyaltyFeeNumerator_);
     }
 
     /**
@@ -120,7 +126,7 @@ abstract contract MutableMinterRoyaltiesBase is IERC2981, ERC165 {
     function _onBurned(uint256 tokenId) internal {
         delete _tokenRoyaltyInfo[tokenId];
 
-        emit RoyaltySet(tokenId, address(0), defaultRoyaltyFeeNumerator);
+        emit RoyaltySet(tokenId, address(0), defaultRoyaltyFeeNumerator());
     }
 
     function _setDefaultRoyaltyFee(uint96 defaultRoyaltyFeeNumerator_) internal {
@@ -128,13 +134,21 @@ abstract contract MutableMinterRoyaltiesBase is IERC2981, ERC165 {
             revert MutableMinterRoyalties__RoyaltyFeeWillExceedSalePrice();
         }
 
-        defaultRoyaltyFeeNumerator = defaultRoyaltyFeeNumerator_;
+        _defaultRoyaltyFeeNumerator = defaultRoyaltyFeeNumerator_;
     }
 }
 
 abstract contract MutableMinterRoyalties is MutableMinterRoyaltiesBase {
+
+    uint96 private immutable _defaultRoyaltyFeeNumeratorImmutable;
+
     constructor(uint96 defaultRoyaltyFeeNumerator_) {
         _setDefaultRoyaltyFee(defaultRoyaltyFeeNumerator_);
+        _defaultRoyaltyFeeNumeratorImmutable = defaultRoyaltyFeeNumerator_;
+    }
+
+    function defaultRoyaltyFeeNumerator() public view override returns (uint96) {
+        return _defaultRoyaltyFeeNumeratorImmutable;
     }
 }
 
