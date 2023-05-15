@@ -6,6 +6,7 @@ import "forge-std/console.sol";
 import "../CreatorTokenTransferValidatorERC721.t.sol";
 import "../mocks/ERC20Mock.sol";
 import "contracts/examples/erc721ac/ERC721ACWithMinterCreatorSharedRoyalties.sol";
+import "contracts/programmable-royalties/helpers/PaymentSplitterInitializable.sol";
 
 contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferValidatorERC721Test {
 
@@ -14,6 +15,7 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
     uint256 public constant DEFAULT_ROYALTY_FEE_NUMERATOR = 1000;
 
     address public defaultTokenCreator;
+    address public paymentSplitterReference;
 
     function setUp() public virtual override {
         super.setUp();
@@ -22,15 +24,17 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
 
         coinMock = new ERC20Mock(18);
 
+        paymentSplitterReference = address(new PaymentSplitterInitializable());
+
         vm.startPrank(defaultTokenCreator);
-        tokenMock = new ERC721ACWithMinterCreatorSharedRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, 25, 75, defaultTokenCreator, "Test", "TEST");
+        tokenMock = new ERC721ACWithMinterCreatorSharedRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, 25, 75, defaultTokenCreator, paymentSplitterReference, "Test", "TEST");
         tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
         vm.stopPrank();
     }
 
     function _deployNewToken(address creator) internal virtual override returns (ITestCreatorToken) {
         vm.prank(creator);
-        return ITestCreatorToken(address(new ERC721ACWithMinterCreatorSharedRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, 25, 75, creator, "Test", "TEST")));
+        return ITestCreatorToken(address(new ERC721ACWithMinterCreatorSharedRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, 25, 75, creator, paymentSplitterReference, "Test", "TEST")));
     }
 
     function _mintToken(address tokenAddress, address to, uint256 tokenId) internal virtual override {
@@ -56,7 +60,7 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
         vm.assume(creatorShares > 0 && creatorShares < 10000);
         vm.assume(royaltyFeeNumerator > tokenMock.FEE_DENOMINATOR());
         vm.expectRevert(MinterCreatorSharedRoyaltiesBase.MinterCreatorSharedRoyalties__RoyaltyFeeWillExceedSalePrice.selector);
-        new ERC721ACWithMinterCreatorSharedRoyalties(royaltyFeeNumerator, minterShares, creatorShares, creator, "Test", "TEST");
+        new ERC721ACWithMinterCreatorSharedRoyalties(royaltyFeeNumerator, minterShares, creatorShares, creator, paymentSplitterReference, "Test", "TEST");
     }
 
     function testRoyaltyInfoForUnmintedTokenIds(uint256 tokenId, uint256 salePrice) public {
@@ -101,7 +105,7 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
             assertEq(recipient, paymentSplitterOfToken);
             assertEq(value, (salePrice * tokenMock.royaltyFeeNumerator()) / tokenMock.FEE_DENOMINATOR());
     
-            PaymentSplitter splitter = PaymentSplitter(payable(paymentSplitterOfToken));
+            PaymentSplitterInitializable splitter = PaymentSplitterInitializable(payable(paymentSplitterOfToken));
     
             uint256 minterShares = splitter.shares(minter);
             uint256 creatorShares = splitter.shares(defaultTokenCreator);
@@ -155,7 +159,7 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
             assertEq(recipient, paymentSplitterOfToken);
             assertEq(value, (salePrice * tokenMock.royaltyFeeNumerator()) / tokenMock.FEE_DENOMINATOR());
     
-            PaymentSplitter splitter = PaymentSplitter(payable(paymentSplitterOfToken));
+            PaymentSplitterInitializable splitter = PaymentSplitterInitializable(payable(paymentSplitterOfToken));
     
             uint256 minterShares = splitter.shares(minter);
             uint256 creatorShares = splitter.shares(defaultTokenCreator);
@@ -230,7 +234,7 @@ contract ERC721ACWithMinterCreatorSharedRoyaltiesTest is CreatorTokenTransferVal
             assertEq(recipient, paymentSplitterOfToken);
             assertEq(value, (salePrice * tokenMock.royaltyFeeNumerator()) / tokenMock.FEE_DENOMINATOR());
     
-            PaymentSplitter splitter = PaymentSplitter(payable(paymentSplitterOfToken));
+            PaymentSplitterInitializable splitter = PaymentSplitterInitializable(payable(paymentSplitterOfToken));
     
             uint256 minterShares = splitter.shares(minter);
             uint256 creatorShares = splitter.shares(defaultTokenCreator);

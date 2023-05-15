@@ -12,12 +12,13 @@ contract AdventureERC721CWithMinterCreatorSharedRoyalties is OwnableBasic, Adven
         uint256 minterShares_,
         uint256 creatorShares_,
         address creator_,
+        address paymentSplitterReference_,
         uint256 maxSimultaneousQuests_,
         string memory name_,
         string memory symbol_) 
         AdventureERC721(maxSimultaneousQuests_)
         ERC721OpenZeppelin(name_, symbol_) 
-        MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_) {
+        MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_, paymentSplitterReference_) {
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(AdventureERC721C, MinterCreatorSharedRoyaltiesBase) returns (bool) {
