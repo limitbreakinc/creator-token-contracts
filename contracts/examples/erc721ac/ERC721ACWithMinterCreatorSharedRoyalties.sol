@@ -12,10 +12,11 @@ contract ERC721ACWithMinterCreatorSharedRoyalties is OwnableBasic, ERC721AC, Min
         uint256 minterShares_,
         uint256 creatorShares_,
         address creator_,
+        address paymentSplitterReference_,
         string memory name_,
         string memory symbol_) 
         ERC721AC(name_, symbol_) 
-        MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_) {
+        MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_, paymentSplitterReference_) {
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, MinterCreatorSharedRoyaltiesBase) returns (bool) {
