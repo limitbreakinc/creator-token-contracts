@@ -394,7 +394,7 @@ abstract contract ClaimableHolderMint is ClaimableHolderMintBase, MaxSupply {
     }
 
     function maxSupply() public view override(MaxSupplyBase, MaxSupply) returns (uint256) {
-        return MaxSupply(address(this)).maxSupply();
+        return _maxSupplyImmutable;
     }
 }
 

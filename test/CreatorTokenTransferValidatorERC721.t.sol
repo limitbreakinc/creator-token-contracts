@@ -794,6 +794,8 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
     }
 
     function testWhitelistPoliciesWithOTCEnabledBlockTransfersWhenCallerNotWhitelistedOrOwner(address creator, address caller, address from, uint160 toKey) public {
+        _sanitizeAddress(caller);
+        _sanitizeAddress(from);
         address to = _verifyEOA(toKey);
         _testPolicyBlocksTransfersWhenCallerNotWhitelistedOrOwner(TransferSecurityLevels.One, creator, caller, from, to);
         _testPolicyBlocksTransfersWhenCallerNotWhitelistedOrOwner(TransferSecurityLevels.Three, creator, caller, from, to);

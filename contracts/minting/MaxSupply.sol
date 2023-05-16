@@ -109,7 +109,7 @@ abstract contract MaxSupplyBase is OwnablePermissions, MintTokenBase, Sequential
 
 abstract contract MaxSupply is MaxSupplyBase {
 
-    uint256 private immutable _maxSupplyImmutable;
+    uint256 internal immutable _maxSupplyImmutable;
 
     constructor(uint256 maxSupply_, uint256 maxOwnerMints_) {
         _setMaxSupplyAndOwnerMints(maxSupply_, maxOwnerMints_);
