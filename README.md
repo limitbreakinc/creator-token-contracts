@@ -13,7 +13,7 @@ $ npm install @limitbreak/creator-token-contracts
 With an existing foundry project:
 
 ```bash
-git submodule add https://github.com/limitbreakinc/creator-token-contracts.git
+forge install limitbreakinc/creator-token-contracts
 ```
 
 Update your `remappings.txt` file to resolve imports.

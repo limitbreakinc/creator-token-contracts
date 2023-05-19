@@ -5,11 +5,7 @@ import "../../ERC721CMetadata.sol";
 import "contracts/minting/AirdropMint.sol";
 import "contracts/programmable-royalties/MinterCreatorSharedRoyalties.sol";
 
-contract AirdropMock is 
-    ERC721CMetadata, 
-    AirdropMint,
-    MinterCreatorSharedRoyalties {
-
+contract AirdropMock is ERC721CMetadata, AirdropMint, MinterCreatorSharedRoyalties {
     struct SharedRoyaltyConfiguration {
         uint256 royaltyFeeNumerator;
         uint256 minterShares;
@@ -19,23 +15,32 @@ contract AirdropMock is
     }
 
     constructor(
-        string memory name_, 
+        string memory name_,
         string memory symbol_,
-        uint256 maxSupply_, 
+        uint256 maxSupply_,
         uint256 maxOwnerMints_,
         uint256 maxAirdropMints_,
-        SharedRoyaltyConfiguration memory sharedRoyaltyConfiguration_) 
-    ERC721CMetadata(name_, symbol_) 
-    MaxSupply(maxSupply_, maxOwnerMints_)
-    AirdropMint(maxAirdropMints_) 
-    MinterCreatorSharedRoyalties(
-        sharedRoyaltyConfiguration_.royaltyFeeNumerator, 
-        sharedRoyaltyConfiguration_.minterShares, 
-        sharedRoyaltyConfiguration_.creatorShares, 
-        sharedRoyaltyConfiguration_.creator,
-        sharedRoyaltyConfiguration_.paymentSplitter) {}
+        SharedRoyaltyConfiguration memory sharedRoyaltyConfiguration_
+    )
+        ERC721CMetadata(name_, symbol_)
+        MaxSupply(maxSupply_, maxOwnerMints_)
+        AirdropMint(maxAirdropMints_)
+        MinterCreatorSharedRoyalties(
+            sharedRoyaltyConfiguration_.royaltyFeeNumerator,
+            sharedRoyaltyConfiguration_.minterShares,
+            sharedRoyaltyConfiguration_.creatorShares,
+            sharedRoyaltyConfiguration_.creator,
+            sharedRoyaltyConfiguration_.paymentSplitter
+        )
+    {}
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721C, MinterCreatorSharedRoyaltiesBase) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC721C, MinterCreatorSharedRoyaltiesBase)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 

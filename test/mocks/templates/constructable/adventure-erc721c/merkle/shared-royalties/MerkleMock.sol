@@ -5,11 +5,7 @@ import "../../AdventureERC721CMetadata.sol";
 import "contracts/minting/MerkleWhitelistMint.sol";
 import "contracts/programmable-royalties/MinterCreatorSharedRoyalties.sol";
 
-contract MerkleMock is 
-    AdventureERC721CMetadata, 
-    MerkleWhitelistMint,
-    MinterCreatorSharedRoyalties {
-
+contract MerkleMock is AdventureERC721CMetadata, MerkleWhitelistMint, MinterCreatorSharedRoyalties {
     struct SharedRoyaltyConfiguration {
         uint256 royaltyFeeNumerator;
         uint256 minterShares;
@@ -24,26 +20,36 @@ contract MerkleMock is
     }
 
     constructor(
-        string memory name_, 
+        string memory name_,
         string memory symbol_,
-        uint256 maxSimultaneousQuests_, 
-        uint256 maxSupply_, 
+        uint256 maxSimultaneousQuests_,
+        uint256 maxSupply_,
         uint256 maxOwnerMints_,
         MerkleMintConfiguration memory MerkleMintConfiguration_,
-        SharedRoyaltyConfiguration memory sharedRoyaltyConfiguration_)
-    AdventureERC721CMetadata(name_, symbol_, maxSimultaneousQuests_)
-    MaxSupply(maxSupply_, maxOwnerMints_)
-    MerkleWhitelistMint(
-        MerkleMintConfiguration_.maxMerkleMints, 
-        MerkleMintConfiguration_.permittedNumberOfMerkleRootChanges)
-    MinterCreatorSharedRoyalties(
-        sharedRoyaltyConfiguration_.royaltyFeeNumerator, 
-        sharedRoyaltyConfiguration_.minterShares, 
-        sharedRoyaltyConfiguration_.creatorShares, 
-        sharedRoyaltyConfiguration_.creator,
-        sharedRoyaltyConfiguration_.paymentSplitter) {}
+        SharedRoyaltyConfiguration memory sharedRoyaltyConfiguration_
+    )
+        AdventureERC721CMetadata(name_, symbol_, maxSimultaneousQuests_)
+        MaxSupply(maxSupply_, maxOwnerMints_)
+        MerkleWhitelistMint(
+            MerkleMintConfiguration_.maxMerkleMints,
+            MerkleMintConfiguration_.permittedNumberOfMerkleRootChanges
+        )
+        MinterCreatorSharedRoyalties(
+            sharedRoyaltyConfiguration_.royaltyFeeNumerator,
+            sharedRoyaltyConfiguration_.minterShares,
+            sharedRoyaltyConfiguration_.creatorShares,
+            sharedRoyaltyConfiguration_.creator,
+            sharedRoyaltyConfiguration_.paymentSplitter
+        )
+    {}
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AdventureERC721C, MinterCreatorSharedRoyaltiesBase) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(AdventureERC721C, MinterCreatorSharedRoyaltiesBase)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 

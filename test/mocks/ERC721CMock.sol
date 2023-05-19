@@ -7,7 +7,6 @@ import "../../contracts/access/OwnableInitializable.sol";
 import "../../contracts/erc721c/ERC721C.sol";
 
 contract ERC721CMock is OwnableBasic, ERC721C {
-    
     constructor() ERC721OpenZeppelin("ERC-721C Mock", "MOCK") {}
 
     function mint(address to, uint256 tokenId) external {
@@ -16,7 +15,6 @@ contract ERC721CMock is OwnableBasic, ERC721C {
 }
 
 contract ERC721CInitializableMock is OwnableInitializable, ERC721CInitializable {
-    
     constructor() ERC721("", "") {}
 
     function mint(address to, uint256 tokenId) external {

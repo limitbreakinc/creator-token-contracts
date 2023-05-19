@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "../../access/OwnableBasic.sol";
+import "../../access/OwnableInitializable.sol";
 import "../../erc721c/ERC721C.sol";
 import "../../programmable-royalties/MinterCreatorSharedRoyalties.sol";
 
@@ -20,6 +21,37 @@ contract ERC721CWithMinterCreatorSharedRoyalties is OwnableBasic, ERC721C, Minte
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721C, MinterCreatorSharedRoyaltiesBase) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function mint(address to, uint256 tokenId) external {
+        _mint(to, tokenId);
+    }
+
+    function safeMint(address to, uint256 tokenId) external {
+        _safeMint(to, tokenId);
+    }
+
+    function burn(uint256 tokenId) external {
+        _burn(tokenId);
+    }
+
+    function _mint(address to, uint256 tokenId) internal virtual override {
+        _onMinted(to, tokenId);
+        super._mint(to, tokenId);
+    }
+
+    function _burn(uint256 tokenId) internal virtual override {
+        super._burn(tokenId);
+        _onBurned(tokenId);
+    }
+}
+
+contract ERC721CWithMinterCreatorSharedRoyaltiesInitializable is OwnableInitializable, ERC721CInitializable, MinterCreatorSharedRoyaltiesInitializable {
+
+    constructor() ERC721("", "") {}
+
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721CInitializable, MinterCreatorSharedRoyaltiesBase) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

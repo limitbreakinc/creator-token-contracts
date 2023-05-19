@@ -13,29 +13,33 @@ interface IAdventurousEarlyExits {
 }
 
 contract AdventureMock is Context, ERC165, IAdventure, IAdventurousEarlyExits {
-
     bool private doQuestsLockTokens;
 
-    IAdventurousERC721 immutable public adventurousNFT;
+    IAdventurousERC721 public immutable adventurousNFT;
 
     constructor(bool doQuestsLockTokens_, address adventurousNFTAddress) {
         doQuestsLockTokens = doQuestsLockTokens_;
         adventurousNFT = IAdventurousERC721(adventurousNFTAddress);
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override (ERC165, IERC165) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC165, IERC165) returns (bool) {
         return interfaceId == type(IAdventure).interfaceId || super.supportsInterface(interfaceId);
     }
 
-    function questsLockTokens() external override view returns (bool) {
+    function questsLockTokens() external view override returns (bool) {
         return doQuestsLockTokens;
     }
 
-    function onQuestEntered(address /*adventurer*/, uint256 /*tokenId*/, uint256 /*questId*/) external override view {
+    function onQuestEntered(address, /*adventurer*/ uint256, /*tokenId*/ uint256 /*questId*/ ) external view override {
         require(_msgSender() == address(adventurousNFT), "Caller not adventurous token contract");
     }
 
-    function onQuestExited(address /*adventurer*/, uint256 /*tokenId*/, uint256 /*questId*/, uint256 /*questStartTimestamp*/) external override view {
+    function onQuestExited(
+        address, /*adventurer*/
+        uint256, /*tokenId*/
+        uint256, /*questId*/
+        uint256 /*questStartTimestamp*/
+    ) external view override {
         require(_msgSender() == address(adventurousNFT), "Caller not adventurous token contract");
     }
 

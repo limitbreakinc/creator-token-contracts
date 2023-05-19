@@ -5,14 +5,20 @@ import "../../AdventureERC721CMetadataInitializable.sol";
 import "contracts/minting/MerkleWhitelistMint.sol";
 import "contracts/programmable-royalties/ImmutableMinterRoyalties.sol";
 
-contract MerkleMock is 
-    AdventureERC721CMetadataInitializable, 
+contract MerkleMock is
+    AdventureERC721CMetadataInitializable,
     MerkleWhitelistMintInitializable,
-    ImmutableMinterRoyaltiesInitializable {
-
+    ImmutableMinterRoyaltiesInitializable
+{
     constructor() ERC721("", "") {}
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AdventureERC721CInitializable, ImmutableMinterRoyaltiesBase) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(AdventureERC721CInitializable, ImmutableMinterRoyaltiesBase)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 

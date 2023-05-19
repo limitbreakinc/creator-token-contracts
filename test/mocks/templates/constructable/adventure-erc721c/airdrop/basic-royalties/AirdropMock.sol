@@ -5,26 +5,30 @@ import "../../AdventureERC721CMetadata.sol";
 import "contracts/minting/AirdropMint.sol";
 import "contracts/programmable-royalties/BasicRoyalties.sol";
 
-contract AirdropMock is 
-    AdventureERC721CMetadata, 
-    AirdropMint,
-    BasicRoyalties {
-
+contract AirdropMock is AdventureERC721CMetadata, AirdropMint, BasicRoyalties {
     constructor(
-        string memory name_, 
+        string memory name_,
         string memory symbol_,
-        uint256 maxSimultaneousQuests_, 
-        uint256 maxSupply_, 
+        uint256 maxSimultaneousQuests_,
+        uint256 maxSupply_,
         uint256 maxOwnerMints_,
         uint256 maxAirdropMints_,
-        address royaltyReceiver_, 
-        uint96 royaltyFeeNumerator_) 
-    AdventureERC721CMetadata(name_, symbol_, maxSimultaneousQuests_) 
-    MaxSupply(maxSupply_, maxOwnerMints_)
-    AirdropMint(maxAirdropMints_) 
-    BasicRoyalties(royaltyReceiver_, royaltyFeeNumerator_) {}
+        address royaltyReceiver_,
+        uint96 royaltyFeeNumerator_
+    )
+        AdventureERC721CMetadata(name_, symbol_, maxSimultaneousQuests_)
+        MaxSupply(maxSupply_, maxOwnerMints_)
+        AirdropMint(maxAirdropMints_)
+        BasicRoyalties(royaltyReceiver_, royaltyFeeNumerator_)
+    {}
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AdventureERC721C, ERC2981) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(AdventureERC721C, ERC2981)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 

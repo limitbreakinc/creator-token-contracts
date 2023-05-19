@@ -3,12 +3,11 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "./mocks/ERC721Mock.sol";
-import "./mocks/ERC721CWPermanentMock.sol";
-import "./CreatorTokenTransferValidatorERC721.t.sol";
+import "../mocks/ERC721Mock.sol";
+import "../mocks/ERC721CWPermanentMock.sol";
+import "../CreatorTokenTransferValidatorERC721.t.sol";
 
 contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
-
     event Staked(uint256 indexed tokenId, address indexed account);
     event Unstaked(uint256 indexed tokenId, address indexed account);
     event StakerConstraintsSet(StakerConstraints stakerConstraints);
@@ -18,7 +17,7 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
 
     function setUp() public virtual override {
         super.setUp();
-        
+
         wrappedTokenMock = new ERC721Mock();
         tokenMock = new ERC721CWPermanentMock(address(wrappedTokenMock));
         tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
@@ -88,7 +87,9 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
         vm.stopPrank();
     }
 
-    function testRevertsWhenUnauthorizedUserAttemptsToStake(address to, address unauthorizedUser, uint256 tokenId) public {
+    function testRevertsWhenUnauthorizedUserAttemptsToStake(address to, address unauthorizedUser, uint256 tokenId)
+        public
+    {
         vm.assume(to != address(0));
         vm.assume(unauthorizedUser != address(0));
         vm.assume(to != unauthorizedUser);
@@ -105,7 +106,9 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
         vm.stopPrank();
     }
 
-    function testRevertsWhenApprovedOperatorAttemptsToStake(address to, address approvedOperator, uint256 tokenId) public {
+    function testRevertsWhenApprovedOperatorAttemptsToStake(address to, address approvedOperator, uint256 tokenId)
+        public
+    {
         vm.assume(to != address(0));
         vm.assume(approvedOperator != address(0));
         vm.assume(to != approvedOperator);
@@ -123,7 +126,9 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
         vm.stopPrank();
     }
 
-    function testRevertsWhenUnauthorizedUserAttemptsToUnstake(address to, address unauthorizedUser, uint256 tokenId) public {
+    function testRevertsWhenUnauthorizedUserAttemptsToUnstake(address to, address unauthorizedUser, uint256 tokenId)
+        public
+    {
         vm.assume(to != address(0));
         vm.assume(unauthorizedUser != address(0));
         vm.assume(to != unauthorizedUser);
@@ -141,7 +146,9 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
         vm.stopPrank();
     }
 
-    function testRevertsWhenApprovedOperatorAttemptsToUnstake(address to, address approvedOperator, uint256 tokenId) public {
+    function testRevertsWhenApprovedOperatorAttemptsToUnstake(address to, address approvedOperator, uint256 tokenId)
+        public
+    {
         vm.assume(to != address(0));
         vm.assume(approvedOperator != address(0));
         vm.assume(to != approvedOperator);
@@ -202,7 +209,11 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
         vm.stopPrank();
     }
 
-    function testSecondaryWrappingCollectionHoldersCannotUnstakeTokens(address to, address secondaryHolder, uint256 tokenId) public {
+    function testSecondaryWrappingCollectionHoldersCannotUnstakeTokens(
+        address to,
+        address secondaryHolder,
+        uint256 tokenId
+    ) public {
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
         vm.assume(secondaryHolder != address(0));
@@ -232,7 +243,10 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
         assertEq(uint8(tokenMock.getStakerConstraints()), uint8(constraints));
     }
 
-    function testRevertsWhenUnauthorizedUserAttemptsToSetStakerConstraints(address unauthorizedUser, uint8 constraintsUint8) public {
+    function testRevertsWhenUnauthorizedUserAttemptsToSetStakerConstraints(
+        address unauthorizedUser,
+        uint8 constraintsUint8
+    ) public {
         vm.assume(unauthorizedUser != address(0));
         vm.assume(constraintsUint8 <= 2);
         StakerConstraints constraints = StakerConstraints(constraintsUint8);
@@ -263,7 +277,9 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
         assertEq(wrappedTokenMock.ownerOf(tokenId), address(tokenMock));
     }
 
-    function testEOACanStakeTokensWhenEOAStakerConstraintsAreInEffectButValidatorIsUnset(address to, uint256 tokenId) public {
+    function testEOACanStakeTokensWhenEOAStakerConstraintsAreInEffectButValidatorIsUnset(address to, uint256 tokenId)
+        public
+    {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
@@ -306,7 +322,11 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
         assertEq(wrappedTokenMock.ownerOf(tokenId), address(tokenMock));
     }
 
-    function testRevertsWhenCallerIsTxOriginConstraintIsInEffectIfCallerIsNotOrigin(address to, address origin, uint256 tokenId) public {
+    function testRevertsWhenCallerIsTxOriginConstraintIsInEffectIfCallerIsNotOrigin(
+        address to,
+        address origin,
+        uint256 tokenId
+    ) public {
         _sanitizeAddress(to);
         _sanitizeAddress(origin);
         vm.assume(to != address(0));
@@ -325,7 +345,9 @@ contract ERC721CWPermanentTest is CreatorTokenTransferValidatorERC721Test {
         tokenMock.stake(tokenId);
     }
 
-    function testRevertsWhenCallerIsEOAConstraintIsInEffectIfCallerHasNotVerifiedSignature(address to, uint256 tokenId) public {
+    function testRevertsWhenCallerIsEOAConstraintIsInEffectIfCallerHasNotVerifiedSignature(address to, uint256 tokenId)
+        public
+    {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
 

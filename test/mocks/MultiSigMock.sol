@@ -9,7 +9,6 @@ interface ICreatorERC721 {
 }
 
 contract MultiSigMock {
-    
     constructor() {}
 
     function execStake(address wrapperNftAddress, uint256 tokenId) external {

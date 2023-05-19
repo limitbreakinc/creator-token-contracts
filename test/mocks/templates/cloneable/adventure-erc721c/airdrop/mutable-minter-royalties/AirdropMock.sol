@@ -5,14 +5,20 @@ import "../../AdventureERC721CMetadataInitializable.sol";
 import "contracts/minting/AirdropMint.sol";
 import "contracts/programmable-royalties/MutableMinterRoyalties.sol";
 
-contract AirdropMock is 
-    AdventureERC721CMetadataInitializable, 
+contract AirdropMock is
+    AdventureERC721CMetadataInitializable,
     AirdropMintInitializable,
-    MutableMinterRoyaltiesInitializable {
-
+    MutableMinterRoyaltiesInitializable
+{
     constructor() ERC721("", "") {}
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AdventureERC721CInitializable, MutableMinterRoyaltiesBase) returns (bool) {
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(AdventureERC721CInitializable, MutableMinterRoyaltiesBase)
+        returns (bool)
+    {
         return super.supportsInterface(interfaceId);
     }
 

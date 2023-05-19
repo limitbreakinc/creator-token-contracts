@@ -11,7 +11,6 @@ import "@openzeppelin/contracts/utils/introspection/IERC165.sol";
  * @dev See https://eips.ethereum.org/EIPS/eip-1167 for details.
  */
 interface IOwnableInitializer is IERC165 {
-
     /**
      * @notice Initializes the contract owner to the specified address
      */

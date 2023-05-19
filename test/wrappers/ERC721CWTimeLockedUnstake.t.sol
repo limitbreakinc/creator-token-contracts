@@ -3,12 +3,11 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "./mocks/ERC721Mock.sol";
-import "./mocks/ERC721CWTimeLockedUnstakeMock.sol";
-import "./CreatorTokenTransferValidatorERC721.t.sol";
+import "../mocks/ERC721Mock.sol";
+import "../mocks/ERC721CWTimeLockedUnstakeMock.sol";
+import "../CreatorTokenTransferValidatorERC721.t.sol";
 
 contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Test {
-
     event Staked(uint256 indexed tokenId, address indexed account);
     event Unstaked(uint256 indexed tokenId, address indexed account);
     event StakerConstraintsSet(StakerConstraints stakerConstraints);
@@ -18,7 +17,7 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
 
     function setUp() public virtual override {
         super.setUp();
-        
+
         wrappedTokenMock = new ERC721Mock();
         tokenMock = new ERC721CWTimeLockedUnstakeMock(1 days, address(wrappedTokenMock));
         tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
@@ -53,7 +52,11 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         assertFalse(tokenMock.canUnstake(tokenId));
     }
 
-    function testCanUnstakeReturnsFalseForStakedTokenIdsBeforeTimelockExpiration(address to, uint256 tokenId, uint256 secondsBeforeExpiration) public {
+    function testCanUnstakeReturnsFalseForStakedTokenIdsBeforeTimelockExpiration(
+        address to,
+        uint256 tokenId,
+        uint256 secondsBeforeExpiration
+    ) public {
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
         _mintToken(address(tokenMock), to, tokenId);
@@ -64,7 +67,11 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         assertFalse(tokenMock.canUnstake(tokenId));
     }
 
-    function testCanUnstakeReturnsTrueForStakedTokenIdsAfterTimelockExpiration(address to, uint256 tokenId, uint256 secondsPastExpiration) public {
+    function testCanUnstakeReturnsTrueForStakedTokenIdsAfterTimelockExpiration(
+        address to,
+        uint256 tokenId,
+        uint256 secondsPastExpiration
+    ) public {
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
         _mintToken(address(tokenMock), to, tokenId);
@@ -104,7 +111,9 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.stopPrank();
     }
 
-    function testRevertsWhenUnauthorizedUserAttemptsToStake(address to, address unauthorizedUser, uint256 tokenId) public {
+    function testRevertsWhenUnauthorizedUserAttemptsToStake(address to, address unauthorizedUser, uint256 tokenId)
+        public
+    {
         vm.assume(to != address(0));
         vm.assume(unauthorizedUser != address(0));
         vm.assume(to != unauthorizedUser);
@@ -121,7 +130,9 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.stopPrank();
     }
 
-    function testRevertsWhenApprovedOperatorAttemptsToStake(address to, address approvedOperator, uint256 tokenId) public {
+    function testRevertsWhenApprovedOperatorAttemptsToStake(address to, address approvedOperator, uint256 tokenId)
+        public
+    {
         vm.assume(to != address(0));
         vm.assume(approvedOperator != address(0));
         vm.assume(to != approvedOperator);
@@ -139,7 +150,9 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.stopPrank();
     }
 
-    function testRevertsWhenUnauthorizedUserAttemptsToUnstake(address to, address unauthorizedUser, uint256 tokenId) public {
+    function testRevertsWhenUnauthorizedUserAttemptsToUnstake(address to, address unauthorizedUser, uint256 tokenId)
+        public
+    {
         vm.assume(to != address(0));
         vm.assume(unauthorizedUser != address(0));
         vm.assume(to != unauthorizedUser);
@@ -157,7 +170,9 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.stopPrank();
     }
 
-    function testRevertsWhenApprovedOperatorAttemptsToUnstake(address to, address approvedOperator, uint256 tokenId) public {
+    function testRevertsWhenApprovedOperatorAttemptsToUnstake(address to, address approvedOperator, uint256 tokenId)
+        public
+    {
         vm.assume(to != address(0));
         vm.assume(approvedOperator != address(0));
         vm.assume(to != approvedOperator);
@@ -189,7 +204,9 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.stopPrank();
     }
 
-    function testWrappingCollectionHoldersCannotUnstakeTokensBeforeTimeLockExpires(address to, uint256 tokenId) public {
+    function testWrappingCollectionHoldersCannotUnstakeTokensBeforeTimeLockExpires(address to, uint256 tokenId)
+        public
+    {
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
 
@@ -204,7 +221,9 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         vm.stopPrank();
     }
 
-    function testWrappingCollectionHoldersCanUnstakeTokensIfAtExactTimelockExpiration(address to, uint256 tokenId) public {
+    function testWrappingCollectionHoldersCanUnstakeTokensIfAtExactTimelockExpiration(address to, uint256 tokenId)
+        public
+    {
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
 
@@ -222,7 +241,11 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         assertEq(wrappedTokenMock.ownerOf(tokenId), to);
     }
 
-    function testWrappingCollectionHoldersCanUnstakeTokensAnytimeAfterTimelockExpiration(address to, uint256 tokenId, uint256 secondsPastExpiration) public {
+    function testWrappingCollectionHoldersCanUnstakeTokensAnytimeAfterTimelockExpiration(
+        address to,
+        uint256 tokenId,
+        uint256 secondsPastExpiration
+    ) public {
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
 
@@ -242,7 +265,12 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         assertEq(wrappedTokenMock.ownerOf(tokenId), to);
     }
 
-    function testSecondaryWrappingCollectionHoldersCanUnstakeTokensAnytimeAfterTimelockExpiration(address to, address secondaryHolder, uint256 tokenId, uint256 secondsPastExpiration) public {
+    function testSecondaryWrappingCollectionHoldersCanUnstakeTokensAnytimeAfterTimelockExpiration(
+        address to,
+        address secondaryHolder,
+        uint256 tokenId,
+        uint256 secondsPastExpiration
+    ) public {
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
         vm.assume(secondaryHolder != address(0));
@@ -269,7 +297,12 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         assertEq(wrappedTokenMock.ownerOf(tokenId), secondaryHolder);
     }
 
-    function testRevertsWhenNativeFundsIncludedInUnstake(address to, uint256 tokenId, uint256 secondsPastExpiration, uint256 value) public {
+    function testRevertsWhenNativeFundsIncludedInUnstake(
+        address to,
+        uint256 tokenId,
+        uint256 secondsPastExpiration,
+        uint256 value
+    ) public {
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
         vm.assume(value > 0);
@@ -284,7 +317,9 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         uint256 maxSecondsPast = type(uint256).max - expirationTimestamp;
         vm.assume(secondsPastExpiration < maxSecondsPast);
         vm.warp(expirationTimestamp + secondsPastExpiration);
-        vm.expectRevert(ERC721WrapperBase.ERC721WrapperBase__DefaultImplementationOfUnstakeDoesNotAcceptPayment.selector);
+        vm.expectRevert(
+            ERC721WrapperBase.ERC721WrapperBase__DefaultImplementationOfUnstakeDoesNotAcceptPayment.selector
+        );
         tokenMock.unstake{value: value}(tokenId);
         vm.stopPrank();
     }
@@ -299,7 +334,10 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         assertEq(uint8(tokenMock.getStakerConstraints()), uint8(constraints));
     }
 
-    function testRevertsWhenUnauthorizedUserAttemptsToSetStakerConstraints(address unauthorizedUser, uint8 constraintsUint8) public {
+    function testRevertsWhenUnauthorizedUserAttemptsToSetStakerConstraints(
+        address unauthorizedUser,
+        uint8 constraintsUint8
+    ) public {
         vm.assume(unauthorizedUser != address(0));
         vm.assume(constraintsUint8 <= 2);
         StakerConstraints constraints = StakerConstraints(constraintsUint8);
@@ -330,7 +368,9 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         assertEq(wrappedTokenMock.ownerOf(tokenId), address(tokenMock));
     }
 
-    function testEOACanStakeTokensWhenEOAStakerConstraintsAreInEffectButValidatorIsUnset(address to, uint256 tokenId) public {
+    function testEOACanStakeTokensWhenEOAStakerConstraintsAreInEffectButValidatorIsUnset(address to, uint256 tokenId)
+        public
+    {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
@@ -373,7 +413,11 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         assertEq(wrappedTokenMock.ownerOf(tokenId), address(tokenMock));
     }
 
-    function testRevertsWhenCallerIsTxOriginConstraintIsInEffectIfCallerIsNotOrigin(address to, address origin, uint256 tokenId) public {
+    function testRevertsWhenCallerIsTxOriginConstraintIsInEffectIfCallerIsNotOrigin(
+        address to,
+        address origin,
+        uint256 tokenId
+    ) public {
         _sanitizeAddress(to);
         _sanitizeAddress(origin);
         vm.assume(to != address(0));
@@ -394,7 +438,9 @@ contract ERC721CWTimeLockedUnstakeTest is CreatorTokenTransferValidatorERC721Tes
         tokenMock.stake(tokenId);
     }
 
-    function testRevertsWhenCallerIsEOAConstraintIsInEffectIfCallerHasNotVerifiedSignature(address to, uint256 tokenId) public {
+    function testRevertsWhenCallerIsEOAConstraintIsInEffectIfCallerHasNotVerifiedSignature(address to, uint256 tokenId)
+        public
+    {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
 

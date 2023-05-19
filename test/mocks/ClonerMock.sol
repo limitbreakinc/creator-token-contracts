@@ -5,7 +5,6 @@ import "test/interfaces/IOwnableInitializable.sol";
 import "@openzeppelin/contracts/proxy/Clones.sol";
 
 contract ClonerMock {
-
     error InitializationArgumentInvalid(uint256 arrayIndex);
 
     constructor() {}
