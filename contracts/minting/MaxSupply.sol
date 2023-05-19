@@ -107,6 +107,11 @@ abstract contract MaxSupplyBase is OwnablePermissions, MintTokenBase, Sequential
     }
 }
 
+/**
+ * @title MaxSupply
+ * @author Limit Break, Inc.
+ * @notice Constructable implementation of the MaxSupplyBase mixin.
+ */
 abstract contract MaxSupply is MaxSupplyBase {
 
     uint256 internal immutable _maxSupplyImmutable;
@@ -121,6 +126,11 @@ abstract contract MaxSupply is MaxSupplyBase {
     }
 }
 
+/**
+ * @title MaxSupplyInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable implementation of the MaxSupplyBase mixin to allow for EIP-1167 clones.
+ */
 abstract contract MaxSupplyInitializable is MaxSupplyBase {
 
     error InitializableMaxSupplyBase__MaxSupplyAlreadyInitialized();

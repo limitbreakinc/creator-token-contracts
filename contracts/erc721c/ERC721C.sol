@@ -46,6 +46,11 @@ abstract contract ERC721C is ERC721OpenZeppelin, CreatorTokenBase {
     }
 }
 
+/**
+ * @title ERC721CInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable implementation of ERC721C to allow for EIP-1167 proxy clones.
+ */
 abstract contract ERC721CInitializable is ERC721OpenZeppelinInitializable, CreatorTokenBase {
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
         return interfaceId == type(ICreatorToken).interfaceId || super.supportsInterface(interfaceId);

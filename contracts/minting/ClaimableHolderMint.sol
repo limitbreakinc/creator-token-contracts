@@ -6,9 +6,9 @@ import "./MaxSupply.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 /**
- * @title ClaimableHolderMint
+ * @title ClaimableHolderMintBase
  * @author Limit Break, Inc.
- * @notice A contract mix-in that may optionally be used with extend ERC-721 tokens with sequential role-based minting capabilities.
+ * @notice Base functionality of a contract mix-in that may optionally be used with extend ERC-721 tokens with sequential role-based minting capabilities.
  * @dev Inheriting contracts must implement `_mintToken`.
  */
 abstract contract ClaimableHolderMintBase is ClaimPeriodBase, MaxSupplyBase {
@@ -385,6 +385,11 @@ abstract contract ClaimableHolderMintBase is ClaimPeriodBase, MaxSupplyBase {
     }
 }
 
+/**
+ * @title ClaimableHolderMint
+ * @author Limit Break, Inc.
+ * @notice Constructable ClaimableHolderMint Contract implementation.
+ */
 abstract contract ClaimableHolderMint is ClaimableHolderMintBase, MaxSupply {
     constructor(
         address[] memory rootCollections_, 
@@ -398,6 +403,11 @@ abstract contract ClaimableHolderMint is ClaimableHolderMintBase, MaxSupply {
     }
 }
 
+/**
+ * @title ClaimableHolderMintInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable ClaimableHolderMint Contract implementation to allow for EIP-1167 clones.
+ */
 abstract contract ClaimableHolderMintInitializable is ClaimableHolderMintBase, MaxSupplyInitializable {
     
     error ClaimableHolderMintInitializable__RootCollectionsAlreadyInitialized();

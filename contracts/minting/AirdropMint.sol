@@ -4,9 +4,9 @@ pragma solidity ^0.8.4;
 import "./MaxSupply.sol";
 
 /**
- * @title AirdropMint
+ * @title AirdropMintBase
  * @author Limit Break, Inc.
- * @notice A contract mix-in that may optionally be used with extend ERC-721 tokens with airdrop minting capabilities.
+ * @notice Base functionality of a contract mix-in that may optionally be used with extend ERC-721 tokens with airdrop minting capabilities.
  * @dev Inheriting contracts must implement `_mintToken`.
  */
 abstract contract AirdropMintBase is MaxSupplyBase {
@@ -74,6 +74,11 @@ abstract contract AirdropMintBase is MaxSupplyBase {
     }
 }
 
+/**
+ * @title AirdropMint
+ * @author Limit Break, Inc.
+ * @notice Constructable AirdropMint Contract implementation.
+ */
 abstract contract AirdropMint is AirdropMintBase, MaxSupply {
     constructor(uint256 maxAirdropMints_) {
         _setMaxAirdropSupply(maxAirdropMints_);
@@ -84,6 +89,11 @@ abstract contract AirdropMint is AirdropMintBase, MaxSupply {
     }
 }
 
+/**
+ * @title AirdropMintInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable AirdropMint Contract implementation to allow for EIP-1167 clones.
+ */
 abstract contract AirdropMintInitializable is AirdropMintBase, MaxSupplyInitializable {
 
     error AirdropMintInitializable__MaxAirdropSupplyAlreadyInitialized();

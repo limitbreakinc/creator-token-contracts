@@ -8,9 +8,9 @@ import "@openzeppelin/contracts/proxy/Clones.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 /**
- * @title MinterCreatorSharedRoyalties
+ * @title MinterCreatorSharedRoyaltiesBase
  * @author Limit Break, Inc.
- * @dev An NFT mix-in contract implementing programmable royalties.  Royalties are shared between creators and minters.
+ * @dev Base functionality of an NFT mix-in contract implementing programmable royalties.  Royalties are shared between creators and minters.
  */
 abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
 
@@ -285,6 +285,11 @@ abstract contract MinterCreatorSharedRoyaltiesBase is IERC2981, ERC165 {
     }
 }
 
+/**
+ * @title MinterCreatorSharedRoyalties
+ * @author Limit Break, Inc.
+ * @notice Constructable MinterCreatorSharedRoyalties Contract implementation.
+ */
 abstract contract MinterCreatorSharedRoyalties is MinterCreatorSharedRoyaltiesBase {
 
     uint256 private immutable _royaltyFeeNumeratorImmutable;
@@ -342,6 +347,11 @@ abstract contract MinterCreatorSharedRoyalties is MinterCreatorSharedRoyaltiesBa
     }
 }
 
+/**
+ * @title MinterCreatorSharedRoyaltiesInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable MinterCreatorSharedRoyalties Contract implementation to allow for EIP-1167 clones. 
+ */
 abstract contract MinterCreatorSharedRoyaltiesInitializable is OwnablePermissions, MinterCreatorSharedRoyaltiesBase {
 
     error MinterCreatorSharedRoyaltiesInitializable__RoyaltyFeeAndSharesAlreadyInitialized();

@@ -5,6 +5,12 @@ import "../../access/OwnableBasic.sol";
 import "../../erc721c/ERC721AC.sol";
 import "../../programmable-royalties/MutableMinterRoyalties.sol";
 
+/**
+ * @title ERC721ACWithMutableMinterRoyalties
+ * @author Limit Break, Inc.
+ * @notice Extension of ERC721AC that allows for minters to receive royalties on the tokens they mint.
+ *         The royalty fee is mutable and settable by the owner of each minted token.
+ */
 contract ERC721ACWithMutableMinterRoyalties is OwnableBasic, ERC721AC, MutableMinterRoyalties {
 
     constructor(

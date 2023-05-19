@@ -5,6 +5,12 @@ import "../../access/OwnableBasic.sol";
 import "../../erc721c/ERC721AC.sol";
 import "../../programmable-royalties/MinterCreatorSharedRoyalties.sol";
 
+/**
+ * @title ERC721ACWithMinterCreatorSharedRoyalties
+ * @author Limit Break, Inc.
+ * @notice Extension of ERC721AC that allows for minters and creators to receive a split of royalties on the tokens minted.
+ *         The royalty fee and percent split is immutable and set at contract creation.
+ */
 contract ERC721ACWithMinterCreatorSharedRoyalties is OwnableBasic, ERC721AC, MinterCreatorSharedRoyalties {
 
     constructor(

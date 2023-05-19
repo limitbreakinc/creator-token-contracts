@@ -5,7 +5,7 @@ import "../AdventureERC721C.sol";
 import "./ERC721CW.sol";
 
 /**
- * @title ERC721CW
+ * @title AdventureERC721CW
  * @author Limit Break, Inc.
  * @notice Extends AdventureERC721-C contracts and adds a staking feature used to wrap another ERC721 contract.
  * The wrapper token gives the developer access to the same set of controls present in the ERC721-C standard.
@@ -66,6 +66,11 @@ abstract contract AdventureERC721CW is ERC721WrapperBase, AdventureERC721C {
     }
 }
 
+/**
+ * @title AdventureERC721CWInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable implementation of the AdventureERC721CW contract to allow for EIP-1167 clones.
+ */
 abstract contract AdventureERC721CWInitializable is ERC721WrapperBase, AdventureERC721CInitializable {
 
     error AdventureERC721CWInitializable__AlreadyInitializedWrappedCollection();

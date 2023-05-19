@@ -5,6 +5,11 @@ import "../../access/OwnableBasic.sol";
 import "../../erc721c/ERC721C.sol";
 import "../../programmable-royalties/BasicRoyalties.sol";
 
+/**
+ * @title ERC721CWithBasicRoyalties
+ * @author Limit Break, Inc.
+ * @notice Extension of ERC721C that adds basic royalties support.
+ */
 contract ERC721CWithBasicRoyalties is OwnableBasic, ERC721C, BasicRoyalties {
 
     constructor(
