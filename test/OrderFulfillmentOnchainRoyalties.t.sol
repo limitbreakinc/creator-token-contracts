@@ -14,7 +14,6 @@ import "contracts/utils/CreatorTokenTransferValidator.sol";
 import "contracts/examples/erc721c/ERC721CWithMutableMinterRoyalties.sol";
 
 contract OrderFulfillmentOnchainRoyaltiesTest is Test {
-    
     ThirdPartyMarketplaceMock public marketplace;
     ERC20Mock public paymentToken;
 
@@ -56,7 +55,8 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         uint256 expectedRoyaltyFee = (price * actualRoyaltyFeeNumerator) / 10000;
 
         vm.prank(creator);
-        ERC721CWithMutableMinterRoyalties token = new ERC721CWithMutableMinterRoyalties(actualRoyaltyFeeNumerator, "Test", "TEST");
+        ERC721CWithMutableMinterRoyalties token =
+            new ERC721CWithMutableMinterRoyalties(actualRoyaltyFeeNumerator, "Test", "TEST");
 
         vm.assume(creator != address(token));
         vm.assume(minter != address(token));
@@ -86,14 +86,15 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         vm.prank(buyer);
         marketplace.validateAndFulfillOrderERC721{value: native ? price : 0}(
             native ? address(0) : address(paymentToken),
-            address(token), 
-            seller, 
-            buyer, 
-            tokenId, 
-            price, 
-            marketplaceFee, 
-            maxRoyaltyFeeNumerator, 
-            "");
+            address(token),
+            seller,
+            buyer,
+            tokenId,
+            price,
+            marketplaceFee,
+            maxRoyaltyFeeNumerator,
+            ""
+        );
 
         assertEq(token.ownerOf(tokenId), buyer);
 
@@ -176,15 +177,16 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         vm.prank(buyer);
         marketplace.validateAndFulfillOrderERC1155{value: native ? price : 0}(
             native ? address(0) : address(paymentToken),
-            address(token), 
-            seller, 
-            buyer, 
-            tokenId, 
+            address(token),
+            seller,
+            buyer,
+            tokenId,
             amount,
-            price, 
-            marketplaceFee, 
-            0, 
-            "");
+            price,
+            marketplaceFee,
+            0,
+            ""
+        );
 
         assertEq(token.balanceOf(buyer, tokenId), amount);
 
@@ -228,7 +230,8 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         uint256 expectedRoyaltyFee = (price * actualRoyaltyFeeNumerator) / 10000;
 
         vm.prank(creator);
-        ERC721CWithMutableMinterRoyalties token = new ERC721CWithMutableMinterRoyalties(actualRoyaltyFeeNumerator, "Test", "TEST");
+        ERC721CWithMutableMinterRoyalties token =
+            new ERC721CWithMutableMinterRoyalties(actualRoyaltyFeeNumerator, "Test", "TEST");
 
         vm.assume(creator != address(token));
         vm.assume(minter != address(token));
@@ -243,24 +246,19 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         token.mint(minter, tokenId);
         token.transferFrom(minter, seller, tokenId);
         vm.stopPrank();
-        
+
         vm.prank(seller);
         token.setApprovalForAll(address(marketplace), true);
 
         vm.deal(buyer, price);
 
         vm.prank(buyer);
-        vm.expectRevert(OrderFulfillmentOnchainRoyalties.OrderFulfillmentOnchainRoyalties__FailedToTransferProceeds.selector);
+        vm.expectRevert(
+            OrderFulfillmentOnchainRoyalties.OrderFulfillmentOnchainRoyalties__FailedToTransferProceeds.selector
+        );
         marketplace.validateAndFulfillOrderERC721{value: price}(
-            address(0),
-            address(token), 
-            seller, 
-            buyer, 
-            tokenId, 
-            price, 
-            marketplaceFee, 
-            maxRoyaltyFeeNumerator, 
-            "");
+            address(0), address(token), seller, buyer, tokenId, price, marketplaceFee, maxRoyaltyFeeNumerator, ""
+        );
     }
 
     function testRevertsIfRoyaltyReceiverCannotReceiveNativeFunds(
@@ -291,7 +289,8 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         vm.assume(expectedRoyaltyFee > 0);
 
         vm.prank(creator);
-        ERC721CWithMutableMinterRoyalties token = new ERC721CWithMutableMinterRoyalties(actualRoyaltyFeeNumerator, "Test", "TEST");
+        ERC721CWithMutableMinterRoyalties token =
+            new ERC721CWithMutableMinterRoyalties(actualRoyaltyFeeNumerator, "Test", "TEST");
 
         vm.prank(creator);
         address payable minter = payable(address(new RejectEtherMock()));
@@ -317,17 +316,12 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         vm.deal(buyer, price);
 
         vm.prank(buyer);
-        vm.expectRevert(OrderFulfillmentOnchainRoyalties.OrderFulfillmentOnchainRoyalties__FailedToTransferProceeds.selector);
+        vm.expectRevert(
+            OrderFulfillmentOnchainRoyalties.OrderFulfillmentOnchainRoyalties__FailedToTransferProceeds.selector
+        );
         marketplace.validateAndFulfillOrderERC721{value: price}(
-            address(0),
-            address(token), 
-            seller, 
-            buyer, 
-            tokenId, 
-            price, 
-            marketplaceFee, 
-            maxRoyaltyFeeNumerator, 
-            "");
+            address(0), address(token), seller, buyer, tokenId, price, marketplaceFee, maxRoyaltyFeeNumerator, ""
+        );
     }
 
     function testRevertsWhenTooMuchPlatformFeesHaveBeenTaken(
@@ -361,7 +355,8 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         uint256 marketplaceFee = price + 1;
 
         vm.prank(creator);
-        ERC721CWithMutableMinterRoyalties token = new ERC721CWithMutableMinterRoyalties(actualRoyaltyFeeNumerator, "Test", "TEST");
+        ERC721CWithMutableMinterRoyalties token =
+            new ERC721CWithMutableMinterRoyalties(actualRoyaltyFeeNumerator, "Test", "TEST");
 
         vm.assume(creator != address(token));
         vm.assume(minter != address(token));
@@ -389,17 +384,22 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         }
 
         vm.prank(buyer);
-        vm.expectRevert(OrderFulfillmentOnchainRoyalties.OrderFulfillmentOnchainRoyalties__PlatformFeesExceededOriginalSalePrice.selector);
+        vm.expectRevert(
+            OrderFulfillmentOnchainRoyalties
+                .OrderFulfillmentOnchainRoyalties__PlatformFeesExceededOriginalSalePrice
+                .selector
+        );
         marketplace.validateAndFulfillOrderERC721{value: native ? marketplaceFee : 0}(
             native ? address(0) : address(paymentToken),
-            address(token), 
-            seller, 
-            buyer, 
-            tokenId, 
-            price, 
-            marketplaceFee, 
-            maxRoyaltyFeeNumerator, 
-            "");
+            address(token),
+            seller,
+            buyer,
+            tokenId,
+            price,
+            marketplaceFee,
+            maxRoyaltyFeeNumerator,
+            ""
+        );
     }
 
     function testRevertsWhenOnChainRoyaltyFeeExceedsMaxApprovedRoyaltyFee(
@@ -437,7 +437,8 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         vm.assume(maxRoyaltyFee < expectedRoyaltyFee);
 
         vm.prank(creator);
-        ERC721CWithMutableMinterRoyalties token = new ERC721CWithMutableMinterRoyalties(actualRoyaltyFeeNumerator, "Test", "TEST");
+        ERC721CWithMutableMinterRoyalties token =
+            new ERC721CWithMutableMinterRoyalties(actualRoyaltyFeeNumerator, "Test", "TEST");
 
         vm.assume(creator != address(token));
         vm.assume(minter != address(token));
@@ -465,17 +466,22 @@ contract OrderFulfillmentOnchainRoyaltiesTest is Test {
         }
 
         vm.prank(buyer);
-        vm.expectRevert(OrderFulfillmentOnchainRoyalties.OrderFulfillmentOnchainRoyalties__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee.selector);
+        vm.expectRevert(
+            OrderFulfillmentOnchainRoyalties
+                .OrderFulfillmentOnchainRoyalties__OnchainRoyaltiesExceedMaximumApprovedRoyaltyFee
+                .selector
+        );
         marketplace.validateAndFulfillOrderERC721{value: native ? price : 0}(
             native ? address(0) : address(paymentToken),
-            address(token), 
-            seller, 
-            buyer, 
-            tokenId, 
-            price, 
-            marketplaceFee, 
-            maxRoyaltyFeeNumerator, 
-            "");
+            address(token),
+            seller,
+            buyer,
+            tokenId,
+            price,
+            marketplaceFee,
+            maxRoyaltyFeeNumerator,
+            ""
+        );
     }
 
     function _sanitizeAddress(address addr) private {

@@ -3,12 +3,11 @@ pragma solidity ^0.8.0;
 
 import "forge-std/Test.sol";
 import "forge-std/console.sol";
-import "./mocks/ERC1155Mock.sol";
-import "./mocks/ERC1155CWPermanentMock.sol";
-import "./CreatorTokenTransferValidatorERC1155.t.sol";
+import "../mocks/ERC1155Mock.sol";
+import "../mocks/ERC1155CWPermanentMock.sol";
+import "../CreatorTokenTransferValidatorERC1155.t.sol";
 
 contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
-
     event Staked(uint256 indexed tokenId, address indexed account, uint256 amount);
     event Unstaked(uint256 indexed tokenId, address indexed account, uint256 amount);
     event StakerConstraintsSet(StakerConstraints stakerConstraints);
@@ -18,7 +17,7 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
 
     function setUp() public virtual override {
         super.setUp();
-        
+
         wrappedTokenMock = new ERC1155Mock();
         tokenMock = new ERC1155CWPermanentMock(address(wrappedTokenMock));
         tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
@@ -55,7 +54,12 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         assertFalse(tokenMock.canUnstake(tokenId, amount));
     }
 
-    function testCanUnstakeReturnsFalseForPermanentlyStakedTokens(address to, uint256 tokenId, uint256 amount, uint256 amountToUnstake) public {
+    function testCanUnstakeReturnsFalseForPermanentlyStakedTokens(
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToUnstake
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -66,7 +70,12 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         assertFalse(tokenMock.canUnstake(tokenId, amountToUnstake));
     }
 
-    function testCanUnstakeReturnsFalseWhenBalanceOfWrapperTokenIsInsufficient(address to, uint256 tokenId, uint256 amount, uint256 amountToUnstake) public {
+    function testCanUnstakeReturnsFalseWhenBalanceOfWrapperTokenIsInsufficient(
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToUnstake
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -76,7 +85,12 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         assertFalse(tokenMock.canUnstake(tokenId, amountToUnstake));
     }
 
-    function testWrappedCollectionHoldersCanStakeTokensGiveSufficientWrappedTokenBalance(address to, uint256 tokenId, uint256 amount, uint256 amountToStake) public {
+    function testWrappedCollectionHoldersCanStakeTokensGiveSufficientWrappedTokenBalance(
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToStake
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -94,7 +108,13 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         assertEq(wrappedTokenMock.balanceOf(address(tokenMock), tokenId), amountToStake);
     }
 
-    function testRevertsWhenNativeFundsIncludedInStake(address to, uint256 tokenId, uint256 amount, uint256 amountToStake, uint256 value) public {
+    function testRevertsWhenNativeFundsIncludedInStake(
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToStake,
+        uint256 value
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -106,12 +126,20 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         wrappedTokenMock.mint(to, tokenId, amount);
         wrappedTokenMock.setApprovalForAll(address(tokenMock), true);
         vm.deal(to, value);
-        vm.expectRevert(ERC1155WrapperBase.ERC1155WrapperBase__DefaultImplementationOfStakeDoesNotAcceptPayment.selector);
+        vm.expectRevert(
+            ERC1155WrapperBase.ERC1155WrapperBase__DefaultImplementationOfStakeDoesNotAcceptPayment.selector
+        );
         tokenMock.stake{value: value}(tokenId, amountToStake);
         vm.stopPrank();
     }
 
-    function testRevertsWhenUnauthorizedUserAttemptsToStake(address to, address unauthorizedUser, uint256 tokenId, uint256 amount, uint256 amountToStake) public {
+    function testRevertsWhenUnauthorizedUserAttemptsToStake(
+        address to,
+        address unauthorizedUser,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToStake
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -131,7 +159,13 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
     }
 
-    function testRevertsWhenApprovedOperatorAttemptsToStake(address to, address approvedOperator, uint256 tokenId, uint256 amount, uint256 amountToStake) public {
+    function testRevertsWhenApprovedOperatorAttemptsToStake(
+        address to,
+        address approvedOperator,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToStake
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -166,7 +200,13 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
     }
 
-    function testRevertsWhenUnauthorizedUserAttemptsToUnstake(address to, address unauthorizedUser, uint256 tokenId, uint256 amount, uint256 amountToStake) public {
+    function testRevertsWhenUnauthorizedUserAttemptsToUnstake(
+        address to,
+        address unauthorizedUser,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToStake
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -187,7 +227,13 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
     }
 
-    function testRevertsWhenApprovedOperatorAttemptsToUnstake(address to, address approvedOperator, uint256 tokenId, uint256 amount, uint256 amountToStake) public {
+    function testRevertsWhenApprovedOperatorAttemptsToUnstake(
+        address to,
+        address approvedOperator,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToStake
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -210,7 +256,12 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
     }
 
-    function testRevertsWhenUserAttemptsToUnstakeATokenAmountThatHasNotBeenStaked(address to, uint256 tokenId,uint256 amount, uint256 amountToUnstake) public {
+    function testRevertsWhenUserAttemptsToUnstakeATokenAmountThatHasNotBeenStaked(
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToUnstake
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -226,7 +277,12 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
     }
 
-    function testWrappingCollectionHoldersCannotUnstakeTokensEvenWithSufficientBalance(address to, uint256 tokenId, uint256 amount, uint256 amountToUnstake) public {
+    function testWrappingCollectionHoldersCannotUnstakeTokensEvenWithSufficientBalance(
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToUnstake
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -242,7 +298,13 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
     }
 
-    function testRevertsWhenNativeFundsIncludedInUnstakeCall(address to, uint256 tokenId, uint256 amount, uint256 amountToUnstake, uint256 value) public {
+    function testRevertsWhenNativeFundsIncludedInUnstakeCall(
+        address to,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToUnstake,
+        uint256 value
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -276,7 +338,13 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         vm.stopPrank();
     }
 
-    function testSecondaryWrappingCollectionHoldersCannotUnstakeTokens(address to, address secondaryHolder, uint256 tokenId, uint256 amount, uint256 amountToTransfer) public {
+    function testSecondaryWrappingCollectionHoldersCannotUnstakeTokens(
+        address to,
+        address secondaryHolder,
+        uint256 tokenId,
+        uint256 amount,
+        uint256 amountToTransfer
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);
@@ -314,7 +382,10 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         assertEq(uint8(tokenMock.getStakerConstraints()), uint8(constraints));
     }
 
-    function testRevertsWhenUnauthorizedUserAttemptsToSetStakerConstraints(address unauthorizedUser, uint8 constraintsUint8) public {
+    function testRevertsWhenUnauthorizedUserAttemptsToSetStakerConstraints(
+        address unauthorizedUser,
+        uint8 constraintsUint8
+    ) public {
         vm.assume(unauthorizedUser != address(0));
         vm.assume(constraintsUint8 <= 2);
         StakerConstraints constraints = StakerConstraints(constraintsUint8);
@@ -324,7 +395,9 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         tokenMock.setStakerConstraints(constraints);
     }
 
-    function testEOACanStakeTokensWhenStakerConstraintsAreInEffect(address to, uint256 tokenId, uint256 amount) public {
+    function testEOACanStakeTokensWhenStakerConstraintsAreInEffect(address to, uint256 tokenId, uint256 amount)
+        public
+    {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
@@ -347,7 +420,11 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         assertEq(wrappedTokenMock.balanceOf(address(tokenMock), tokenId), amount);
     }
 
-    function testEOACanStakeTokensWhenEOAStakerConstraintsAreInEffectButValidatorIsUnset(address to, uint256 tokenId, uint256 amount) public {
+    function testEOACanStakeTokensWhenEOAStakerConstraintsAreInEffectButValidatorIsUnset(
+        address to,
+        uint256 tokenId,
+        uint256 amount
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to != address(tokenMock));
@@ -371,8 +448,12 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         assertEq(wrappedTokenMock.balanceOf(to, tokenId), 0);
         assertEq(wrappedTokenMock.balanceOf(address(tokenMock), tokenId), amount);
     }
-    
-    function testVerifiedEOACanStakeTokensWhenEOAStakerConstraintsAreInEffect(uint160 toKey, uint256 tokenId, uint256 amount) public {
+
+    function testVerifiedEOACanStakeTokensWhenEOAStakerConstraintsAreInEffect(
+        uint160 toKey,
+        uint256 tokenId,
+        uint256 amount
+    ) public {
         address to = _verifyEOA(toKey);
         _sanitizeAddress(to);
         vm.assume(to != address(0));
@@ -393,8 +474,13 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         assertEq(wrappedTokenMock.balanceOf(to, tokenId), 0);
         assertEq(wrappedTokenMock.balanceOf(address(tokenMock), tokenId), amount);
     }
-    
-    function testRevertsWhenCallerIsTxOriginConstraintIsInEffectIfCallerIsNotOrigin(address to, address origin, uint256 tokenId, uint256 amount) public {
+
+    function testRevertsWhenCallerIsTxOriginConstraintIsInEffectIfCallerIsNotOrigin(
+        address to,
+        address origin,
+        uint256 tokenId,
+        uint256 amount
+    ) public {
         _sanitizeAddress(to);
         _sanitizeAddress(origin);
         vm.assume(to != address(0));
@@ -414,7 +500,11 @@ contract ERC1155CWPermanentTest is CreatorTokenTransferValidatorERC1155Test {
         tokenMock.stake(tokenId, amount);
     }
 
-    function testRevertsWhenCallerIsEOAConstraintIsInEffectIfCallerHasNotVerifiedSignature(address to, uint256 tokenId, uint256 amount) public {
+    function testRevertsWhenCallerIsEOAConstraintIsInEffectIfCallerHasNotVerifiedSignature(
+        address to,
+        uint256 tokenId,
+        uint256 amount
+    ) public {
         _sanitizeAddress(to);
         vm.assume(to != address(0));
         vm.assume(to.code.length == 0);

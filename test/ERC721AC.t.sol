@@ -7,12 +7,11 @@ import "./mocks/ERC721ACMock.sol";
 import "./CreatorTokenTransferValidatorERC721.t.sol";
 
 contract ERC721ACTest is CreatorTokenTransferValidatorERC721Test {
-
     ERC721ACMock public tokenMock;
 
     function setUp() public virtual override {
         super.setUp();
-        
+
         tokenMock = new ERC721ACMock();
         tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
     }

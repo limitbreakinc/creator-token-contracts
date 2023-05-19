@@ -7,7 +7,6 @@ import "../CreatorTokenTransferValidatorERC721.t.sol";
 import "contracts/examples/erc721ac/ERC721ACWithMutableMinterRoyalties.sol";
 
 contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidatorERC721Test {
-
     event RoyaltySet(uint256 indexed tokenId, address indexed receiver, uint96 feeNumerator);
 
     ERC721ACWithMutableMinterRoyalties public tokenMock;
@@ -15,14 +14,16 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
 
     function setUp() public virtual override {
         super.setUp();
-        
+
         tokenMock = new ERC721ACWithMutableMinterRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, "Test", "TEST");
         tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
     }
 
     function _deployNewToken(address creator) internal virtual override returns (ITestCreatorToken) {
         vm.prank(creator);
-        return ITestCreatorToken(address(new ERC721ACWithMutableMinterRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, "Test", "TEST")));
+        return ITestCreatorToken(
+            address(new ERC721ACWithMutableMinterRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, "Test", "TEST"))
+        );
     }
 
     function _mintToken(address tokenAddress, address to, uint256 quantity) internal virtual override {
@@ -34,7 +35,7 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
             vm.expectEmit(true, true, false, true);
             emit RoyaltySet(tokenId, to, defaultRoyaltyFee);
         }
-        
+
         ERC721ACWithMutableMinterRoyalties(tokenAddress).mint(to, quantity);
     }
 
@@ -91,7 +92,12 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
         }
     }
 
-    function testRoyaltyInfoForMintedTokenIdsAfterTransfer(address minter, address secondaryOwner, uint256 quantity, uint256 salePrice) public {
+    function testRoyaltyInfoForMintedTokenIdsAfterTransfer(
+        address minter,
+        address secondaryOwner,
+        uint256 quantity,
+        uint256 salePrice
+    ) public {
         vm.assume(quantity > 0 && quantity < 5);
         vm.assume(minter != address(0));
         vm.assume(secondaryOwner != address(0));
@@ -105,14 +111,19 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
         for (uint256 tokenId = nextTokenId; tokenId <= lastTokenId; ++tokenId) {
             vm.prank(minter);
             tokenMock.transferFrom(minter, secondaryOwner, tokenId);
-    
+
             (address recipient, uint256 value) = tokenMock.royaltyInfo(tokenId, salePrice);
             assertEq(recipient, minter);
             assertEq(value, (salePrice * tokenMock.defaultRoyaltyFeeNumerator()) / tokenMock.FEE_DENOMINATOR());
         }
     }
 
-    function testRoyaltyRecipientResetsToAddressZeroAfterBurns(address minter, address secondaryOwner, uint256 quantity, uint256 salePrice) public {
+    function testRoyaltyRecipientResetsToAddressZeroAfterBurns(
+        address minter,
+        address secondaryOwner,
+        uint256 quantity,
+        uint256 salePrice
+    ) public {
         vm.assume(quantity > 0 && quantity < 5);
         vm.assume(minter != address(0));
         vm.assume(secondaryOwner != address(0));
@@ -126,20 +137,22 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
         for (uint256 tokenId = nextTokenId; tokenId <= lastTokenId; ++tokenId) {
             vm.prank(minter);
             tokenMock.transferFrom(minter, secondaryOwner, tokenId);
-    
+
             vm.prank(secondaryOwner);
             uint96 defaultRoyaltyFee = tokenMock.defaultRoyaltyFeeNumerator();
             vm.expectEmit(true, true, false, true);
             emit RoyaltySet(tokenId, address(0), defaultRoyaltyFee);
             tokenMock.burn(tokenId);
-    
+
             (address recipient, uint256 value) = tokenMock.royaltyInfo(tokenId, salePrice);
             assertEq(recipient, address(0));
             assertEq(value, (salePrice * tokenMock.defaultRoyaltyFeeNumerator()) / tokenMock.FEE_DENOMINATOR());
         }
     }
 
-    function testMinterCanSetRoyaltyFee(address minter, uint256 quantity, uint256 salePrice, uint96 updatedFee) public {
+    function testMinterCanSetRoyaltyFee(address minter, uint256 quantity, uint256 salePrice, uint96 updatedFee)
+        public
+    {
         vm.assume(quantity > 0 && quantity < 5);
         vm.assume(minter != address(0));
         vm.assume(updatedFee == 0 || salePrice < type(uint256).max / updatedFee);
@@ -155,15 +168,19 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
             vm.expectEmit(true, true, false, true);
             emit RoyaltySet(tokenId, minter, updatedFee);
             tokenMock.setRoyaltyFee(tokenId, updatedFee);
-    
+
             (address recipient, uint256 value) = tokenMock.royaltyInfo(tokenId, salePrice);
-    
+
             assertEq(recipient, minter);
             assertEq(value, (salePrice * updatedFee) / tokenMock.FEE_DENOMINATOR());
         }
     }
 
-    function testRevertsWhenMinterSetsFeeNumeratorToExceedSalesPrice(address minter, uint256 quantity, uint96 royaltyFeeNumerator) public {
+    function testRevertsWhenMinterSetsFeeNumeratorToExceedSalesPrice(
+        address minter,
+        uint256 quantity,
+        uint96 royaltyFeeNumerator
+    ) public {
         vm.assume(quantity > 0 && quantity < 5);
         vm.assume(minter != address(0));
         vm.assume(royaltyFeeNumerator > tokenMock.FEE_DENOMINATOR());
@@ -179,7 +196,12 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
         }
     }
 
-    function testRevertsWhenUnauthorizedUserAttemptsToSetRoyaltyFee(address minter, address unauthorizedUser, uint256 quantity, uint96 royaltyFeeNumerator) public {
+    function testRevertsWhenUnauthorizedUserAttemptsToSetRoyaltyFee(
+        address minter,
+        address unauthorizedUser,
+        uint256 quantity,
+        uint96 royaltyFeeNumerator
+    ) public {
         vm.assume(quantity > 0 && quantity < 5);
         vm.assume(minter != address(0));
         vm.assume(unauthorizedUser != address(0));
@@ -197,7 +219,13 @@ contract ERC721ACWithMutableMinterRoyaltiesTest is CreatorTokenTransferValidator
         }
     }
 
-    function testRevertsWhenMinterAttemptsToSetRoyaltyFeeForAnotherMintersTokenId(address minter, address minter2, uint256 quantity, uint256 quantity2, uint96 royaltyFeeNumerator) public {
+    function testRevertsWhenMinterAttemptsToSetRoyaltyFeeForAnotherMintersTokenId(
+        address minter,
+        address minter2,
+        uint256 quantity,
+        uint256 quantity2,
+        uint96 royaltyFeeNumerator
+    ) public {
         vm.assume(quantity > 0 && quantity < 5);
         vm.assume(quantity2 > 0 && quantity2 < 5);
         vm.assume(minter != address(0));

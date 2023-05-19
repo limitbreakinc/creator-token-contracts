@@ -6,9 +6,12 @@ import "../../contracts/access/OwnableBasic.sol";
 import "../../contracts/erc721c/presets/ERC721CWPermanent.sol";
 
 contract ERC721CWPermanentMock is OwnableBasic, ERC721CWPermanent {
-    constructor(address wrappedCollectionAddress_) ERC721CW(wrappedCollectionAddress_) ERC721OpenZeppelin("ERC-721C Mock", "MOCK") {}
+    constructor(address wrappedCollectionAddress_)
+        ERC721CW(wrappedCollectionAddress_)
+        ERC721OpenZeppelin("ERC-721C Mock", "MOCK")
+    {}
 
-    function mint(address /*to*/, uint256 tokenId) external {
+    function mint(address, /*to*/ uint256 tokenId) external {
         stake(tokenId);
     }
 }
