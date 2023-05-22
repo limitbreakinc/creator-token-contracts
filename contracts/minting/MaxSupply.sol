@@ -21,9 +21,12 @@ abstract contract MaxSupplyBase is OwnablePermissions, MintTokenBase, Sequential
 
     /// @dev The global maximum supply for a contract.  Inheriting contracts must reference this maximum supply in addition to any other
     /// @dev constraints they are looking to enforce.
+    /// @dev If `_maxSupply` is set to zero, the global max supply will match the combined max allowable mints for each minting mix-in used.
+    /// @dev If the `_maxSupply` is below the total sum of allowable mints, the `_maxSupply` will be prioritized.
     uint256 private _maxSupply;
 
     /// @dev The number of tokens remaining to mint via owner mint.
+    /// @dev This can be used to guarantee minting out by allowing the owner to mint unclaimed supply after the public mint is completed.
     uint256 private _remainingOwnerMints;
 
     /// @dev Emitted when the maximum supply is initialized
@@ -107,6 +110,11 @@ abstract contract MaxSupplyBase is OwnablePermissions, MintTokenBase, Sequential
     }
 }
 
+/**
+ * @title MaxSupply
+ * @author Limit Break, Inc.
+ * @notice Constructable implementation of the MaxSupplyBase mixin.
+ */
 abstract contract MaxSupply is MaxSupplyBase {
 
     uint256 internal immutable _maxSupplyImmutable;
@@ -121,6 +129,11 @@ abstract contract MaxSupply is MaxSupplyBase {
     }
 }
 
+/**
+ * @title MaxSupplyInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable implementation of the MaxSupplyBase mixin to allow for EIP-1167 clones.
+ */
 abstract contract MaxSupplyInitializable is MaxSupplyBase {
 
     error InitializableMaxSupplyBase__MaxSupplyAlreadyInitialized();

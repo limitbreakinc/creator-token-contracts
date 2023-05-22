@@ -56,6 +56,11 @@ abstract contract ERC1155C is ERC1155OpenZeppelin, CreatorTokenBase {
     }
 }
 
+/**
+ * @title ERC1155CInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable implementation of ERC1155C to allow for EIP-1167 proxy clones.
+ */
 abstract contract ERC1155CInitializable is ERC1155OpenZeppelinInitializable, CreatorTokenBase {
 
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {

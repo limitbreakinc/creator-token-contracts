@@ -8,12 +8,13 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 
 /**
- * @title ERC1155CW
+ * @title ERC1155WrapperBase
  * @author Limit Break, Inc.
- * @notice Extends ERC1155-C contracts and adds a staking feature used to wrap another ERC1155 contract.
+ * @notice Base functionality to extend ERC1155-C contracts and add a staking feature used to wrap another ERC1155 contract.
  * The wrapper token gives the developer access to the same set of controls present in the ERC1155-C standard.  
  * Holders opt-in to this contract by staking, and it is possible for holders to unstake at the developers' discretion. 
  * The intent of this contract is to allow developers to upgrade existing NFT collections and provide enhanced features.
+ * The base contract is intended to be inherited by either a constructable or initializable contract.
  *
  * @notice Creators also have discretion to set optional staker constraints should they wish to restrict staking to 
  *         EOA accounts only.
@@ -172,6 +173,11 @@ abstract contract ERC1155WrapperBase is WithdrawETH, ReentrancyGuard, ICreatorTo
     function _getBalanceOf(address account, uint256 tokenId) internal view virtual returns (uint256);
 }
 
+/**
+ * @title ERC1155CW
+ * @author Limit Break, Inc.
+ * @notice Constructable ERC1155C Wrapper Contract implementation
+ */
 abstract contract ERC1155CW is ERC1155Holder, ERC1155WrapperBase, ERC1155C {
 
     IERC1155 private immutable wrappedCollectionImmutable;
@@ -211,6 +217,11 @@ abstract contract ERC1155CW is ERC1155Holder, ERC1155WrapperBase, ERC1155C {
     }
 }
 
+/**
+ * @title ERC1155CWInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable ERC1155C Wrapper Contract implementation to allow for EIP-1167 clones.
+ */
 abstract contract ERC1155CWInitializable is ERC1155Holder, ERC1155WrapperBase, ERC1155CInitializable {
 
     error ERC1155CWInitializable__AlreadyInitializedWrappedCollection();

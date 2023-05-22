@@ -6,12 +6,13 @@ import "../../interfaces/ICreatorTokenWrapperERC721.sol";
 import "../../utils/WithdrawETH.sol";
 
 /**
- * @title ERC721CW
+ * @title ERC721WrapperBase
  * @author Limit Break, Inc.
- * @notice Extends ERC721-C contracts and adds a staking feature used to wrap another ERC721 contract.
+ * @notice Base contract extending ERC721-C contracts and adding a staking feature used to wrap another ERC721 contract.
  * The wrapper token gives the developer access to the same set of controls present in the ERC721-C standard.  
  * Holders opt-in to this contract by staking, and it is possible for holders to unstake at the developers' discretion. 
  * The intent of this contract is to allow developers to upgrade existing NFT collections and provide enhanced features.
+ * The base contract is intended to be inherited by either a constructable or initializable contract.
  *
  * @notice Creators also have discretion to set optional staker constraints should they wish to restrict staking to 
  *         EOA accounts only.
@@ -161,6 +162,11 @@ abstract contract ERC721WrapperBase is WithdrawETH, ICreatorTokenWrapperERC721 {
     function _tokenExists(uint256 tokenId) internal view virtual returns (bool);
 }
 
+/**
+ * @title ERC721CW
+ * @author Limit Break, Inc.
+ * @notice Constructable ERC721C Wrapper Contract implementation
+ */
 abstract contract ERC721CW is ERC721WrapperBase, ERC721C {
     
     IERC721 private immutable wrappedCollectionImmutable;
@@ -210,6 +216,11 @@ abstract contract ERC721CW is ERC721WrapperBase, ERC721C {
     }
 }
 
+/**
+ * @title ERC721CWInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable ERC721C Wrapper Contract implementation to allow for EIP-1167 clones.
+ */
 abstract contract ERC721CWInitializable is ERC721WrapperBase, ERC721CInitializable {
 
     error ERC721CWInitializable__AlreadyInitializedWrappedCollection();

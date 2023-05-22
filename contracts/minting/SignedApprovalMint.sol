@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /**
-* @title SignedApprovalMint
+* @title SignedApprovalMintBase
 * @author Limit Break, Inc.
-* @notice A contract mix-in that may optionally be used with extend ERC-721 tokens with Signed Approval minting capabilities, allowing an approved signer to issue a limited amount of mints.
+* @notice Base functionality for a contract mix-in that may optionally be used with extend ERC-721 tokens with Signed Approval minting capabilities, allowing an approved signer to issue a limited amount of mints.
 * @dev Inheriting contracts must implement `_mintToken`.
 */
 abstract contract SignedApprovalMintBase is MaxSupplyBase, EIP712 {
@@ -160,6 +160,11 @@ abstract contract SignedApprovalMintBase is MaxSupplyBase, EIP712 {
     }
 }
 
+/**
+ * @title SignedApprovalMint
+ * @author Limit Break, Inc.
+ * @notice Constructable SignedApprovalMint Contract implementation.
+ */
 abstract contract SignedApprovalMint is SignedApprovalMintBase, MaxSupply {
     constructor(address signer_, uint256 maxSignedMints_) {
         _setSignerAndMaxSignedMintSupply(signer_, maxSignedMints_);
@@ -170,6 +175,11 @@ abstract contract SignedApprovalMint is SignedApprovalMintBase, MaxSupply {
     }
 }
 
+/**
+ * @title SignedApprovalMintInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable SignedApprovalMint Contract implementation to allow for EIP-1167 clones. 
+ */
 abstract contract SignedApprovalMintInitializable is SignedApprovalMintBase, MaxSupplyInitializable {
     
     error SignedApprovalMintInitializable__SignedMintSupplyAlreadyInitialized();

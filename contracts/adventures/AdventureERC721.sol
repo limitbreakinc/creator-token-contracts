@@ -5,10 +5,14 @@ import "./IAdventurous.sol";
 import "./AdventureWhitelist.sol";
 import "../token/erc721/ERC721OpenZeppelin.sol";
 
+/**
+ * @title AdventureBase
+ * @author Limit Break, Inc.
+ * @notice Base functionality of the AdventureERC721 token standard.
+ */
 abstract contract AdventureBase is AdventureWhitelist, IAdventurous {
 
     error AdventureERC721__AdventureApprovalToCaller();
-    error AdventureERC721__AlreadyInitializedAdventureERC721();
     error AdventureERC721__AlreadyOnQuest();
     error AdventureERC721__AnActiveQuestIsPreventingTransfers();
     error AdventureERC721__CallerNotApprovedForAdventure();
@@ -311,6 +315,12 @@ abstract contract AdventureBase is AdventureWhitelist, IAdventurous {
     function _ownerOfToken(uint256 tokenId) internal view virtual returns (address);
 }
 
+
+/**
+ * @title AdventureERC721
+ * @author Limit Break, Inc.
+ * @notice Standard AdventureERC721 implementation allowing for constructor to be called
+ */
 abstract contract AdventureERC721 is AdventureBase, ERC721OpenZeppelin {
 
     /// @dev The most simultaneous quests the token may participate in at a time
@@ -364,6 +374,11 @@ abstract contract AdventureERC721 is AdventureBase, ERC721OpenZeppelin {
     }
 }
 
+/**
+ * @title AdventureERC721Initializable
+ * @author Limit Break, Inc.
+ * @notice Initializable AdventureERC721 implementation allowing for EIP-1167 clones.
+ */
 abstract contract AdventureERC721Initializable is AdventureBase, ERC721OpenZeppelinInitializable {
 
     error AdventureERC721Initializable__AlreadyInitializedMaxSimultaneousQuestsAndTransferType();

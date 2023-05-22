@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 /**
  * @title MerkleWhitelistMint
  * @author Limit Break, Inc.
- * @notice A contract mix-in that may optionally be used with extend ERC-721 tokens with merkle-proof based whitelist minting capabilities.
+ * @notice Base functionality of a contract mix-in that may optionally be used with extend ERC-721 tokens with merkle-proof based whitelist minting capabilities.
  * @dev Inheriting contracts must implement `_mintToken`.
  */
 abstract contract MerkleWhitelistMintBase is ClaimPeriodBase, MaxSupplyBase {
@@ -135,6 +135,11 @@ abstract contract MerkleWhitelistMintBase is ClaimPeriodBase, MaxSupplyBase {
     }
 }
 
+/**
+ * @title MerkleWhitelistMint
+ * @author Limit Break, Inc.
+ * @notice Constructable MerkleWhitelistMint Contract implementation.
+ */
 abstract contract MerkleWhitelistMint is MerkleWhitelistMintBase, MaxSupply {
     constructor(uint256 maxMerkleMints_, uint256 permittedNumberOfMerkleRootChanges_) {
         _setMaxMerkleMintsAndPermittedNumberOfMerkleRootChanges(
@@ -148,6 +153,11 @@ abstract contract MerkleWhitelistMint is MerkleWhitelistMintBase, MaxSupply {
     }
 }
 
+/**
+ * @title MerkleWhitelistMintInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable MerkleWhitelistMint Contract implementation to allow for EIP-1167 clones. 
+ */
 abstract contract MerkleWhitelistMintInitializable is MerkleWhitelistMintBase, MaxSupplyInitializable {
     
     error MerkleWhitelistMintInitializable__MerkleSupplyAlreadyInitialized();

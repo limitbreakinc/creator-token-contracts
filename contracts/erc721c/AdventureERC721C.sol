@@ -56,6 +56,12 @@ abstract contract AdventureERC721C is AdventureERC721, CreatorTokenBase {
     }
 }
 
+
+/**
+ * @title AdventureERC721CInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable implementation of the AdventureERC721C contract to allow for EIP-1167 clones.
+ */
 abstract contract AdventureERC721CInitializable is AdventureERC721Initializable, CreatorTokenBase {
 
     function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {

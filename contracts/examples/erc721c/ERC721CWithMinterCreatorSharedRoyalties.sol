@@ -6,6 +6,13 @@ import "../../access/OwnableInitializable.sol";
 import "../../erc721c/ERC721C.sol";
 import "../../programmable-royalties/MinterCreatorSharedRoyalties.sol";
 
+/**
+ * @title ERC721CWithMinterCreatorSharedRoyalties
+ * @author Limit Break, Inc.
+ * @notice Extension of ERC721C that allows for minters and creators to receive a split of royalties on the tokens minted.
+ *         The royalty fee and percent split is immutable and set at contract creation.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
+ */
 contract ERC721CWithMinterCreatorSharedRoyalties is OwnableBasic, ERC721C, MinterCreatorSharedRoyalties {
 
     constructor(
@@ -47,6 +54,12 @@ contract ERC721CWithMinterCreatorSharedRoyalties is OwnableBasic, ERC721C, Minte
     }
 }
 
+/**
+ * @title ERC721CWithMinterCreatorSharedRoyaltiesInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable extension of ERC721C that allows for minters and creators to receive a split of royalties on the tokens minted.
+ *         The royalty fee and percent split is immutable and set at contract creation. Allows for EIP-1167 clones.
+ */
 contract ERC721CWithMinterCreatorSharedRoyaltiesInitializable is OwnableInitializable, ERC721CInitializable, MinterCreatorSharedRoyaltiesInitializable {
 
     constructor() ERC721("", "") {}

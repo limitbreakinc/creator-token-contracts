@@ -6,9 +6,9 @@ import "@openzeppelin/contracts/interfaces/IERC2981.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
 /**
- * @title MutableMinterRoyalties
+ * @title MutableMinterRoyaltiesBase
  * @author Limit Break, Inc.
- * @dev An NFT mix-in contract implementing programmable royalties for minters, allowing the minter of each token ID to 
+ * @dev Base functionality of an NFT mix-in contract implementing programmable royalties for minters, allowing the minter of each token ID to 
  *      update the royalty fee percentage.
  */
 abstract contract MutableMinterRoyaltiesBase is IERC2981, ERC165 {
@@ -138,6 +138,11 @@ abstract contract MutableMinterRoyaltiesBase is IERC2981, ERC165 {
     }
 }
 
+/**
+ * @title MutableMinterRoyalties
+ * @author Limit Break, Inc.
+ * @notice Constructable MutableMinterRoyalties Contract implementation.
+ */
 abstract contract MutableMinterRoyalties is MutableMinterRoyaltiesBase {
 
     uint96 private immutable _defaultRoyaltyFeeNumeratorImmutable;
@@ -152,6 +157,11 @@ abstract contract MutableMinterRoyalties is MutableMinterRoyaltiesBase {
     }
 }
 
+/**
+ * @title MutableMinterRoyaltiesInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable MutableMinterRoyalties Contract implementation to allow for EIP-1167 clones. 
+ */
 abstract contract MutableMinterRoyaltiesInitializable is OwnablePermissions, MutableMinterRoyaltiesBase {
 
     error MutableMinterRoyaltiesInitializable__DefaultMinterRoyaltyFeeAlreadyInitialized();

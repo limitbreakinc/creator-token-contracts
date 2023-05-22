@@ -6,6 +6,13 @@ import "../../access/OwnableInitializable.sol";
 import "../../erc721c/ERC721C.sol";
 import "../../programmable-royalties/MutableMinterRoyalties.sol";
 
+/**
+ * @title ERC721CWithMutableMinterRoyalties
+ * @author Limit Break, Inc.
+ * @notice Extension of ERC721C that allows for minters to receive royalties on the tokens they mint.
+ *         The royalty fee is mutable and settable by the owner of each minted token.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
+ */
 contract ERC721CWithMutableMinterRoyalties is OwnableBasic, ERC721C, MutableMinterRoyalties {
 
     constructor(
@@ -43,6 +50,13 @@ contract ERC721CWithMutableMinterRoyalties is OwnableBasic, ERC721C, MutableMint
     }
 }
 
+
+/**
+ * @title ERC721CWithMutableMinterRoyalties
+ * @author Limit Break, Inc.
+ * @notice Initializable extension of ERC721C that allows for minters to receive royalties on the tokens they mint.
+ *         The royalty fee is mutable and settable by the owner of each minted token. Allows for EIP-1167 clones.
+ */
 contract ERC721CWithMutableMinterRoyaltiesInitializable is OwnableInitializable, ERC721CInitializable, MutableMinterRoyaltiesInitializable {
 
     constructor() ERC721("", "") {
