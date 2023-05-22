@@ -10,6 +10,7 @@ import "../../programmable-royalties/ImmutableMinterRoyalties.sol";
  * @author Limit Break, Inc.
  * @notice Extension of ERC721AC that allows for minters to receive royalties on the tokens they mint.
  *         The royalty fee is immutable and set at contract creation.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
  */
 contract ERC721ACWithImmutableMinterRoyalties is OwnableBasic, ERC721AC, ImmutableMinterRoyalties {
 

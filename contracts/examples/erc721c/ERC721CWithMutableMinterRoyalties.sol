@@ -11,6 +11,7 @@ import "../../programmable-royalties/MutableMinterRoyalties.sol";
  * @author Limit Break, Inc.
  * @notice Extension of ERC721C that allows for minters to receive royalties on the tokens they mint.
  *         The royalty fee is mutable and settable by the owner of each minted token.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
  */
 contract ERC721CWithMutableMinterRoyalties is OwnableBasic, ERC721C, MutableMinterRoyalties {
 

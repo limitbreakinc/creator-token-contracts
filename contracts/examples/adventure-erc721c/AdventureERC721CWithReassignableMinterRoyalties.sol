@@ -10,6 +10,7 @@ import "../../programmable-royalties/MinterRoyaltiesReassignableRightsNFT.sol";
  * @author Limit Break, Inc.
  * @notice Extension of AdventureERC721C that creates a separate reassignable royalty rights NFT for each token.
  *         The reassignable royalty rights NFT is freely tradeable, abstracting royalty rights from the token itself.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
  */
 contract AdventureERC721CWithReassignableMinterRoyalties is OwnableBasic, AdventureERC721C, MinterRoyaltiesReassignableRightsNFT {
 

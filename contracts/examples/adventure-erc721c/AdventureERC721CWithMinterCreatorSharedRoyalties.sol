@@ -10,6 +10,7 @@ import "../../programmable-royalties/MinterCreatorSharedRoyalties.sol";
  * @author Limit Break, Inc.
  * @notice Extension of AdventureERC721C that allows for minters and creators to receive a split of royalties on the tokens minted.
  *         The royalty fee and percent split is immutable and set at contract creation.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
  */
 contract AdventureERC721CWithMinterCreatorSharedRoyalties is OwnableBasic, AdventureERC721C, MinterCreatorSharedRoyalties {
 

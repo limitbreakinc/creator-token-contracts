@@ -9,6 +9,7 @@ import "../../programmable-royalties/BasicRoyalties.sol";
  * @title ERC721ACWithBasicRoyalties
  * @author Limit Break, Inc.
  * @notice Extension of ERC721AC that adds basic royalties support.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
  */
 contract ERC721ACWithBasicRoyalties is OwnableBasic, ERC721AC, BasicRoyalties {
 

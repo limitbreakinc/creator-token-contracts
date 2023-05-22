@@ -9,6 +9,7 @@ import "../../programmable-royalties/BasicRoyalties.sol";
  * @title AdventureERC721CWithBasicRoyalties
  * @author Limit Break, Inc.
  * @notice Extension of AdventureERC721C that adds basic royalties support.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
  */
 contract AdventureERC721CWithBasicRoyalties is OwnableBasic, AdventureERC721C, BasicRoyalties {
 
