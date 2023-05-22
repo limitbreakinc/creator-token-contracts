@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "../access/OwnablePermissions.sol";
 
 /**
  * @title ClaimPeriodBase
@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @notice In order to support multiple contracts with enforced claim periods, the claim period has been moved to this base contract.
  *
  */
-abstract contract ClaimPeriodBase is Ownable {
+abstract contract ClaimPeriodBase is OwnablePermissions {
 
     error ClaimPeriodBase__ClaimsMustBeClosedToReopen();
     error ClaimPeriodBase__ClaimPeriodIsNotOpen();
@@ -31,7 +31,9 @@ abstract contract ClaimPeriodBase is Ownable {
     /// Accepts a claimPeriodClosingTimestamp_ timestamp which will open the period ending at that time (in seconds)
     /// NOTE: Use as high a window as possible to prevent gas wars for claiming
     /// For an unbounded claim window, pass in type(uint256).max
-    function openClaims(uint256 claimPeriodClosingTimestamp_) external onlyOwner {
+    function openClaims(uint256 claimPeriodClosingTimestamp_) external {
+        _requireCallerIsContractOwner();
+
         if(claimPeriodClosingTimestamp_ <= block.timestamp) {
             revert ClaimPeriodBase__ClaimPeriodMustBeClosedInTheFuture();
         }
@@ -54,7 +56,9 @@ abstract contract ClaimPeriodBase is Ownable {
     /// @dev Closes claims at a specified timestamp.
     ///
     /// Throws when the specified timestamp is not in the future.
-    function closeClaims(uint256 claimPeriodClosingTimestamp_) external onlyOwner {
+    function closeClaims(uint256 claimPeriodClosingTimestamp_) external {
+        _requireCallerIsContractOwner();
+
         _requireClaimsOpen();
 
         if(claimPeriodClosingTimestamp_ <= block.timestamp) {

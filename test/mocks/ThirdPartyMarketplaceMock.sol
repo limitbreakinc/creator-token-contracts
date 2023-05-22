@@ -6,7 +6,6 @@ import "contracts/marketplaces/OrderFulfillmentOnchainRoyalties.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract ThirdPartyMarketplaceMock is OrderFulfillmentOnchainRoyalties {
-    
     constructor() {}
 
     fallback() external payable {}
@@ -30,12 +29,12 @@ contract ThirdPartyMarketplaceMock is OrderFulfillmentOnchainRoyalties {
         if (paymentMethod == address(0)) {
             bool success;
             address to = address(this);
-    
+
             assembly {
                 // Transfer the ETH and store if it succeeded or not.
                 success := call(2300, to, marketplaceFee, 0, 0, 0, 0)
             }
-    
+
             if (!success) {
                 revert();
             }
@@ -43,18 +42,21 @@ contract ThirdPartyMarketplaceMock is OrderFulfillmentOnchainRoyalties {
             SafeERC20.safeTransferFrom(IERC20(paymentMethod), msg.sender, address(this), marketplaceFee);
         }
 
-        fulfillSingleItemOrder(OrderDetails({
-            protocol: CollectionProtocols.ERC721,
-            seller: seller,
-            buyer: buyer,
-            paymentMethod: paymentMethod,
-            tokenAddress: nftAddress,
-            tokenId: tokenId,
-            amount: 1,
-            priceBeforePlatformFees: price,
-            platformFeesDeducted: marketplaceFee,
-            maxRoyaltyFeeNumerator: maxRoyaltyFeeNumerator
-        }), 2300);
+        fulfillSingleItemOrder(
+            OrderDetails({
+                protocol: CollectionProtocols.ERC721,
+                seller: seller,
+                buyer: buyer,
+                paymentMethod: paymentMethod,
+                tokenAddress: nftAddress,
+                tokenId: tokenId,
+                amount: 1,
+                priceBeforePlatformFees: price,
+                platformFeesDeducted: marketplaceFee,
+                maxRoyaltyFeeNumerator: maxRoyaltyFeeNumerator
+            }),
+            2300
+        );
     }
 
     function validateAndFulfillOrderERC1155(
@@ -76,12 +78,12 @@ contract ThirdPartyMarketplaceMock is OrderFulfillmentOnchainRoyalties {
         if (paymentMethod == address(0)) {
             bool success;
             address to = address(this);
-    
+
             assembly {
                 // Transfer the ETH and store if it succeeded or not.
                 success := call(2300, to, marketplaceFee, 0, 0, 0, 0)
             }
-    
+
             if (!success) {
                 revert();
             }
@@ -89,17 +91,20 @@ contract ThirdPartyMarketplaceMock is OrderFulfillmentOnchainRoyalties {
             SafeERC20.safeTransferFrom(IERC20(paymentMethod), msg.sender, address(this), marketplaceFee);
         }
 
-        fulfillSingleItemOrder(OrderDetails({
-            protocol: CollectionProtocols.ERC1155,
-            seller: seller,
-            buyer: buyer,
-            paymentMethod: paymentMethod,
-            tokenAddress: nftAddress,
-            tokenId: tokenId,
-            amount: amount,
-            priceBeforePlatformFees: price,
-            platformFeesDeducted: marketplaceFee,
-            maxRoyaltyFeeNumerator: maxRoyaltyFeeNumerator
-        }), 2300);
+        fulfillSingleItemOrder(
+            OrderDetails({
+                protocol: CollectionProtocols.ERC1155,
+                seller: seller,
+                buyer: buyer,
+                paymentMethod: paymentMethod,
+                tokenAddress: nftAddress,
+                tokenId: tokenId,
+                amount: amount,
+                priceBeforePlatformFees: price,
+                platformFeesDeducted: marketplaceFee,
+                maxRoyaltyFeeNumerator: maxRoyaltyFeeNumerator
+            }),
+            2300
+        );
     }
 }

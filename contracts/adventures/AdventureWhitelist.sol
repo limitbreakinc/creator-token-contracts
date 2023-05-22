@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import "./IAdventure.sol";
+import "../access/OwnablePermissions.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
@@ -11,7 +12,7 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
  * @notice Implements the basic security features of the {IAdventurous} token standard for ERC721-compliant tokens.
  * This includes a whitelist for trusted Adventure contracts designed to interoperate with this token.
  */
-abstract contract AdventureWhitelist is Ownable {
+abstract contract AdventureWhitelist is OwnablePermissions {
 
     error AdventureWhitelist__AdventureIsStillWhitelisted();
     error AdventureWhitelist__AlreadyWhitelisted();
@@ -46,7 +47,9 @@ abstract contract AdventureWhitelist is Ownable {
     /// Postconditions:
     /// The specified adventure contract is in the whitelist.
     /// An `AdventureWhitelistUpdate` event has been emitted.
-    function whitelistAdventure(address adventure) external onlyOwner {
+    function whitelistAdventure(address adventure) external {
+        _requireCallerIsContractOwner();
+
         if(isAdventureWhitelisted(adventure)) {
             revert AdventureWhitelist__AlreadyWhitelisted();
         }
@@ -73,7 +76,9 @@ abstract contract AdventureWhitelist is Ownable {
     /// Postconditions:
     /// The specified adventure contract is no longer in the whitelist.
     /// An `AdventureWhitelistUpdate` event has been emitted.
-    function unwhitelistAdventure(address adventure) external onlyOwner {
+    function unwhitelistAdventure(address adventure) external {
+        _requireCallerIsContractOwner();
+
         if(!isAdventureWhitelisted(adventure)) {
             revert AdventureWhitelist__NotWhitelisted();
         }

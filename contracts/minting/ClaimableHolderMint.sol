@@ -2,16 +2,16 @@
 pragma solidity ^0.8.4;
 
 import "./ClaimPeriodBase.sol";
-import "./MaxSupplyBase.sol";
+import "./MaxSupply.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 
 /**
- * @title ClaimableHolderMint
+ * @title ClaimableHolderMintBase
  * @author Limit Break, Inc.
- * @notice A contract mix-in that may optionally be used with extend ERC-721 tokens with sequential role-based minting capabilities.
+ * @notice Base functionality of a contract mix-in that may optionally be used with extend ERC-721 tokens with sequential role-based minting capabilities.
  * @dev Inheriting contracts must implement `_mintToken`.
  */
-abstract contract ClaimableHolderMint is ClaimPeriodBase, MaxSupplyBase {
+abstract contract ClaimableHolderMintBase is ClaimPeriodBase, MaxSupplyBase {
 
     error ClaimableHolderMint__CallerDoesNotOwnRootTokenId();
     error ClaimableHolderMint__CollectionAddressIsNotAnERC721Token();
@@ -71,59 +71,6 @@ abstract contract ClaimableHolderMint is ClaimPeriodBase, MaxSupplyBase {
     /// @dev Emitted when a set of ineligible token slots and bitmaps are set for a root collection
     event IneligibleTokensInitialized(address indexed rootCollectionAddress, uint256[] ineligibleTokenSlots, uint256[] ineligibleTokenBitmaps);
 
-    constructor(
-        address[] memory rootCollections_, 
-        uint256[] memory rootCollectionMaxSupplies_, 
-        uint256[] memory tokensPerClaimArray_) {
-        uint256 rootCollectionsArrayLength = rootCollections_.length;
-
-        _requireInputArrayLengthsMatch(rootCollectionsArrayLength, rootCollectionMaxSupplies_.length);
-        _requireInputArrayLengthsMatch(rootCollectionsArrayLength, tokensPerClaimArray_.length);
-
-        if(rootCollectionsArrayLength == 0) {
-            revert ClaimableHolderMint__MustSpecifyAtLeastOneRootCollection();
-        }
-        if(rootCollectionsArrayLength > MAX_ROOT_COLLECTIONS) {
-            revert ClaimableHolderMint__MaxNumberOfRootCollectionsExceeded();
-        }
-
-        for(uint256 i = 0; i < rootCollectionsArrayLength;) {
-            address rootCollection_ = rootCollections_[i];
-            uint256 rootCollectionMaxSupply_ = rootCollectionMaxSupplies_[i];
-            uint256 tokensPerClaim_ = tokensPerClaimArray_[i];
-
-            emit RootCollectionInitialized(address(rootCollection_), rootCollectionMaxSupply_, tokensPerClaim_);
-
-            if(!IERC165(rootCollection_).supportsInterface(type(IERC721).interfaceId)) {
-                revert ClaimableHolderMint__CollectionAddressIsNotAnERC721Token();
-            }
-
-            if(tokensPerClaim_ == 0 || tokensPerClaim_ > 10) {
-                revert ClaimableHolderMint__TokensPerClaimMustBeBetweenOneAndTen();
-            }
-
-            if(rootCollectionMaxSupply_ == 0) {
-                revert ClaimableHolderMint__MaxSupplyOfRootTokenCannotBeZero();
-            }
-
-            rootCollectionLookup[rootCollection_].isRootCollection = true;
-            rootCollectionLookup[rootCollection_].rootCollection = IERC721(rootCollection_);
-            rootCollectionLookup[rootCollection_].maxSupply = rootCollectionMaxSupply_;
-            rootCollectionLookup[rootCollection_].tokensPerClaim = tokensPerClaim_;
-
-            unchecked {
-                // Initialize memory to use for tracking token ids that have been minted
-                // The bit corresponding to token id defaults to 1 when unminted,
-                // and will be set to 0 upon mint.
-                uint256 numberOfTokenTrackerSlots = _getNumberOfTokenTrackerSlots(rootCollectionMaxSupply_);
-                for(uint256 j = 0; j < numberOfTokenTrackerSlots; ++j) {
-                    rootCollectionLookup[rootCollection_].claimedTokenTracker.push(type(uint256).max);
-                }
-                ++i;
-            }
-        }
-    }
-
     /// @notice Accepts a list of slot and bitmaps to mark tokens ineligible for claim for the provided root collection address
     /// @dev You can generate the inputs for `ineligibleTokenSlots` and `ineligibleTokenBitmaps` by using the helper function `getIneligibleTokensBitmap`
     /// @dev Params are memory to allow for initialization within constructors.
@@ -134,7 +81,13 @@ abstract contract ClaimableHolderMint is ClaimPeriodBase, MaxSupplyBase {
     /// Postconditions:
     /// ---------------
     /// The ineligible token bitmaps are set on the root collection details.
-    function initializeIneligibleTokens(bool finalize, address rootCollectionAddress, uint256[] memory ineligibleTokenSlots, uint256[] memory ineligibleTokenBitmaps) external {
+    function initializeIneligibleTokens(
+        bool finalize, 
+        address rootCollectionAddress, 
+        uint256[] memory ineligibleTokenSlots, 
+        uint256[] memory ineligibleTokenBitmaps) external {
+        _requireCallerIsContractOwner();
+
         if(finalizedIneligibleTokens) {
             revert ClaimableHolderMint__IneligibleTokensFinalized();
         }
@@ -373,5 +326,107 @@ abstract contract ClaimableHolderMint is ClaimPeriodBase, MaxSupplyBase {
         if(!finalizedIneligibleTokens) {
             revert ClaimableHolderMint__IneligibleTokensHaveNotBeenFinalized();
         }
+    }
+
+    function _setRootCollections(
+        address[] memory rootCollections_, 
+        uint256[] memory rootCollectionMaxSupplies_, 
+        uint256[] memory tokensPerClaimArray_) internal {
+
+        uint256 rootCollectionsArrayLength = rootCollections_.length;
+
+        _requireInputArrayLengthsMatch(rootCollectionsArrayLength, rootCollectionMaxSupplies_.length);
+        _requireInputArrayLengthsMatch(rootCollectionsArrayLength, tokensPerClaimArray_.length);
+
+        if(rootCollectionsArrayLength == 0) {
+            revert ClaimableHolderMint__MustSpecifyAtLeastOneRootCollection();
+        }
+        if(rootCollectionsArrayLength > MAX_ROOT_COLLECTIONS) {
+            revert ClaimableHolderMint__MaxNumberOfRootCollectionsExceeded();
+        }
+
+        for(uint256 i = 0; i < rootCollectionsArrayLength;) {
+            address rootCollection_ = rootCollections_[i];
+            uint256 rootCollectionMaxSupply_ = rootCollectionMaxSupplies_[i];
+            uint256 tokensPerClaim_ = tokensPerClaimArray_[i];
+
+            emit RootCollectionInitialized(address(rootCollection_), rootCollectionMaxSupply_, tokensPerClaim_);
+
+            if(!IERC165(rootCollection_).supportsInterface(type(IERC721).interfaceId)) {
+                revert ClaimableHolderMint__CollectionAddressIsNotAnERC721Token();
+            }
+
+            if(tokensPerClaim_ == 0 || tokensPerClaim_ > 10) {
+                revert ClaimableHolderMint__TokensPerClaimMustBeBetweenOneAndTen();
+            }
+
+            if(rootCollectionMaxSupply_ == 0) {
+                revert ClaimableHolderMint__MaxSupplyOfRootTokenCannotBeZero();
+            }
+
+            rootCollectionLookup[rootCollection_].isRootCollection = true;
+            rootCollectionLookup[rootCollection_].rootCollection = IERC721(rootCollection_);
+            rootCollectionLookup[rootCollection_].maxSupply = rootCollectionMaxSupply_;
+            rootCollectionLookup[rootCollection_].tokensPerClaim = tokensPerClaim_;
+
+            unchecked {
+                // Initialize memory to use for tracking token ids that have been minted
+                // The bit corresponding to token id defaults to 1 when unminted,
+                // and will be set to 0 upon mint.
+                uint256 numberOfTokenTrackerSlots = _getNumberOfTokenTrackerSlots(rootCollectionMaxSupply_);
+                for(uint256 j = 0; j < numberOfTokenTrackerSlots; ++j) {
+                    rootCollectionLookup[rootCollection_].claimedTokenTracker.push(type(uint256).max);
+                }
+                ++i;
+            }
+        }
+
+        _initializeNextTokenIdCounter();
+    }
+}
+
+/**
+ * @title ClaimableHolderMint
+ * @author Limit Break, Inc.
+ * @notice Constructable ClaimableHolderMint Contract implementation.
+ */
+abstract contract ClaimableHolderMint is ClaimableHolderMintBase, MaxSupply {
+    constructor(
+        address[] memory rootCollections_, 
+        uint256[] memory rootCollectionMaxSupplies_, 
+        uint256[] memory tokensPerClaimArray_) {
+        _setRootCollections(rootCollections_, rootCollectionMaxSupplies_, tokensPerClaimArray_);
+    }
+
+    function maxSupply() public view override(MaxSupplyBase, MaxSupply) returns (uint256) {
+        return _maxSupplyImmutable;
+    }
+}
+
+/**
+ * @title ClaimableHolderMintInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable ClaimableHolderMint Contract implementation to allow for EIP-1167 clones.
+ */
+abstract contract ClaimableHolderMintInitializable is ClaimableHolderMintBase, MaxSupplyInitializable {
+    
+    error ClaimableHolderMintInitializable__RootCollectionsAlreadyInitialized();
+
+    /// @dev Flag indicating that the root collections have been initialized.
+    bool private _rootCollectionsInitialized;
+
+    function initializeRootCollections(
+        address[] memory rootCollections_, 
+        uint256[] memory rootCollectionMaxSupplies_, 
+        uint256[] memory tokensPerClaimArray_) public {
+        _requireCallerIsContractOwner();
+
+        if(_rootCollectionsInitialized) {
+            revert ClaimableHolderMintInitializable__RootCollectionsAlreadyInitialized();
+        }
+
+        _rootCollectionsInitialized = true;
+
+        _setRootCollections(rootCollections_, rootCollectionMaxSupplies_, tokensPerClaimArray_);
     }
 }
