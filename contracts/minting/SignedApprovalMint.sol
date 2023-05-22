@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import "./MaxSupplyBase.sol";
+import "./MaxSupply.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 /**
-* @title SignedApprovalMint
+* @title SignedApprovalMintBase
 * @author Limit Break, Inc.
-* @notice A contract mix-in that may optionally be used with extend ERC-721 tokens with Signed Approval minting capabilities, allowing an approved signer to issue a limited amount of mints.
+* @notice Base functionality for a contract mix-in that may optionally be used with extend ERC-721 tokens with Signed Approval minting capabilities, allowing an approved signer to issue a limited amount of mints.
 * @dev Inheriting contracts must implement `_mintToken`.
 */
-abstract contract SignedApprovalMint is MaxSupplyBase, EIP712 {
+abstract contract SignedApprovalMintBase is MaxSupplyBase, EIP712 {
 
     error SignedApprovalMint__AddressAlreadyMinted();
     error SignedApprovalMint__InvalidSignature();
@@ -42,21 +42,6 @@ abstract contract SignedApprovalMint is MaxSupplyBase, EIP712 {
 
     /// @dev Emitted when a signer is updated
     event SignerUpdated(address oldSigner, address newSigner); 
-
-    constructor(
-        address signer_, 
-        uint256 maxSignedMints_) EIP712("SignedApprovalMint", "1") {
-        if(signer_ == address(0)) {
-            revert SignedApprovalMint__SignerCannotBeInitializedAsAddressZero();
-        }
-
-        if(maxSignedMints_ == 0) {
-            revert SignedApprovalMint__MaxQuantityMustBeGreaterThanZero();
-        }
-
-        _approvalSigner = signer_;
-        _remainingSignedMints = maxSignedMints_;
-    }
 
     /// @notice Allows a user to claim/mint one or more tokens as approved by the approved signer
     ///
@@ -108,7 +93,8 @@ abstract contract SignedApprovalMint is MaxSupplyBase, EIP712 {
     ///
     /// Throws if caller is not owner
     /// Throws if already decommissioned
-    function decommissionSignedApprovals() external onlyOwner {
+    function decommissionSignedApprovals() external {
+        _requireCallerIsContractOwner();
         _requireSignedClaimsActive();
         _signedClaimsDecommissioned = true;
         emit SignedClaimsDecommissioned();
@@ -120,7 +106,9 @@ abstract contract SignedApprovalMint is MaxSupplyBase, EIP712 {
     ///
     /// Throws when caller is not owner
     /// Throws when current signer is address(0)
-    function setSigner(address newSigner) public onlyOwner {
+    function setSigner(address newSigner) public {
+        _requireCallerIsContractOwner();
+
         if(_signedClaimsDecommissioned) {
             revert SignedApprovalMint__SignedClaimsAreDecommissioned();
         }
@@ -154,5 +142,59 @@ abstract contract SignedApprovalMint is MaxSupplyBase, EIP712 {
         if(_signedClaimsDecommissioned) {
             revert SignedApprovalMint__SignedClaimsAreDecommissioned();
         }
+    }
+
+    function _setSignerAndMaxSignedMintSupply(address signer_, uint256 maxSignedMints_) internal {
+        if(signer_ == address(0)) {
+            revert SignedApprovalMint__SignerCannotBeInitializedAsAddressZero();
+        }
+
+        if(maxSignedMints_ == 0) {
+            revert SignedApprovalMint__MaxQuantityMustBeGreaterThanZero();
+        }
+
+        _approvalSigner = signer_;
+        _remainingSignedMints = maxSignedMints_;
+
+        _initializeNextTokenIdCounter();
+    }
+}
+
+/**
+ * @title SignedApprovalMint
+ * @author Limit Break, Inc.
+ * @notice Constructable SignedApprovalMint Contract implementation.
+ */
+abstract contract SignedApprovalMint is SignedApprovalMintBase, MaxSupply {
+    constructor(address signer_, uint256 maxSignedMints_) {
+        _setSignerAndMaxSignedMintSupply(signer_, maxSignedMints_);
+    }
+
+    function maxSupply() public view override(MaxSupplyBase, MaxSupply) returns (uint256) {
+        return _maxSupplyImmutable;
+    }
+}
+
+/**
+ * @title SignedApprovalMintInitializable
+ * @author Limit Break, Inc.
+ * @notice Initializable SignedApprovalMint Contract implementation to allow for EIP-1167 clones. 
+ */
+abstract contract SignedApprovalMintInitializable is SignedApprovalMintBase, MaxSupplyInitializable {
+    
+    error SignedApprovalMintInitializable__SignedMintSupplyAlreadyInitialized();
+
+    bool private _signedMintSupplyInitialized;
+
+    function initializeSignerAndMaxSignedMintSupply(address signer_, uint256 maxSignedMints_) public {
+        _requireCallerIsContractOwner();
+
+        if(_signedMintSupplyInitialized) {
+            revert SignedApprovalMintInitializable__SignedMintSupplyAlreadyInitialized();
+        }
+
+        _signedMintSupplyInitialized = true;
+
+        _setSignerAndMaxSignedMintSupply(signer_, maxSignedMints_);
     }
 }

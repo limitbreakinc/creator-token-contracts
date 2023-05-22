@@ -1,10 +1,17 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../../access/OwnableBasic.sol";
 import "../../erc721c/ERC721AC.sol";
 import "../../programmable-royalties/BasicRoyalties.sol";
 
-contract ERC721ACWithBasicRoyalties is ERC721AC, BasicRoyalties {
+/**
+ * @title ERC721ACWithBasicRoyalties
+ * @author Limit Break, Inc.
+ * @notice Extension of ERC721AC that adds basic royalties support.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
+ */
+contract ERC721ACWithBasicRoyalties is OwnableBasic, ERC721AC, BasicRoyalties {
 
     constructor(
         address royaltyReceiver_,
@@ -31,11 +38,13 @@ contract ERC721ACWithBasicRoyalties is ERC721AC, BasicRoyalties {
         _burn(tokenId);
     }
 
-    function setDefaultRoyalty(address receiver, uint96 feeNumerator) public onlyOwner {
+    function setDefaultRoyalty(address receiver, uint96 feeNumerator) public {
+        _requireCallerIsContractOwner();
         _setDefaultRoyalty(receiver, feeNumerator);
     }
 
-    function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) public onlyOwner {
+    function setTokenRoyalty(uint256 tokenId, address receiver, uint96 feeNumerator) public {
+        _requireCallerIsContractOwner();
         _setTokenRoyalty(tokenId, receiver, feeNumerator);
     }
 }

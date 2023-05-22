@@ -22,7 +22,7 @@ abstract contract ERC721CWTimeLockedUnstake is ERC721CW {
         uint256 timelockSeconds_, 
         address wrappedCollectionAddress_, 
         string memory name_, 
-        string memory symbol_) ERC721CW(wrappedCollectionAddress_, name_, symbol_) {
+        string memory symbol_) ERC721CW(wrappedCollectionAddress_) ERC721OpenZeppelin(name_, symbol_) {
         timelockSeconds = timelockSeconds_;
     }
 

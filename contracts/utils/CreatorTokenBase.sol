@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../access/OwnablePermissions.sol";
 import "../interfaces/ICreatorToken.sol";
 import "../interfaces/ICreatorTokenTransferValidator.sol";
 import "../utils/TransferValidation.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC165.sol";
 
 /**
@@ -30,7 +30,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
  * <ul>Set and update the ICreatorTokenTransferValidator implementation contract to enforce desired policies for the 
  *   creator token.</ul>
  */
-abstract contract CreatorTokenBase is Ownable, TransferValidation, ICreatorToken {
+abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, ICreatorToken {
     
     error CreatorTokenBase__InvalidTransferValidatorContract();
     error CreatorTokenBase__SetTransferValidatorFirst();
@@ -46,7 +46,8 @@ abstract contract CreatorTokenBase is Ownable, TransferValidation, ICreatorToken
      *         and set the security policy to the recommended default settings.
      * @dev    May be overridden to change the default behavior of an individual collection.
      */
-    function setToDefaultSecurityPolicy() public virtual onlyOwner {
+    function setToDefaultSecurityPolicy() public virtual {
+        _requireCallerIsContractOwner();
         setTransferValidator(DEFAULT_TRANSFER_VALIDATOR);
         ICreatorTokenTransferValidator(DEFAULT_TRANSFER_VALIDATOR).setTransferSecurityLevelOfCollection(address(this), DEFAULT_TRANSFER_SECURITY_LEVEL);
         ICreatorTokenTransferValidator(DEFAULT_TRANSFER_VALIDATOR).setOperatorWhitelistOfCollection(address(this), DEFAULT_OPERATOR_WHITELIST_ID);
@@ -60,7 +61,9 @@ abstract contract CreatorTokenBase is Ownable, TransferValidation, ICreatorToken
         address validator, 
         TransferSecurityLevels level, 
         uint120 operatorWhitelistId, 
-        uint120 permittedContractReceiversAllowlistId) public onlyOwner {
+        uint120 permittedContractReceiversAllowlistId) public {
+        _requireCallerIsContractOwner();
+
         setTransferValidator(validator);
 
         ICreatorTokenTransferValidator(validator).
@@ -80,7 +83,9 @@ abstract contract CreatorTokenBase is Ownable, TransferValidation, ICreatorToken
     function setToCustomSecurityPolicy(
         TransferSecurityLevels level, 
         uint120 operatorWhitelistId, 
-        uint120 permittedContractReceiversAllowlistId) public onlyOwner {
+        uint120 permittedContractReceiversAllowlistId) public {
+        _requireCallerIsContractOwner();
+
         ICreatorTokenTransferValidator validator = getTransferValidator();
         if (address(validator) == address(0)) {
             revert CreatorTokenBase__SetTransferValidatorFirst();
@@ -104,7 +109,9 @@ abstract contract CreatorTokenBase is Ownable, TransferValidation, ICreatorToken
      *
      * @param transferValidator_ The address of the transfer validator contract.
      */
-    function setTransferValidator(address transferValidator_) public onlyOwner {
+    function setTransferValidator(address transferValidator_) public {
+        _requireCallerIsContractOwner();
+
         bool isValidTransferValidator = false;
 
         if(transferValidator_.code.length > 0) {

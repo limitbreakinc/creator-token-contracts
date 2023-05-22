@@ -8,10 +8,11 @@ interface ITestCreatorToken1155 is IERC1155, ICreatorToken {
     function mint(address, uint256, uint256) external;
     function setTransferValidator(address transferValidator_) external;
     function setToDefaultSecurityPolicy() external;
-    
+
     function setToCustomValidatorAndSecurityPolicy(
-        address validator, 
-        TransferSecurityLevels level, 
-        uint120 operatorWhitelistId, 
-        uint120 permittedContractReceiversAllowlistId) external;
+        address validator,
+        TransferSecurityLevels level,
+        uint120 operatorWhitelistId,
+        uint120 permittedContractReceiversAllowlistId
+    ) external;
 }
