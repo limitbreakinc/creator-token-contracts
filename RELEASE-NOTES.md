@@ -1,15 +1,15 @@
 ## 1.1.1 (2023-05-22)
 
-> Refactored code to support either fully constructed or cloned contracts.
-> Implemented EIP-1167 for payment splitter cloning to streamline the shared royalties mix-in.
-> Testing code coverage improvements
+* Refactored code to support either fully constructed or cloned contracts.
+* Implemented EIP-1167 for payment splitter cloning to streamline the shared royalties mix-in.
+* Testing code coverage improvements
 
 ### Upgrade Steps
 * Use npm or yarn to install creator-token-contracts at v1.1.1
 
 ## 1.1.0 (2023-05-08)
 
-> Formalized creator token standards, added sample programmable royalty mix-ins, a marketplace helper mix-in, and more!
+* Formalized creator token standards, added sample programmable royalty mix-ins, a marketplace helper mix-in, and more!
 
 ### Upgrade Steps
 * Use npm or yarn to install creator-token-contracts at v1.1.0
