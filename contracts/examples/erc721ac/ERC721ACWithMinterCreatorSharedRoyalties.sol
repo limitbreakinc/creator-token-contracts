@@ -1,23 +1,32 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../../access/OwnableBasic.sol";
 import "../../erc721c/ERC721AC.sol";
 import "../../programmable-royalties/MinterCreatorSharedRoyalties.sol";
 
-contract ERC721ACWithMinterCreatorSharedRoyalties is ERC721AC, MinterCreatorSharedRoyalties {
+/**
+ * @title ERC721ACWithMinterCreatorSharedRoyalties
+ * @author Limit Break, Inc.
+ * @notice Extension of ERC721AC that allows for minters and creators to receive a split of royalties on the tokens minted.
+ *         The royalty fee and percent split is immutable and set at contract creation.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
+ */
+contract ERC721ACWithMinterCreatorSharedRoyalties is OwnableBasic, ERC721AC, MinterCreatorSharedRoyalties {
 
     constructor(
         uint256 royaltyFeeNumerator_,
         uint256 minterShares_,
         uint256 creatorShares_,
         address creator_,
+        address paymentSplitterReference_,
         string memory name_,
         string memory symbol_) 
         ERC721AC(name_, symbol_) 
-        MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_) {
+        MinterCreatorSharedRoyalties(royaltyFeeNumerator_, minterShares_, creatorShares_, creator_, paymentSplitterReference_) {
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, MinterCreatorSharedRoyalties) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, MinterCreatorSharedRoyaltiesBase) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 

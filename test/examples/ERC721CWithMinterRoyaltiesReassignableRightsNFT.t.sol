@@ -9,7 +9,6 @@ import "contracts/examples/erc721c/ERC721CWithReassignableMinterRoyalties.sol";
 import "contracts/programmable-royalties/helpers/RoyaltyRightsNFT.sol";
 
 contract ERC721CWithMinterRoyaltiesReassignableRightsNFTTest is CreatorTokenTransferValidatorERC721Test {
-
     address public royaltyRightsNFTReference;
     ERC20Mock public coinMock;
     ERC721CWithReassignableMinterRoyalties public tokenMock;
@@ -19,7 +18,7 @@ contract ERC721CWithMinterRoyaltiesReassignableRightsNFTTest is CreatorTokenTran
 
     function setUp() public virtual override {
         super.setUp();
-        
+
         defaultTokenCreator = address(0x1);
 
         coinMock = new ERC20Mock(18);
@@ -27,14 +26,19 @@ contract ERC721CWithMinterRoyaltiesReassignableRightsNFTTest is CreatorTokenTran
         royaltyRightsNFTReference = address(new RoyaltyRightsNFT());
 
         vm.startPrank(defaultTokenCreator);
-        tokenMock = new ERC721CWithReassignableMinterRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, royaltyRightsNFTReference, "Test", "TEST");
+        tokenMock =
+        new ERC721CWithReassignableMinterRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, royaltyRightsNFTReference, "Test", "TEST");
         tokenMock.setToCustomValidatorAndSecurityPolicy(address(validator), TransferSecurityLevels.One, 1, 0);
         vm.stopPrank();
     }
 
     function _deployNewToken(address creator) internal virtual override returns (ITestCreatorToken) {
         vm.prank(creator);
-        return ITestCreatorToken(address(new ERC721CWithReassignableMinterRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, royaltyRightsNFTReference, "Test", "TEST")));
+        return ITestCreatorToken(
+            address(
+                new ERC721CWithReassignableMinterRoyalties(DEFAULT_ROYALTY_FEE_NUMERATOR, royaltyRightsNFTReference, "Test", "TEST")
+            )
+        );
     }
 
     function _mintToken(address tokenAddress, address to, uint256 tokenId) internal virtual override {
@@ -53,12 +57,21 @@ contract ERC721CWithMinterRoyaltiesReassignableRightsNFTTest is CreatorTokenTran
         assertEq(tokenMock.supportsInterface(type(IERC2981).interfaceId), true);
     }
 
-    function testRevertsWhenFeeNumeratorExceedsSalesPrice(uint256 royaltyFeeNumerator, uint256 minterShares, uint256 creatorShares, address creator) public {
+    function testRevertsWhenFeeNumeratorExceedsSalesPrice(
+        uint256 royaltyFeeNumerator,
+        uint256 minterShares,
+        uint256 creatorShares,
+        address creator
+    ) public {
         vm.assume(creator != address(0));
         vm.assume(minterShares > 0 && minterShares < 10000);
         vm.assume(creatorShares > 0 && creatorShares < 10000);
         vm.assume(royaltyFeeNumerator > tokenMock.FEE_DENOMINATOR());
-        vm.expectRevert(MinterRoyaltiesReassignableRightsNFT.MinterRoyaltiesReassignableRightsNFT__RoyaltyFeeWillExceedSalePrice.selector);
+        vm.expectRevert(
+            MinterRoyaltiesReassignableRightsNFT
+                .MinterRoyaltiesReassignableRightsNFT__RoyaltyFeeWillExceedSalePrice
+                .selector
+        );
         new ERC721CWithReassignableMinterRoyalties(royaltyFeeNumerator, royaltyRightsNFTReference, "Test", "TEST");
     }
 
@@ -83,7 +96,12 @@ contract ERC721CWithMinterRoyaltiesReassignableRightsNFTTest is CreatorTokenTran
         assertEq(RoyaltyRightsNFT(address(tokenMock.royaltyRightsNFT())).ownerOf(tokenId), minter);
     }
 
-    function testRoyaltyInfoForMintedTokenIdsAfterTransfer(address minter, address secondaryOwner, uint256 tokenId, uint256 salePrice) public {
+    function testRoyaltyInfoForMintedTokenIdsAfterTransfer(
+        address minter,
+        address secondaryOwner,
+        uint256 tokenId,
+        uint256 salePrice
+    ) public {
         vm.assume(minter != address(0));
         vm.assume(secondaryOwner != address(0));
         vm.assume(salePrice < type(uint256).max / tokenMock.royaltyFeeNumerator());
@@ -100,7 +118,12 @@ contract ERC721CWithMinterRoyaltiesReassignableRightsNFTTest is CreatorTokenTran
         assertEq(RoyaltyRightsNFT(address(tokenMock.royaltyRightsNFT())).ownerOf(tokenId), minter);
     }
 
-    function testRoyaltyRecipientResetsToAddressZeroAfterBurns(address minter, address secondaryOwner, uint256 tokenId, uint256 salePrice) public {
+    function testRoyaltyRecipientResetsToAddressZeroAfterBurns(
+        address minter,
+        address secondaryOwner,
+        uint256 tokenId,
+        uint256 salePrice
+    ) public {
         vm.assume(minter != address(0));
         vm.assume(secondaryOwner != address(0));
         vm.assume(salePrice < type(uint256).max / tokenMock.royaltyFeeNumerator());
@@ -133,7 +156,13 @@ contract ERC721CWithMinterRoyaltiesReassignableRightsNFTTest is CreatorTokenTran
         _mintToken(address(tokenMock), minter, tokenId);
     }
 
-    function testBurnedTokenIdsCanBeReminted(address minter, address secondaryOwner, address reminter, uint256 tokenId, uint256 salePrice) public {
+    function testBurnedTokenIdsCanBeReminted(
+        address minter,
+        address secondaryOwner,
+        address reminter,
+        uint256 tokenId,
+        uint256 salePrice
+    ) public {
         vm.assume(minter != address(0));
         vm.assume(secondaryOwner != address(0));
         vm.assume(reminter != address(0));
@@ -170,7 +199,12 @@ contract ERC721CWithMinterRoyaltiesReassignableRightsNFTTest is CreatorTokenTran
         assertEq(RoyaltyRightsNFT(address(tokenMock.royaltyRightsNFT())).ownerOf(tokenId), minter);
     }
 
-    function testRoyaltyRightsNFTHolderGetsTheRoyalties(address minter, address rightsOwner, uint256 tokenId, uint256 salePrice) public {
+    function testRoyaltyRightsNFTHolderGetsTheRoyalties(
+        address minter,
+        address rightsOwner,
+        uint256 tokenId,
+        uint256 salePrice
+    ) public {
         vm.assume(minter != address(0));
         vm.assume(rightsOwner != address(0));
         vm.assume(salePrice < type(uint256).max / tokenMock.royaltyFeeNumerator());

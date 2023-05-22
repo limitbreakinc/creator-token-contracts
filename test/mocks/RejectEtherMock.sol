@@ -6,8 +6,8 @@ contract RejectEtherMock {
     fallback() external payable {
         revert("Receiving ETH not permitted");
     }
+
     receive() external payable {
         revert("Receiving ETH not permitted");
     }
-    
 }

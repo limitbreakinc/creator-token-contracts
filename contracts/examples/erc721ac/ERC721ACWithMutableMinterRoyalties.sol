@@ -1,10 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
+import "../../access/OwnableBasic.sol";
 import "../../erc721c/ERC721AC.sol";
 import "../../programmable-royalties/MutableMinterRoyalties.sol";
 
-contract ERC721ACWithMutableMinterRoyalties is ERC721AC, MutableMinterRoyalties {
+/**
+ * @title ERC721ACWithMutableMinterRoyalties
+ * @author Limit Break, Inc.
+ * @notice Extension of ERC721AC that allows for minters to receive royalties on the tokens they mint.
+ *         The royalty fee is mutable and settable by the owner of each minted token.
+ * @dev These contracts are intended for example use and are not intended for production deployments as-is.
+ */
+contract ERC721ACWithMutableMinterRoyalties is OwnableBasic, ERC721AC, MutableMinterRoyalties {
 
     constructor(
         uint96 defaultRoyaltyFeeNumerator_,
@@ -14,7 +22,7 @@ contract ERC721ACWithMutableMinterRoyalties is ERC721AC, MutableMinterRoyalties 
         MutableMinterRoyalties(defaultRoyaltyFeeNumerator_) {
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, MutableMinterRoyalties) returns (bool) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AC, MutableMinterRoyaltiesBase) returns (bool) {
         return super.supportsInterface(interfaceId);
     }
 
