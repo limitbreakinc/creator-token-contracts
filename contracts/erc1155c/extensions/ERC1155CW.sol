@@ -218,7 +218,7 @@ abstract contract ERC1155CW is ERC1155Holder, ERC1155WrapperBase, ERC1155C {
 }
 
 /**
- * @title ERC1155CW
+ * @title ERC1155CWInitializable
  * @author Limit Break, Inc.
  * @notice Initializable ERC1155C Wrapper Contract implementation to allow for EIP-1167 clones.
  */
