@@ -103,7 +103,7 @@ build_push_npm:
   script:
    - echo $NPM_CONFIG > ~/.npmrc
    - npm whoami
-   - npm publish ./limitbreak-creator-token-contracts-1.1.0.tgz --access public
+   - npm publish ./limitbreak-creator-token-contracts-1.1.1.tgz --access public
   tags:
     - infra-docker
   rules:
