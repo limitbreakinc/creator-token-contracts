@@ -30,7 +30,8 @@ contract PaymentSplitterInitializable is Context {
     event PaymentReleased(address to, uint256 amount);
     event ERC20PaymentReleased(IERC20 indexed token, address to, uint256 amount);
     event PaymentReceived(address from, uint256 amount);
-
+    
+    bool private _paymentSplitterInitialized;
     uint256 private _totalShares;
     uint256 private _totalReleased;
 
@@ -51,10 +52,13 @@ contract PaymentSplitterInitializable is Context {
     function initializePaymentSplitter(address[] calldata payees, uint256[] calldata shares_) external {
         require(payees.length == shares_.length, "PaymentSplitter: payees and shares length mismatch");
         require(payees.length > 0, "PaymentSplitter: no payees");
+        require(!_paymentSplitterInitialized, "PaymentSplitter: already initialized");
 
         for (uint256 i = 0; i < payees.length; i++) {
             _addPayee(payees[i], shares_[i]);
         }
+
+        _paymentSplitterInitialized = true;
     }
 
     /**
