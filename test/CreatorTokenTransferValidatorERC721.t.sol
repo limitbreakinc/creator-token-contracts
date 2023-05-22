@@ -1006,7 +1006,9 @@ contract CreatorTokenTransferValidatorERC721Test is Test {
     function testEOAPoliciesAllowTransferToPermittedContractDestinations(address creator, address caller, address from)
         public
     {
+        _sanitizeAddress(caller);
         _sanitizeAddress(creator);
+        _sanitizeAddress(from);
         _testPolicyAllowsTransfersToPermittedContractReceivers(TransferSecurityLevels.Four, creator, caller, from);
         _testPolicyAllowsTransfersToPermittedContractReceivers(TransferSecurityLevels.Six, creator, caller, from);
     }
