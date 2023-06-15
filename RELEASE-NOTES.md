@@ -2,6 +2,7 @@
 
 * Add README text to clarify this library is not compatible with Upgradeable contracts.
 * Add documentation comments to clarify merkle mint mix-in usage.
+* Fix pragma locked to 0.8.9
 
 ## 1.1.1 (2023-05-22)
 
