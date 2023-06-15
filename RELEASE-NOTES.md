@@ -1,3 +1,8 @@
+## 1.1.2 (2023-06-15)
+
+* Add README text to clarify this library is not compatible with Upgradeable contracts.
+* Add documentation comments to clarify merkle mint mix-in usage.
+
 ## 1.1.1 (2023-05-22)
 
 * Refactored code to support either fully constructed or cloned contracts.
