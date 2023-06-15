@@ -22,6 +22,8 @@ Update your `remappings.txt` file to resolve imports.
 
 Once installed, you can use the contracts in the library by importing them.
 
+***Note: This contract library contains Initializable variations of several contracts an mix-ins.  The initialization functions are meant for use ONLY with EIP-1167 Minimal Proxies (Clones).  The use of the term "Initializable" is not meant to imply that these contracts are suitable for use in Upgradeable Proxy contracts.  This contract library should NOT be used in any upgradeable contract, as they do not provide storage-safety should additional contract variables be added in future versions.  Limit Break has no intentions to make this library suitable for upgradeability and developers are solely responsible for adapting the code should they use it in an upgradeable contract.*** 
+
 ## Cloning The Source Code
 
 ```bash

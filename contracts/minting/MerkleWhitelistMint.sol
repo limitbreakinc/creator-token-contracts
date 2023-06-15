@@ -10,6 +10,14 @@ import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
  * @author Limit Break, Inc.
  * @notice Base functionality of a contract mix-in that may optionally be used with extend ERC-721 tokens with merkle-proof based whitelist minting capabilities.
  * @dev Inheriting contracts must implement `_mintToken`.
+ *
+ * @dev The leaf nodes of the merkle tree contain the address and quantity of tokens that may be minted by that address.
+ *      Duplicate addresses are not permitted.  For instance, address(Bob) may only appear once in the merkle tree.
+ *      If address(Bob) appears more than once, Bob will be able to claim from only one of the leaves that contain his 
+ *      address. In the event a mistake is made and duplicates are included in the merkle tree, the owner of the 
+ *      contract may be able to de-duplicate the tree and submit a new root, provided 
+ *      `_remainingNumberOfMerkleRootChanges` is greater than 0. The number of permitted merkle root changes is set 
+ *      during contract construction/initialization, so take this into account when deploying your contracts.
  */
 abstract contract MerkleWhitelistMintBase is ClaimPeriodBase, MaxSupplyBase {
     error MerkleWhitelistMint__AddressHasAlreadyClaimed();
