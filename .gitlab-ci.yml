@@ -94,7 +94,9 @@ push_repo_github:
       echo "git gc"
       git gc
       echo "git fsck"
-       git fsck
+      git fsck
+      echo "git status"
+      git status
       echo "git checkout main && git merge $CI_COMMIT_REF_NAME"
       git checkout main && git merge $CI_COMMIT_REF_NAME
       echo "git push github_origin main"
