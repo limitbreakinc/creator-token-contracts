@@ -99,8 +99,10 @@ push_repo_github:
       git status
       echo "git checkout main && git merge $CI_COMMIT_REF_NAME"
       git checkout main && git merge $CI_COMMIT_REF_NAME
+      echo "git branch"
+      git branch
       echo "git push github_origin main"
-      git push github_origin main
+      git push --force github_origin main 
       echo "git tag -fa $TAG -m 'version: ${TAG}'"
       git tag -fa $TAG -m "version: ${TAG}"
       echo "git push github_origin --tags"
