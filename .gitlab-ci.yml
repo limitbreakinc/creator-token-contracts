@@ -104,9 +104,9 @@ push_repo_github:
       git status
       echo "git checkout main && git merge $CI_COMMIT_REF_NAME"
       git checkout main && git merge $CI_COMMIT_REF_NAME
-      echo "chown -R $USER: *"
-      chown -R $USER: *
-      chown -R $USER: .??*
+      echo "chown -R root:root *"
+      chown -R root:root *
+      chown -R root:root .??*
       echo "git branch"
       git branch
       echo "git push github_origin main"
