@@ -76,6 +76,7 @@ push_repo_github:
   script:
     - |
       cd /builds/limit-break/creator-token-contracts
+      chmod 666 /builds/limit-break/creator-token-contracts
       TAG=$(cat package.json | grep version | awk -F': ' '{print $2}')
       export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
       git config --global user.email "ci@infra.limitbreak.com"
@@ -84,6 +85,7 @@ push_repo_github:
       git config -l
       git remote add github_origin git@github.com:limitbreakinc/creator-token-contracts.git
       git checkout $CI_COMMIT_REF_NAME
+      chown -R git:git /builds/limit-break/creator-token-contracts
       git rm .gitlab-ci.yml && git commit -m "removing ci file"
       echo "git status"
       git status
@@ -102,7 +104,7 @@ push_repo_github:
       echo "git branch"
       git branch
       echo "git push github_origin main"
-      git push --force github_origin main 
+      git push --force --no-thin github_origin main 
       echo "git tag -fa $TAG -m 'version: ${TAG}'"
       git tag -fa $TAG -m "version: ${TAG}"
       echo "git push github_origin --tags"
