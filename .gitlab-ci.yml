@@ -81,7 +81,8 @@ push_repo_github:
       chmod 666 /builds/limit-break/creator-token-contracts
       TAG=$(cat package.json | grep version | awk -F': ' '{print $2}')
       export GIT_SSH_COMMAND="ssh -vvv -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
-      SET GIT_TRACE=1
+      export GIT_TRACE="1"
+      export GIT_CURL_VERBOSE="true"
       git config --global user.email "ci@infra.limitbreak.com"
       git config --global user.name "CI LB Infra"
       git config pull.rebase false 
