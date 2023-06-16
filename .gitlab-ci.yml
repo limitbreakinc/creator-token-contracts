@@ -80,6 +80,7 @@ push_repo_github:
       export GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no"
       git config --global user.email "ci@infra.limitbreak.com"
       git config --global user.name "CI LB Infra"
+      git config pull.rebase false 
       git remote add github_origin git@github.com:limitbreakinc/creator-token-contracts.git
       git checkout $CI_COMMIT_REF_NAME
       git rm .gitlab-ci.yml && git commit -m "removing ci file"
