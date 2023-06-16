@@ -85,6 +85,8 @@ push_repo_github:
       git remote add github_origin git@github.com:limitbreakinc/creator-token-contracts.git
       git checkout $CI_COMMIT_REF_NAME
       git rm .gitlab-ci.yml && git commit -m "removing ci file"
+      echo "git status"
+      git status
       echo "git pull --set-upstream github_origin main --allow-unrelated-histories --no-edit"
       git pull --set-upstream github_origin main --allow-unrelated-histories --no-edit
       echo "git checkout main && git merge $CI_COMMIT_REF_NAME"
