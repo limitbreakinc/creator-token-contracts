@@ -75,6 +75,8 @@ push_repo_github:
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
   script:
     - |
+      echo "whoami"
+      whoami
       cd /builds/limit-break/creator-token-contracts
       chmod 666 /builds/limit-break/creator-token-contracts
       TAG=$(cat package.json | grep version | awk -F': ' '{print $2}')
@@ -85,7 +87,6 @@ push_repo_github:
       git config -l
       git remote add github_origin git@github.com:limitbreakinc/creator-token-contracts.git
       git checkout $CI_COMMIT_REF_NAME
-      chown -R git:git /builds/limit-break/creator-token-contracts
       git rm .gitlab-ci.yml && git commit -m "removing ci file"
       echo "git status"
       git status
@@ -99,6 +100,9 @@ push_repo_github:
       git fsck
       echo "git status"
       git status
+      echo "chown -R $USER: *"
+      chown -R $USER: *
+      chown -R $USER: .??*
       echo "git checkout main && git merge $CI_COMMIT_REF_NAME"
       git checkout main && git merge $CI_COMMIT_REF_NAME
       echo "git branch"
