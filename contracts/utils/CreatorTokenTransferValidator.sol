@@ -748,11 +748,13 @@ contract CreatorTokenTransferValidator is
         if (id == 1) {
             if (_isChainOwnerOrFactory()) {
                 return;
-            }
-
-            if (_msgSender() != permittedContractReceiverAllowlistOwners[id]) {
+            } else {
                 revert CreatorTokenTransferValidator__CallerDoesNotOwnAllowlist();
             }
+        }
+
+        if (_msgSender() != permittedContractReceiverAllowlistOwners[id]) {
+            revert CreatorTokenTransferValidator__CallerDoesNotOwnAllowlist();
         }
     }
 }
