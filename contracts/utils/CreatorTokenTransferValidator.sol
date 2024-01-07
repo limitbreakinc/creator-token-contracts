@@ -4,45 +4,46 @@ pragma solidity ^0.8.4;
 import "./EOARegistry.sol";
 import "../interfaces/IOwnable.sol";
 import "../interfaces/ICreatorTokenTransferValidator.sol";
+import "../interfaces/IArbOwnerPublic.sol";
 import "@openzeppelin/contracts/access/IAccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
 /**
  * @title  CreatorTokenTransferValidator
  * @author Limit Break, Inc.
- * @notice The CreatorTokenTransferValidator contract is designed to provide a customizable and secure transfer 
- *         validation mechanism for NFT collections. This contract allows the owner of an NFT collection to configure 
- *         the transfer security level, operator whitelist, and permitted contract receiver allowlist for each 
+ * @notice The CreatorTokenTransferValidator contract is designed to provide a customizable and secure transfer
+ *         validation mechanism for NFT collections. This contract allows the owner of an NFT collection to configure
+ *         the transfer security level, operator whitelist, and permitted contract receiver allowlist for each
  *         collection.
  *
  * @dev    <h4>Features</h4>
- *         - Transfer security levels: Provides different levels of transfer security, 
+ *         - Transfer security levels: Provides different levels of transfer security,
  *           from open transfers to completely restricted transfers.
  *         - Operator whitelist: Allows the owner of a collection to whitelist specific operator addresses permitted
  *           to execute transfers on behalf of others.
- *         - Permitted contract receiver allowlist: Enables the owner of a collection to allow specific contract 
+ *         - Permitted contract receiver allowlist: Enables the owner of a collection to allow specific contract
  *           addresses to receive NFTs when otherwise disabled by security policy.
  *
  * @dev    <h4>Benefits</h4>
- *         - Enhanced security: Allows creators to have more control over their NFT collections, ensuring the safety 
+ *         - Enhanced security: Allows creators to have more control over their NFT collections, ensuring the safety
  *           and integrity of their assets.
  *         - Flexibility: Provides collection owners the ability to customize transfer rules as per their requirements.
- *         - Compliance: Facilitates compliance with regulations by enabling creators to restrict transfers based on 
+ *         - Compliance: Facilitates compliance with regulations by enabling creators to restrict transfers based on
  *           specific criteria.
  *
  * @dev    <h4>Intended Usage</h4>
- *         - The CreatorTokenTransferValidator contract is intended to be used by NFT collection owners to manage and 
- *           enforce transfer policies. This contract is integrated with the following varations of creator token 
+ *         - The CreatorTokenTransferValidator contract is intended to be used by NFT collection owners to manage and
+ *           enforce transfer policies. This contract is integrated with the following varations of creator token
  *           NFT contracts to validate transfers according to the defined security policies.
  *
  *           - ERC721-C:   Creator token implenting OpenZeppelin's ERC-721 standard.
  *           - ERC721-AC:  Creator token implenting Azuki's ERC-721A standard.
- *           - ERC721-CW:  Creator token implementing OpenZeppelin's ERC-721 standard with opt-in staking to 
+ *           - ERC721-CW:  Creator token implementing OpenZeppelin's ERC-721 standard with opt-in staking to
  *                         wrap/upgrade a pre-existing ERC-721 collection.
- *           - ERC721-ACW: Creator token implementing Azuki's ERC721-A standard with opt-in staking to 
+ *           - ERC721-ACW: Creator token implementing Azuki's ERC721-A standard with opt-in staking to
  *                         wrap/upgrade a pre-existing ERC-721 collection.
  *           - ERC1155-C:  Creator token implenting OpenZeppelin's ERC-1155 standard.
- *           - ERC1155-CW: Creator token implementing OpenZeppelin's ERC-1155 standard with opt-in staking to 
+ *           - ERC1155-CW: Creator token implementing OpenZeppelin's ERC-1155 standard with opt-in staking to
  *                         wrap/upgrade a pre-existing ERC-1155 collection.
  *
  *          <h4>Transfer Security Levels</h4>
@@ -68,7 +69,10 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
  *            - Caller Constraints: OperatorWhitelistDisableOTC
  *            - Receiver Constraints: EOA
  */
-contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferValidator {
+contract CreatorTokenTransferValidator is
+    EOARegistry,
+    ICreatorTokenTransferValidator
+{
     using EnumerableSet for EnumerableSet.AddressSet;
 
     error CreatorTokenTransferValidator__AddressAlreadyAllowed();
@@ -80,52 +84,76 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
     error CreatorTokenTransferValidator__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
     error CreatorTokenTransferValidator__ReceiverMustNotHaveDeployedCode();
     error CreatorTokenTransferValidator__ReceiverProofOfEOASignatureUnverified();
-    
+
     bytes32 private constant DEFAULT_ACCESS_CONTROL_ADMIN_ROLE = 0x00;
-    TransferSecurityLevels public constant DEFAULT_TRANSFER_SECURITY_LEVEL = TransferSecurityLevels.Zero;
+    TransferSecurityLevels public constant DEFAULT_TRANSFER_SECURITY_LEVEL =
+        TransferSecurityLevels.Zero;
+
+    address public constant ARB_OWNER_PUBLIC =
+        0x000000000000000000000000000000000000006b;
+
+    address public constant FACTORY =
+        0x0000000000000000000000000000000000000100;
 
     uint120 private lastOperatorWhitelistId;
     uint120 private lastPermittedContractReceiverAllowlistId;
 
-    mapping (TransferSecurityLevels => TransferSecurityPolicy) public transferSecurityPolicies;
-    mapping (address => CollectionSecurityPolicy) private collectionSecurityPolicies;
-    mapping (uint120 => address) public operatorWhitelistOwners;
-    mapping (uint120 => address) public permittedContractReceiverAllowlistOwners;
-    mapping (uint120 => EnumerableSet.AddressSet) private operatorWhitelists;
-    mapping (uint120 => EnumerableSet.AddressSet) private permittedContractReceiverAllowlists;
+    mapping(TransferSecurityLevels => TransferSecurityPolicy)
+        public transferSecurityPolicies;
+    mapping(address => CollectionSecurityPolicy)
+        private collectionSecurityPolicies;
+    mapping(uint120 => address) public operatorWhitelistOwners;
+    mapping(uint120 => address) public permittedContractReceiverAllowlistOwners;
+    mapping(uint120 => EnumerableSet.AddressSet) private operatorWhitelists;
+    mapping(uint120 => EnumerableSet.AddressSet)
+        private permittedContractReceiverAllowlists;
 
     constructor(address defaultOwner) EOARegistry() {
-        transferSecurityPolicies[TransferSecurityLevels.Zero] = TransferSecurityPolicy({
+        transferSecurityPolicies[
+            TransferSecurityLevels.Zero
+        ] = TransferSecurityPolicy({
             callerConstraints: CallerConstraints.None,
             receiverConstraints: ReceiverConstraints.None
         });
 
-        transferSecurityPolicies[TransferSecurityLevels.One] = TransferSecurityPolicy({
+        transferSecurityPolicies[
+            TransferSecurityLevels.One
+        ] = TransferSecurityPolicy({
             callerConstraints: CallerConstraints.OperatorWhitelistEnableOTC,
             receiverConstraints: ReceiverConstraints.None
         });
 
-        transferSecurityPolicies[TransferSecurityLevels.Two] = TransferSecurityPolicy({
+        transferSecurityPolicies[
+            TransferSecurityLevels.Two
+        ] = TransferSecurityPolicy({
             callerConstraints: CallerConstraints.OperatorWhitelistDisableOTC,
             receiverConstraints: ReceiverConstraints.None
         });
 
-        transferSecurityPolicies[TransferSecurityLevels.Three] = TransferSecurityPolicy({
+        transferSecurityPolicies[
+            TransferSecurityLevels.Three
+        ] = TransferSecurityPolicy({
             callerConstraints: CallerConstraints.OperatorWhitelistEnableOTC,
             receiverConstraints: ReceiverConstraints.NoCode
         });
 
-        transferSecurityPolicies[TransferSecurityLevels.Four] = TransferSecurityPolicy({
+        transferSecurityPolicies[
+            TransferSecurityLevels.Four
+        ] = TransferSecurityPolicy({
             callerConstraints: CallerConstraints.OperatorWhitelistEnableOTC,
             receiverConstraints: ReceiverConstraints.EOA
         });
 
-        transferSecurityPolicies[TransferSecurityLevels.Five] = TransferSecurityPolicy({
+        transferSecurityPolicies[
+            TransferSecurityLevels.Five
+        ] = TransferSecurityPolicy({
             callerConstraints: CallerConstraints.OperatorWhitelistDisableOTC,
             receiverConstraints: ReceiverConstraints.NoCode
         });
 
-        transferSecurityPolicies[TransferSecurityLevels.Six] = TransferSecurityPolicy({
+        transferSecurityPolicies[
+            TransferSecurityLevels.Six
+        ] = TransferSecurityPolicy({
             callerConstraints: CallerConstraints.OperatorWhitelistDisableOTC,
             receiverConstraints: ReceiverConstraints.EOA
         });
@@ -134,8 +162,16 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
 
         operatorWhitelistOwners[id] = defaultOwner;
 
-        emit CreatedAllowlist(AllowlistTypes.Operators, id, "DEFAULT OPERATOR WHITELIST");
-        emit ReassignedAllowlistOwnership(AllowlistTypes.Operators, id, defaultOwner);
+        emit CreatedAllowlist(
+            AllowlistTypes.Operators,
+            id,
+            "DEFAULT OPERATOR WHITELIST"
+        );
+        emit ReassignedAllowlistOwnership(
+            AllowlistTypes.Operators,
+            id,
+            defaultOwner
+        );
     }
 
     /**
@@ -156,30 +192,68 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param from   The address of the token owner.
      * @param to     The address of the token receiver.
      */
-    function applyCollectionTransferPolicy(address caller, address from, address to) external view override {
+    function applyCollectionTransferPolicy(
+        address caller,
+        address from,
+        address to
+    ) external view override {
         address collection = _msgSender();
-        CollectionSecurityPolicy memory collectionSecurityPolicy = collectionSecurityPolicies[collection];
-        TransferSecurityPolicy memory transferSecurityPolicy = 
-            transferSecurityPolicies[collectionSecurityPolicy.transferSecurityLevel];
-        
-        if (transferSecurityPolicy.receiverConstraints == ReceiverConstraints.NoCode) {
+        CollectionSecurityPolicy
+            memory collectionSecurityPolicy = collectionSecurityPolicies[
+                collection
+            ];
+        TransferSecurityPolicy
+            memory transferSecurityPolicy = transferSecurityPolicies[
+                collectionSecurityPolicy.transferSecurityLevel
+            ];
+
+        if (
+            transferSecurityPolicy.receiverConstraints ==
+            ReceiverConstraints.NoCode
+        ) {
             if (to.code.length > 0) {
-                if (!isContractReceiverPermitted(collectionSecurityPolicy.permittedContractReceiversId, to)) {
+                if (
+                    !isContractReceiverPermitted(
+                        collectionSecurityPolicy.permittedContractReceiversId,
+                        to
+                    )
+                ) {
                     revert CreatorTokenTransferValidator__ReceiverMustNotHaveDeployedCode();
                 }
             }
-        } else if (transferSecurityPolicy.receiverConstraints == ReceiverConstraints.EOA) {
+        } else if (
+            transferSecurityPolicy.receiverConstraints ==
+            ReceiverConstraints.EOA
+        ) {
             if (!isVerifiedEOA(to)) {
-                if (!isContractReceiverPermitted(collectionSecurityPolicy.permittedContractReceiversId, to)) {
+                if (
+                    !isContractReceiverPermitted(
+                        collectionSecurityPolicy.permittedContractReceiversId,
+                        to
+                    )
+                ) {
                     revert CreatorTokenTransferValidator__ReceiverProofOfEOASignatureUnverified();
                 }
             }
         }
 
-        if (transferSecurityPolicy.callerConstraints != CallerConstraints.None) {
-            if(operatorWhitelists[collectionSecurityPolicy.operatorWhitelistId].length() > 0) {
-                if (!isOperatorWhitelisted(collectionSecurityPolicy.operatorWhitelistId, caller)) {
-                    if (transferSecurityPolicy.callerConstraints == CallerConstraints.OperatorWhitelistEnableOTC) {
+        if (
+            transferSecurityPolicy.callerConstraints != CallerConstraints.None
+        ) {
+            if (
+                operatorWhitelists[collectionSecurityPolicy.operatorWhitelistId]
+                    .length() > 0
+            ) {
+                if (
+                    !isOperatorWhitelisted(
+                        collectionSecurityPolicy.operatorWhitelistId,
+                        caller
+                    )
+                ) {
+                    if (
+                        transferSecurityPolicy.callerConstraints ==
+                        CallerConstraints.OperatorWhitelistEnableOTC
+                    ) {
                         if (caller != from) {
                             revert CreatorTokenTransferValidator__CallerMustBeWhitelistedOperator();
                         }
@@ -203,20 +277,26 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param name The name of the new operator whitelist.
      * @return     The id of the new operator whitelist.
      */
-    function createOperatorWhitelist(string calldata name) external override returns (uint120) {
+    function createOperatorWhitelist(
+        string calldata name
+    ) external override returns (uint120) {
         uint120 id = ++lastOperatorWhitelistId;
 
         operatorWhitelistOwners[id] = _msgSender();
 
         emit CreatedAllowlist(AllowlistTypes.Operators, id, name);
-        emit ReassignedAllowlistOwnership(AllowlistTypes.Operators, id, _msgSender());
+        emit ReassignedAllowlistOwnership(
+            AllowlistTypes.Operators,
+            id,
+            _msgSender()
+        );
 
         return id;
     }
 
     /**
      * @notice Create a new permitted contract receiver allowlist.
-     * 
+     *
      * @dev <h4>Postconditions:</h4>
      *      1. A new permitted contract receiver allowlist with the specified name is created.
      *      2. The caller is set as the owner of the new permitted contract receiver allowlist.
@@ -226,13 +306,23 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param name The name of the new permitted contract receiver allowlist.
      * @return     The id of the new permitted contract receiver allowlist.
      */
-    function createPermittedContractReceiverAllowlist(string calldata name) external override returns (uint120) {
+    function createPermittedContractReceiverAllowlist(
+        string calldata name
+    ) external override returns (uint120) {
         uint120 id = ++lastPermittedContractReceiverAllowlistId;
 
         permittedContractReceiverAllowlistOwners[id] = _msgSender();
 
-        emit CreatedAllowlist(AllowlistTypes.PermittedContractReceivers, id, name);
-        emit ReassignedAllowlistOwnership(AllowlistTypes.PermittedContractReceivers, id, _msgSender());
+        emit CreatedAllowlist(
+            AllowlistTypes.PermittedContractReceivers,
+            id,
+            name
+        );
+        emit ReassignedAllowlistOwnership(
+            AllowlistTypes.PermittedContractReceivers,
+            id,
+            _msgSender()
+        );
 
         return id;
     }
@@ -250,8 +340,11 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param id       The id of the operator whitelist.
      * @param newOwner The address of the new owner.
      */
-    function reassignOwnershipOfOperatorWhitelist(uint120 id, address newOwner) external override {
-        if(newOwner == address(0)) {
+    function reassignOwnershipOfOperatorWhitelist(
+        uint120 id,
+        address newOwner
+    ) external override {
+        if (newOwner == address(0)) {
             revert CreatorTokenTransferValidator__AllowlistOwnershipCannotBeTransferredToZeroAddress();
         }
 
@@ -271,8 +364,11 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param id       The id of the permitted contract receiver allowlist.
      * @param newOwner The address of the new owner.
      */
-    function reassignOwnershipOfPermittedContractReceiverAllowlist(uint120 id, address newOwner) external override {
-        if(newOwner == address(0)) {
+    function reassignOwnershipOfPermittedContractReceiverAllowlist(
+        uint120 id,
+        address newOwner
+    ) external override {
+        if (newOwner == address(0)) {
             revert CreatorTokenTransferValidator__AllowlistOwnershipCannotBeTransferredToZeroAddress();
         }
 
@@ -290,7 +386,9 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      *
      * @param id The id of the operator whitelist.
      */
-    function renounceOwnershipOfOperatorWhitelist(uint120 id) external override {
+    function renounceOwnershipOfOperatorWhitelist(
+        uint120 id
+    ) external override {
         _reassignOwnershipOfOperatorWhitelist(id, address(0));
     }
 
@@ -305,7 +403,9 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      *
      * @param id The id of the permitted contract receiver allowlist.
      */
-    function renounceOwnershipOfPermittedContractReceiverAllowlist(uint120 id) external override {
+    function renounceOwnershipOfPermittedContractReceiverAllowlist(
+        uint120 id
+    ) external override {
         _reassignOwnershipOfPermittedContractReceiverAllowlist(id, address(0));
     }
 
@@ -322,8 +422,9 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param level      The new transfer security level to apply.
      */
     function setTransferSecurityLevelOfCollection(
-        address collection, 
-        TransferSecurityLevels level) external override {
+        address collection,
+        TransferSecurityLevels level
+    ) external override {
         _requireCallerIsNFTOrContractOwnerOrAdmin(collection);
         collectionSecurityPolicies[collection].transferSecurityLevel = level;
         emit SetTransferSecurityLevel(collection, level);
@@ -331,7 +432,7 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
 
     /**
      * @notice Set the operator whitelist of a collection.
-     * 
+     *
      * @dev Throws when the caller is neither collection contract, nor the owner or admin of the specified collection.
      * @dev Throws when the specified operator whitelist id does not exist.
      *
@@ -342,7 +443,10 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param collection The address of the collection.
      * @param id         The id of the operator whitelist.
      */
-    function setOperatorWhitelistOfCollection(address collection, uint120 id) external override {
+    function setOperatorWhitelistOfCollection(
+        address collection,
+        uint120 id
+    ) external override {
         _requireCallerIsNFTOrContractOwnerOrAdmin(collection);
 
         if (id > lastOperatorWhitelistId) {
@@ -366,15 +470,23 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param collection The address of the collection.
      * @param id         The id of the permitted contract receiver allowlist.
      */
-    function setPermittedContractReceiverAllowlistOfCollection(address collection, uint120 id) external override {
+    function setPermittedContractReceiverAllowlistOfCollection(
+        address collection,
+        uint120 id
+    ) external override {
         _requireCallerIsNFTOrContractOwnerOrAdmin(collection);
 
         if (id > lastPermittedContractReceiverAllowlistId) {
             revert CreatorTokenTransferValidator__AllowlistDoesNotExist();
         }
 
-        collectionSecurityPolicies[collection].permittedContractReceiversId = id;
-        emit SetAllowlist(AllowlistTypes.PermittedContractReceivers, collection, id);
+        collectionSecurityPolicies[collection]
+            .permittedContractReceiversId = id;
+        emit SetAllowlist(
+            AllowlistTypes.PermittedContractReceivers,
+            collection,
+            id
+        );
     }
 
     /**
@@ -390,7 +502,10 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param id       The id of the operator whitelist.
      * @param operator The address of the operator to add.
      */
-    function addOperatorToWhitelist(uint120 id, address operator) external override {
+    function addOperatorToWhitelist(
+        uint120 id,
+        address operator
+    ) external override {
         _requireCallerOwnsOperatorWhitelist(id);
 
         if (!operatorWhitelists[id].add(operator)) {
@@ -413,14 +528,21 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param id              The id of the permitted contract receiver allowlist.
      * @param receiver The address of the contract to add.
      */
-    function addPermittedContractReceiverToAllowlist(uint120 id, address receiver) external override {
+    function addPermittedContractReceiverToAllowlist(
+        uint120 id,
+        address receiver
+    ) external override {
         _requireCallerOwnsPermittedContractReceiverAllowlist(id);
 
         if (!permittedContractReceiverAllowlists[id].add(receiver)) {
             revert CreatorTokenTransferValidator__AddressAlreadyAllowed();
         }
 
-        emit AddedToAllowlist(AllowlistTypes.PermittedContractReceivers, id, receiver);
+        emit AddedToAllowlist(
+            AllowlistTypes.PermittedContractReceivers,
+            id,
+            receiver
+        );
     }
 
     /**
@@ -436,7 +558,10 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param id       The id of the operator whitelist.
      * @param operator The address of the operator to remove.
      */
-    function removeOperatorFromWhitelist(uint120 id, address operator) external override {
+    function removeOperatorFromWhitelist(
+        uint120 id,
+        address operator
+    ) external override {
         _requireCallerOwnsOperatorWhitelist(id);
 
         if (!operatorWhitelists[id].remove(operator)) {
@@ -448,7 +573,7 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
 
     /**
      * @notice Remove a contract address from a permitted contract receiver allowlist.
-     * 
+     *
      * @dev Throws when the caller does not own the specified permitted contract receiver allowlist.
      * @dev Throws when the contract address is not in the specified permitted contract receiver allowlist.
      *
@@ -459,14 +584,21 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param id       The id of the permitted contract receiver allowlist.
      * @param receiver The address of the contract to remove.
      */
-    function removePermittedContractReceiverFromAllowlist(uint120 id, address receiver) external override {
+    function removePermittedContractReceiverFromAllowlist(
+        uint120 id,
+        address receiver
+    ) external override {
         _requireCallerOwnsPermittedContractReceiverAllowlist(id);
 
         if (!permittedContractReceiverAllowlists[id].remove(receiver)) {
             revert CreatorTokenTransferValidator__AddressNotAllowed();
         }
 
-        emit RemovedFromAllowlist(AllowlistTypes.PermittedContractReceivers, id, receiver);
+        emit RemovedFromAllowlist(
+            AllowlistTypes.PermittedContractReceivers,
+            id,
+            receiver
+        );
     }
 
     /**
@@ -475,8 +607,9 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @return           The security policy of the specified collection, which includes:
      *                   Transfer security level, operator whitelist id, permitted contract receiver allowlist id
      */
-    function getCollectionSecurityPolicy(address collection) 
-        external view override returns (CollectionSecurityPolicy memory) {
+    function getCollectionSecurityPolicy(
+        address collection
+    ) external view override returns (CollectionSecurityPolicy memory) {
         return collectionSecurityPolicies[collection];
     }
 
@@ -485,7 +618,9 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param id The id of the operator whitelist.
      * @return   An array of whitelisted operator addresses.
      */
-    function getWhitelistedOperators(uint120 id) external view override returns (address[] memory) {
+    function getWhitelistedOperators(
+        uint120 id
+    ) external view override returns (address[] memory) {
         return operatorWhitelists[id].values();
     }
 
@@ -494,7 +629,9 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param id The id of the permitted contract receiver allowlist.
      * @return   An array of contract addresses is the permitted contract receiver allowlist.
      */
-    function getPermittedContractReceivers(uint120 id) external view override returns (address[] memory) {
+    function getPermittedContractReceivers(
+        uint120 id
+    ) external view override returns (address[] memory) {
         return permittedContractReceiverAllowlists[id].values();
     }
 
@@ -504,7 +641,10 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @param operator The address of the operator to check.
      * @return         True if the operator is in the specified operator whitelist, false otherwise.
      */
-    function isOperatorWhitelisted(uint120 id, address operator) public view override returns (bool) {
+    function isOperatorWhitelisted(
+        uint120 id,
+        address operator
+    ) public view override returns (bool) {
         return operatorWhitelists[id].contains(operator);
     }
 
@@ -512,15 +652,20 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
      * @notice Check if a contract address is in a specified permitted contract receiver allowlist.
      * @param id       The id of the permitted contract receiver allowlist.
      * @param receiver The address of the contract to check.
-     * @return         True if the contract address is in the specified permitted contract receiver allowlist, 
+     * @return         True if the contract address is in the specified permitted contract receiver allowlist,
      *                 false otherwise.
      */
-    function isContractReceiverPermitted(uint120 id, address receiver) public view override returns (bool) {
+    function isContractReceiverPermitted(
+        uint120 id,
+        address receiver
+    ) public view override returns (bool) {
         return permittedContractReceiverAllowlists[id].contains(receiver);
     }
 
     /// @notice ERC-165 Interface Support
-    function supportsInterface(bytes4 interfaceId) public view virtual override(EOARegistry, IERC165) returns (bool) {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(EOARegistry, IERC165) returns (bool) {
         return
             interfaceId == type(ITransferValidator).interfaceId ||
             interfaceId == type(ITransferSecurityRegistry).interfaceId ||
@@ -528,40 +673,61 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
             super.supportsInterface(interfaceId);
     }
 
-    function _requireCallerIsNFTOrContractOwnerOrAdmin(address tokenAddress) internal view {
+    function _requireCallerIsNFTOrContractOwnerOrAdmin(
+        address tokenAddress
+    ) internal view {
         bool callerHasPermissions = false;
-        if(tokenAddress.code.length > 0) {
+        if (tokenAddress.code.length > 0) {
             callerHasPermissions = _msgSender() == tokenAddress;
-            if(!callerHasPermissions) {
-
-                try IOwnable(tokenAddress).owner() returns (address contractOwner) {
+            if (!callerHasPermissions) {
+                try IOwnable(tokenAddress).owner() returns (
+                    address contractOwner
+                ) {
                     callerHasPermissions = _msgSender() == contractOwner;
                 } catch {}
 
-                if(!callerHasPermissions) {
-                    try IAccessControl(tokenAddress).hasRole(DEFAULT_ACCESS_CONTROL_ADMIN_ROLE, _msgSender()) 
-                        returns (bool callerIsContractAdmin) {
+                if (!callerHasPermissions) {
+                    try
+                        IAccessControl(tokenAddress).hasRole(
+                            DEFAULT_ACCESS_CONTROL_ADMIN_ROLE,
+                            _msgSender()
+                        )
+                    returns (bool callerIsContractAdmin) {
                         callerHasPermissions = callerIsContractAdmin;
                     } catch {}
                 }
             }
         }
 
-        if(!callerHasPermissions) {
+        if (!callerHasPermissions) {
             revert CreatorTokenTransferValidator__CallerMustHaveElevatedPermissionsForSpecifiedNFT();
         }
     }
 
-    function _reassignOwnershipOfOperatorWhitelist(uint120 id, address newOwner) private {
+    function _reassignOwnershipOfOperatorWhitelist(
+        uint120 id,
+        address newOwner
+    ) private {
         _requireCallerOwnsOperatorWhitelist(id);
         operatorWhitelistOwners[id] = newOwner;
-        emit ReassignedAllowlistOwnership(AllowlistTypes.Operators, id, newOwner);
+        emit ReassignedAllowlistOwnership(
+            AllowlistTypes.Operators,
+            id,
+            newOwner
+        );
     }
 
-    function _reassignOwnershipOfPermittedContractReceiverAllowlist(uint120 id, address newOwner) private {
+    function _reassignOwnershipOfPermittedContractReceiverAllowlist(
+        uint120 id,
+        address newOwner
+    ) private {
         _requireCallerOwnsPermittedContractReceiverAllowlist(id);
         permittedContractReceiverAllowlistOwners[id] = newOwner;
-        emit ReassignedAllowlistOwnership(AllowlistTypes.PermittedContractReceivers, id, newOwner);
+        emit ReassignedAllowlistOwnership(
+            AllowlistTypes.PermittedContractReceivers,
+            id,
+            newOwner
+        );
     }
 
     function _requireCallerOwnsOperatorWhitelist(uint120 id) private view {
@@ -570,9 +736,23 @@ contract CreatorTokenTransferValidator is EOARegistry, ICreatorTokenTransferVali
         }
     }
 
-    function _requireCallerOwnsPermittedContractReceiverAllowlist(uint120 id) private view {
-        if (_msgSender() != permittedContractReceiverAllowlistOwners[id]) {
-            revert CreatorTokenTransferValidator__CallerDoesNotOwnAllowlist();
+    function _isChainOwnerOrFactory() private view returns (bool) {
+        return
+            IArbOwnerPublic(ARB_OWNER_PUBLIC).isChainOwner(_msgSender()) ||
+            _msgSender() == FACTORY;
+    }
+
+    function _requireCallerOwnsPermittedContractReceiverAllowlist(
+        uint120 id
+    ) private view {
+        if (id == 1) {
+            if (_isChainOwnerOrFactory()) {
+                return;
+            }
+
+            if (_msgSender() != permittedContractReceiverAllowlistOwners[id]) {
+                revert CreatorTokenTransferValidator__CallerDoesNotOwnAllowlist();
+            }
         }
     }
 }
