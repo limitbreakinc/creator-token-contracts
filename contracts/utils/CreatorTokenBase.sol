@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
 /**
  * @title CreatorTokenBase
  * @author Limit Break, Inc.
- * @notice CreatorTokenBase is an abstract contract that provides basic functionality for managing token 
+ * @notice CreatorTokenBase is an abstract contract that provides basic functionality for managing token
  * transfer policies through an implementation of ICreatorTokenTransferValidator. This contract is intended to be used
  * as a base for creator-specific token contracts, enabling customizable transfer restrictions and security policies.
  *
@@ -25,18 +25,24 @@ import "@openzeppelin/contracts/interfaces/IERC165.sol";
  * <ul>Can be easily integrated into other token contracts as a base contract.</ul>
  *
  * <h4>Intended Usage:</h4>
- * <ul>Use as a base contract for creator token implementations that require advanced transfer restrictions and 
+ * <ul>Use as a base contract for creator token implementations that require advanced transfer restrictions and
  *   security policies.</ul>
- * <ul>Set and update the ICreatorTokenTransferValidator implementation contract to enforce desired policies for the 
+ * <ul>Set and update the ICreatorTokenTransferValidator implementation contract to enforce desired policies for the
  *   creator token.</ul>
  */
-abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, ICreatorToken {
-    
+abstract contract CreatorTokenBase is
+    OwnablePermissions,
+    TransferValidation,
+    ICreatorToken
+{
     error CreatorTokenBase__InvalidTransferValidatorContract();
     error CreatorTokenBase__SetTransferValidatorFirst();
 
-    address public constant DEFAULT_TRANSFER_VALIDATOR = address(0x0000721C310194CcfC01E523fc93C9cCcFa2A0Ac);
-    TransferSecurityLevels public constant DEFAULT_TRANSFER_SECURITY_LEVEL = TransferSecurityLevels.One;
+    // todo: change this to the deployed address if different
+    address public constant DEFAULT_TRANSFER_VALIDATOR =
+        address(0x0000721C310194CcfC01E523fc93C9cCcFa2A0Ac);
+    TransferSecurityLevels public constant DEFAULT_TRANSFER_SECURITY_LEVEL =
+        TransferSecurityLevels.One;
     uint120 public constant DEFAULT_OPERATOR_WHITELIST_ID = uint120(1);
 
     ICreatorTokenTransferValidator private transferValidator;
@@ -49,8 +55,16 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
     function setToDefaultSecurityPolicy() public virtual {
         _requireCallerIsContractOwner();
         setTransferValidator(DEFAULT_TRANSFER_VALIDATOR);
-        ICreatorTokenTransferValidator(DEFAULT_TRANSFER_VALIDATOR).setTransferSecurityLevelOfCollection(address(this), DEFAULT_TRANSFER_SECURITY_LEVEL);
-        ICreatorTokenTransferValidator(DEFAULT_TRANSFER_VALIDATOR).setOperatorWhitelistOfCollection(address(this), DEFAULT_OPERATOR_WHITELIST_ID);
+        ICreatorTokenTransferValidator(DEFAULT_TRANSFER_VALIDATOR)
+            .setTransferSecurityLevelOfCollection(
+                address(this),
+                DEFAULT_TRANSFER_SECURITY_LEVEL
+            );
+        ICreatorTokenTransferValidator(DEFAULT_TRANSFER_VALIDATOR)
+            .setOperatorWhitelistOfCollection(
+                address(this),
+                DEFAULT_OPERATOR_WHITELIST_ID
+            );
     }
 
     /**
@@ -58,22 +72,29 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
      *         and set the security policy to their own custom settings.
      */
     function setToCustomValidatorAndSecurityPolicy(
-        address validator, 
-        TransferSecurityLevels level, 
-        uint120 operatorWhitelistId, 
-        uint120 permittedContractReceiversAllowlistId) public {
+        address validator,
+        TransferSecurityLevels level,
+        uint120 operatorWhitelistId,
+        uint120 permittedContractReceiversAllowlistId
+    ) public {
         _requireCallerIsContractOwner();
 
         setTransferValidator(validator);
 
-        ICreatorTokenTransferValidator(validator).
-            setTransferSecurityLevelOfCollection(address(this), level);
+        ICreatorTokenTransferValidator(validator)
+            .setTransferSecurityLevelOfCollection(address(this), level);
 
-        ICreatorTokenTransferValidator(validator).
-            setOperatorWhitelistOfCollection(address(this), operatorWhitelistId);
+        ICreatorTokenTransferValidator(validator)
+            .setOperatorWhitelistOfCollection(
+                address(this),
+                operatorWhitelistId
+            );
 
-        ICreatorTokenTransferValidator(validator).
-            setPermittedContractReceiverAllowlistOfCollection(address(this), permittedContractReceiversAllowlistId);
+        ICreatorTokenTransferValidator(validator)
+            .setPermittedContractReceiverAllowlistOfCollection(
+                address(this),
+                permittedContractReceiversAllowlistId
+            );
     }
 
     /**
@@ -81,9 +102,10 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
      * @dev    Reverts if the transfer validator has not been set.
      */
     function setToCustomSecurityPolicy(
-        TransferSecurityLevels level, 
-        uint120 operatorWhitelistId, 
-        uint120 permittedContractReceiversAllowlistId) public {
+        TransferSecurityLevels level,
+        uint120 operatorWhitelistId,
+        uint120 permittedContractReceiversAllowlistId
+    ) public {
         _requireCallerIsContractOwner();
 
         ICreatorTokenTransferValidator validator = getTransferValidator();
@@ -92,15 +114,21 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
         }
 
         validator.setTransferSecurityLevelOfCollection(address(this), level);
-        validator.setOperatorWhitelistOfCollection(address(this), operatorWhitelistId);
-        validator.setPermittedContractReceiverAllowlistOfCollection(address(this), permittedContractReceiversAllowlistId);
+        validator.setOperatorWhitelistOfCollection(
+            address(this),
+            operatorWhitelistId
+        );
+        validator.setPermittedContractReceiverAllowlistOfCollection(
+            address(this),
+            permittedContractReceiversAllowlistId
+        );
     }
 
     /**
      * @notice Sets the transfer validator for the token contract.
      *
-     * @dev    Throws when provided validator contract is not the zero address and doesn't support 
-     *         the ICreatorTokenTransferValidator interface. 
+     * @dev    Throws when provided validator contract is not the zero address and doesn't support
+     *         the ICreatorTokenTransferValidator interface.
      * @dev    Throws when the caller is not the contract owner.
      *
      * @dev    <h4>Postconditions:</h4>
@@ -114,18 +142,24 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
 
         bool isValidTransferValidator = false;
 
-        if(transferValidator_.code.length > 0) {
-            try IERC165(transferValidator_).supportsInterface(type(ICreatorTokenTransferValidator).interfaceId) 
-                returns (bool supportsInterface) {
+        if (transferValidator_.code.length > 0) {
+            try
+                IERC165(transferValidator_).supportsInterface(
+                    type(ICreatorTokenTransferValidator).interfaceId
+                )
+            returns (bool supportsInterface) {
                 isValidTransferValidator = supportsInterface;
             } catch {}
         }
 
-        if(transferValidator_ != address(0) && !isValidTransferValidator) {
+        if (transferValidator_ != address(0) && !isValidTransferValidator) {
             revert CreatorTokenBase__InvalidTransferValidatorContract();
         }
 
-        emit TransferValidatorUpdated(address(transferValidator), transferValidator_);
+        emit TransferValidatorUpdated(
+            address(transferValidator),
+            transferValidator_
+        );
 
         transferValidator = ICreatorTokenTransferValidator(transferValidator_);
     }
@@ -133,7 +167,12 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
     /**
      * @notice Returns the transfer validator contract address for this token contract.
      */
-    function getTransferValidator() public view override returns (ICreatorTokenTransferValidator) {
+    function getTransferValidator()
+        public
+        view
+        override
+        returns (ICreatorTokenTransferValidator)
+    {
         return transferValidator;
     }
 
@@ -141,26 +180,41 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
      * @notice Returns the security policy for this token contract, which includes:
      *         Transfer security level, operator whitelist id, permitted contract receiver allowlist id.
      */
-    function getSecurityPolicy() public view override returns (CollectionSecurityPolicy memory) {
+    function getSecurityPolicy()
+        public
+        view
+        override
+        returns (CollectionSecurityPolicy memory)
+    {
         if (address(transferValidator) != address(0)) {
             return transferValidator.getCollectionSecurityPolicy(address(this));
         }
 
-        return CollectionSecurityPolicy({
-            transferSecurityLevel: TransferSecurityLevels.Zero,
-            operatorWhitelistId: 0,
-            permittedContractReceiversId: 0
-        });
+        return
+            CollectionSecurityPolicy({
+                transferSecurityLevel: TransferSecurityLevels.Zero,
+                operatorWhitelistId: 0,
+                permittedContractReceiversId: 0
+            });
     }
 
     /**
      * @notice Returns the list of all whitelisted operators for this token contract.
      * @dev    This can be an expensive call and should only be used in view-only functions.
      */
-    function getWhitelistedOperators() public view override returns (address[] memory) {
+    function getWhitelistedOperators()
+        public
+        view
+        override
+        returns (address[] memory)
+    {
         if (address(transferValidator) != address(0)) {
-            return transferValidator.getWhitelistedOperators(
-                transferValidator.getCollectionSecurityPolicy(address(this)).operatorWhitelistId);
+            return
+                transferValidator.getWhitelistedOperators(
+                    transferValidator
+                        .getCollectionSecurityPolicy(address(this))
+                        .operatorWhitelistId
+                );
         }
 
         return new address[](0);
@@ -170,10 +224,19 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
      * @notice Returns the list of permitted contract receivers for this token contract.
      * @dev    This can be an expensive call and should only be used in view-only functions.
      */
-    function getPermittedContractReceivers() public view override returns (address[] memory) {
+    function getPermittedContractReceivers()
+        public
+        view
+        override
+        returns (address[] memory)
+    {
         if (address(transferValidator) != address(0)) {
-            return transferValidator.getPermittedContractReceivers(
-                transferValidator.getCollectionSecurityPolicy(address(this)).permittedContractReceiversId);
+            return
+                transferValidator.getPermittedContractReceivers(
+                    transferValidator
+                        .getCollectionSecurityPolicy(address(this))
+                        .permittedContractReceiversId
+                );
         }
 
         return new address[](0);
@@ -183,10 +246,17 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
      * @notice Checks if an operator is whitelisted for this token contract.
      * @param operator The address of the operator to check.
      */
-    function isOperatorWhitelisted(address operator) public view override returns (bool) {
+    function isOperatorWhitelisted(
+        address operator
+    ) public view override returns (bool) {
         if (address(transferValidator) != address(0)) {
-            return transferValidator.isOperatorWhitelisted(
-                transferValidator.getCollectionSecurityPolicy(address(this)).operatorWhitelistId, operator);
+            return
+                transferValidator.isOperatorWhitelisted(
+                    transferValidator
+                        .getCollectionSecurityPolicy(address(this))
+                        .operatorWhitelistId,
+                    operator
+                );
         }
 
         return false;
@@ -196,10 +266,17 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
      * @notice Checks if a contract receiver is permitted for this token contract.
      * @param receiver The address of the receiver to check.
      */
-    function isContractReceiverPermitted(address receiver) public view override returns (bool) {
+    function isContractReceiverPermitted(
+        address receiver
+    ) public view override returns (bool) {
         if (address(transferValidator) != address(0)) {
-            return transferValidator.isContractReceiverPermitted(
-                transferValidator.getCollectionSecurityPolicy(address(this)).permittedContractReceiversId, receiver);
+            return
+                transferValidator.isContractReceiverPermitted(
+                    transferValidator
+                        .getCollectionSecurityPolicy(address(this))
+                        .permittedContractReceiversId,
+                    receiver
+                );
         }
 
         return false;
@@ -211,16 +288,26 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
      *         address would be allowed by this token's security policy.
      *
      * @notice This function only checks the security policy restrictions and does not check whether token ownership
-     *         or approvals are in place. 
+     *         or approvals are in place.
      *
      * @param caller The address of the simulated caller.
      * @param from   The address of the sender.
      * @param to     The address of the receiver.
      * @return       True if the transfer is allowed, false otherwise.
      */
-    function isTransferAllowed(address caller, address from, address to) public view override returns (bool) {
+    function isTransferAllowed(
+        address caller,
+        address from,
+        address to
+    ) public view override returns (bool) {
         if (address(transferValidator) != address(0)) {
-            try transferValidator.applyCollectionTransferPolicy(caller, from, to) {
+            try
+                transferValidator.applyCollectionTransferPolicy(
+                    caller,
+                    from,
+                    to
+                )
+            {
                 return true;
             } catch {
                 return false;
@@ -242,11 +329,12 @@ abstract contract CreatorTokenBase is OwnablePermissions, TransferValidation, IC
      * @param to      The address of the receiver.
      */
     function _preValidateTransfer(
-        address caller, 
-        address from, 
-        address to, 
-        uint256 /*tokenId*/, 
-        uint256 /*value*/) internal virtual override {
+        address caller,
+        address from,
+        address to,
+        uint256 /*tokenId*/,
+        uint256 /*value*/
+    ) internal virtual override {
         if (address(transferValidator) != address(0)) {
             transferValidator.applyCollectionTransferPolicy(caller, from, to);
         }
