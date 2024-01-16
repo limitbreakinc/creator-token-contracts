@@ -14,9 +14,17 @@ With an existing foundry project:
 
 ```bash
 forge install limitbreakinc/creator-token-contracts
+forge install OpenZeppelin/openzeppelin-contracts@v4.9.5
 ```
 
+Creator Token Contracts uses pre-5.0 OpenZeppelin contracts. In 5.0+, OZ changed `Ownable` which Creator Token Contracts depends on to be a default constructor.  
+
 Update your `remappings.txt` file to resolve imports.
+
+```bash
+creator-token-contracts/=lib/creator-token-contracts/
+@openzeppelin/=lib/openzeppelin-contracts/contracts/
+```
 
 ## Usage
 
