@@ -1,6 +1,6 @@
 # Creator Token Contracts
 
-**A backwards compatible library of NFT contract standards and mix-ins that power programmable royalty use cases and expand possible NFT use cases by introducing creator tokens.** 
+**A backwards compatible library of NFT contract standards and mix-ins that power programmable royalty use cases and expand possible NFT use cases by introducing creator tokens.**
 
 ## Installation with Hardhat/Truffle
 
@@ -18,11 +18,17 @@ forge install limitbreakinc/creator-token-contracts
 
 Update your `remappings.txt` file to resolve imports.
 
+```bash
+creator-token-contracts/=lib/creator-token-contracts/
+```
+
+(Creator Token Contracts uses pre-5.0 OpenZeppelin contracts. In 5.0+, OZ changed `Ownable` which Creator Token Contracts depends on to be a default constructor.)
+
 ## Usage
 
 Once installed, you can use the contracts in the library by importing them.
 
-***Note: This contract library contains Initializable variations of several contracts an mix-ins.  The initialization functions are meant for use ONLY with EIP-1167 Minimal Proxies (Clones).  The use of the term "Initializable" is not meant to imply that these contracts are suitable for use in Upgradeable Proxy contracts.  This contract library should NOT be used in any upgradeable contract, as they do not provide storage-safety should additional contract variables be added in future versions.  Limit Break has no intentions to make this library suitable for upgradeability and developers are solely responsible for adapting the code should they use it in an upgradeable contract.*** 
+***Note: This contract library contains Initializable variations of several contracts an mix-ins.  The initialization functions are meant for use ONLY with EIP-1167 Minimal Proxies (Clones).  The use of the term "Initializable" is not meant to imply that these contracts are suitable for use in Upgradeable Proxy contracts.  This contract library should NOT be used in any upgradeable contract, as they do not provide storage-safety should additional contract variables be added in future versions.  Limit Break has no intentions to make this library suitable for upgradeability and developers are solely responsible for adapting the code should they use it in an upgradeable contract.***
 
 ## Cloning The Source Code
 
@@ -126,9 +132,9 @@ pragma solidity ^0.8.4;
 import "@limitbreak/creator-token-contracts/contracts/erc721c/ERC721C.sol";
 
 contract MyCollection is ERC721C {
-    
+
     constructor() ERC721C("MyCollection", "MC") {}
-    
+
     ...
 }
 ```
@@ -139,9 +145,9 @@ pragma solidity ^0.8.4;
 import "@limitbreak/creator-token-contracts/contracts/erc721c/ERC721AC.sol";
 
 contract MyCollection is ERC721AC {
-    
+
     constructor() ERC721AC("MyCollection", "MC") {}
-    
+
     ...
 }
 ```
@@ -152,9 +158,9 @@ pragma solidity ^0.8.4;
 import "@limitbreak/creator-token-contracts/contracts/erc721c/AdventureERC721C.sol";
 
 contract MyCollection is AdventureERC721C {
-    
+
     constructor() AdventureERC721C(10, "MyCollection", "MC") {}
-    
+
     ...
 }
 ```
@@ -164,7 +170,7 @@ contract MyCollection is AdventureERC721C {
 ```solidity
 
 contract MyCollection is ERC721C {
-    
+
     ...
 
     function ownerMint(address to, uint256 tokenId) external onlyOwner {
@@ -176,7 +182,7 @@ contract MyCollection is ERC721C {
     }
 
     // TODO: Other collection-specific contract features here
-    
+
     function _baseURI() internal view virtual override returns (string memory) {
         return "https://my.nft.com/mycollection/metadata/";
     }
@@ -297,9 +303,9 @@ pragma solidity ^0.8.4;
 import "@limitbreak/creator-token-contracts/contracts/erc721c/extensions/ERC721CW.sol";
 
 contract MyCollection is ERC721CW {
-    
+
     constructor(address wrappedCollectionAddress_) ERC721CW(wrappedCollectionAddress_, "MyCollection", "MC") {}
-    
+
     ...
 }
 ```
@@ -310,9 +316,9 @@ pragma solidity ^0.8.4;
 import "@limitbreak/creator-token-contracts/contracts/erc721c/AdventureERC721CW.sol";
 
 contract MyCollection is AdventureERC721CW {
-    
+
     constructor(address wrappedCollectionAddress_) AdventureERC721C(wrappedCollectionAddress_, 10, "MyCollection", "MC") {}
-    
+
     ...
 }
 ```
@@ -326,7 +332,7 @@ contract MyCollection is ERC721CW {
     ...
 
     // TODO: Other collection-specific contract features here
-    
+
     function _baseURI() internal view virtual override returns (string memory) {
         return "https://my.nft.com/mycollection/metadata/";
     }
@@ -361,8 +367,8 @@ contract AdventureERC721CWithMutableMinterRoyalties is AdventureERC721C, Mutable
         uint96 defaultRoyaltyFeeNumerator_,
         uint256 maxSimultaneousQuests_,
         string memory name_,
-        string memory symbol_) 
-        AdventureERC721C(maxSimultaneousQuests_, name_, symbol_) 
+        string memory symbol_)
+        AdventureERC721C(maxSimultaneousQuests_, name_, symbol_)
         MutableMinterRoyalties(defaultRoyaltyFeeNumerator_) {
     }
 
@@ -410,7 +416,7 @@ contract AdventureERC721CWithMutableMinterRoyalties is AdventureERC721C, Mutable
 }
 ```
 
-5. Override the _mint and _burn functions.  Call _onMinted or _onBurned respectively and then call the base implementation.  
+5. Override the _mint and _burn functions.  Call _onMinted or _onBurned respectively and then call the base implementation.
 
 ```solidity
 
@@ -474,7 +480,7 @@ contract MyMarketplace is OrderFulfillmentOnchainRoyalties {
     function _translateOrderDetails(Execution memory execution) private pure returns (OrderDetails memory) {
         Order memory sellOrder = execution.sell.order;
         Order memory buyOrder = execution.buy.order;
-        
+
         uint256 platformFeesDeducted = 0;
         for (uint256 i = 0; i < sellOrder.fees.length; i++) {
             platformFeesDeducted += (sellOrder.price * sellOrder.fees[i].rate) / FEE_DENOMINATOR;
@@ -493,12 +499,12 @@ contract MyMarketplace is OrderFulfillmentOnchainRoyalties {
             maxRoyaltyFeeNumerator: getMaxRoyaltyFeeNumerator() // Implement this function to get the maximum royalty fee numerator allowed by your marketplace
         });
     }
-    
+
     // Your other marketplace functions here
 }
 ```
 
-The `_translateOrderDetails` function is responsible for converting the native `Execution` data structure into the `OrderDetails` structure used by the mixin. 
+The `_translateOrderDetails` function is responsible for converting the native `Execution` data structure into the `OrderDetails` structure used by the mixin.
 
 Don't forget to test and adjust the code as needed to ensure proper functioning and security of your platform.
 
